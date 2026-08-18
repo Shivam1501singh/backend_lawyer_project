@@ -1,0 +1,177 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AccountType {
+  USER
+  ADVOCATE
+}
+
+enum OtpPurpose {
+  EMAIL_VERIFICATION
+  PHONE_VERIFICATION
+  LOGIN
+}
+
+model RegistrationSession {
+  id                   String            @id @default(uuid())
+  accountType          AccountType
+  fullName             String
+  email                String?
+  emailVerified        Boolean           @default(false)
+  city                 String?
+  state                String?
+  pincode              String?
+  phone                String?
+  phoneVerified        Boolean           @default(false)
+  expiresAt            DateTime
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  
+  otpVerifications     OtpVerification[]
+
+  // Temporary advocate registration details
+  profilePhotoUrl      String?
+  profilePhotoPublicId String?
+  gender               String?
+  barCouncilId         String?
+  aadhaarNumber        String?
+  passwordHash         String?
+  languagesSpoken      String[]          @default([])
+  country              String?
+}
+
+model OtpVerification {
+  id             String               @id @default(uuid())
+  registrationId String?
+  accountType    AccountType
+  purpose        OtpPurpose
+  target         String
+  otpHash        String
+  expiresAt      DateTime
+  attempts       Int                  @default(0)
+  maxAttempts    Int                  @default(5)
+  used           Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+
+  registration   RegistrationSession? @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([registrationId])
+  @@index([target])
+  @@index([expiresAt])
+}
+
+model User {
+  id            String   @id @default(uuid())
+  fullName      String
+  email         String   @unique
+  phone         String   @unique
+  city          String
+  state         String
+  pincode       String
+  emailVerified Boolean  @default(true)
+  phoneVerified Boolean  @default(true)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  reviews       Review[]
+}
+
+model Advocate {
+  id                       String   @id @default(uuid())
+  profilePhotoUrl          String?
+  profilePhotoPublicId     String?
+  fullName                 String
+  phone                    String   @unique
+  phoneVerified            Boolean  @default(false)
+  gender                   String?
+  barCouncilId             String   @unique
+  aadhaarNumber            String?
+  email                    String   @unique
+  emailVerified            Boolean  @default(false)
+  passwordHash             String
+  languagesSpoken          String[]
+  country                  String?  // India-specific platform; country is optional
+  state                    String
+  city                     String
+  pincode                  String?
+  isActive                 Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  // Professional profile fields
+  experienceYears          Int?
+  casesWon                 Int?
+  bestPracticeArea         String?
+  about                    String?
+  courtPractice            String[]
+  completeAddress          String?
+  videoCallChargePerMinute Decimal?
+  voiceCallChargePerMinute Decimal?
+  offlineVisitingFee       Decimal?
+
+  averageRating            Decimal?
+  totalReviews             Int               @default(0)
+  reviews                  Review[]
+
+  practiceAreas            String[]          @default([])
+  topCourtPractised        String?
+}
+
+enum HelpRequestStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model HelpRequest {
+  id           String            @id @default(uuid())
+  referenceId  String            @unique
+
+  name         String
+  email        String
+  phoneNumber  String            @default("")
+  concern      String            @db.Text
+  response     String?           @db.Text
+
+  status       HelpRequestStatus @default(OPEN)
+
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  respondedAt  DateTime?
+
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  userId      String
+  advocateId  String
+  rating      Int
+  reviewText  String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  advocate    Advocate  @relation(fields: [advocateId], references: [id], onDelete: Cascade)
+
+  @@index([advocateId])
+  @@index([userId])
+  @@index([createdAt])
+
+  @@unique([userId, advocateId])
+}
+
+
+
+

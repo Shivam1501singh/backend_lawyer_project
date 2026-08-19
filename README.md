@@ -41,11 +41,11 @@ export default api;
 
 ---
 
-## 3. User Registration Flow (Simplified)
+## 3. User Registration Flow
 The User registration is a 3-step wizard.
 
 ```text
-Step 1: Name + Email Start ──> Email OTP / Google ──> Step 2: Profile Complete (Location, Phone) ──> Step 3: Verify Phone OTP (Auto-Creates Account)
+Step 1: Name + Email Start ──> Email OTP / Google ──> Step 2: Phone Verification (Send & Verify OTP) ──> Step 3: Address & Profile Complete (Finalizes Auto-Creation)
 ```
 
 ### Endpoints Reference
@@ -113,15 +113,48 @@ Step 1: Name + Email Start ──> Email OTP / Google ──> Step 2: Profile Co
       "fullName": "Shivam Singh",
       "email": "user@example.com",
       "emailVerified": true,
-      "phone": "",
-      "phoneVerified": false,
+      "phone": "9876543210",
+      "phoneVerified": true,
       "accountType": "USER"
     }
   }
   ```
 
-#### Step 2: Complete Profile Details
+#### Step 2 (Part A): Send Phone OTP
+- **Endpoint:** `POST /api/auth/user/send-phone-otp`
+- **Request Body:**
+  ```json
+  {
+    "registrationId": "uuid-string",
+    "phone": "9876543210"
+  }
+  ```
+- **Response:**
+  ```json
+  { "success": true, "message": "OTP sent successfully" }
+  ```
+
+#### Step 2 (Part B): Verify Phone OTP
+- **Endpoint:** `POST /api/auth/user/verify-phone`
+- **Request Body:**
+  ```json
+  {
+    "registrationId": "uuid-string",
+    "otp": "123456"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Phone number verified successfully",
+    "phoneVerified": true
+  }
+  ```
+
+#### Step 3: Complete Profile Details (Address & Location Step)
 - **Endpoint:** `POST /api/auth/user/profile`
+- **Security Check:** `emailVerified === true` and `phoneVerified === true` must be true in the registration session. If not, the request will be rejected.
 - **Request Body:**
   ```json
   {
@@ -129,34 +162,26 @@ Step 1: Name + Email Start ──> Email OTP / Google ──> Step 2: Profile Co
     "city": "Ghaziabad",
     "state": "Uttar Pradesh",
     "pincode": "201014",
-    "phone": "9876543210"
+    "latitude": 28.6692,
+    "longitude": 77.4538
   }
   ```
-- **Response:**
+- **Location Fields (Optional):**
+  - `latitude` — `number` (or float representation), representing the latitude coordinate of user's browser location (fetched via `navigator.geolocation.getCurrentPosition()`).
+  - `longitude` — `number` (or float representation), representing the longitude coordinate of user's browser location.
+- **Response (Auto-creates User account and clears session):**
   ```json
-  { "success": true, "message": "Profile completed successfully." }
+  {
+    "success": true,
+    "message": "Profile completed successfully."
+  }
   ```
-
-#### Step 3 (Part A): Send Phone OTP
-- **Endpoint:** `POST /api/auth/user/send-phone-otp`
-- **Request Body:**
+- **Error Response (If phone is not verified yet):**
   ```json
-  { "registrationId": "uuid-string" }
-  ```
-- **Response:**
-  ```json
-  { "success": true, "message": "OTP sent successfully" }
-  ```
-
-#### Step 3 (Part B): Verify Phone OTP & Finalize
-- **Endpoint:** `POST /api/auth/user/verify-phone`
-- **Request Body:**
-  ```json
-  { "registrationId": "uuid-string", "otp": "123456" }
-  ```
-- **Response:**
-  ```json
-  { "success": true, "message": "Registration successful. Please login..." }
+  {
+    "success": false,
+    "message": "Please verify your phone number before adding your address."
+  }
   ```
 
 ---
@@ -311,9 +336,14 @@ Step 7: Review & Finalize Account Creation
     "languagesSpoken": ["Hindi", "English"],
     "state": "Uttar Pradesh",
     "city": "Ghaziabad",
-    "pincode": "201001"
+    "pincode": "201001",
+    "latitude": 28.6692,
+    "longitude": 77.4538
   }
   ```
+- **Location Fields (Optional):**
+  - `latitude` — `number` (or float representation), representing the latitude coordinate of advocate's browser location.
+  - `longitude` — `number` (or float representation), representing the longitude coordinate of advocate's browser location.
 
 - **Location Field Validation:**
   - `state` — Required, Indian State or Union Territory name, max 100 chars

@@ -152,7 +152,9 @@ export const completeProfile = async (req, res, next) => {
       languagesSpoken: validated.languagesSpoken,
       state: validated.state,
       city: validated.city,
-      pincode: validated.pincode
+      pincode: validated.pincode,
+      latitude: validated.latitude,
+      longitude: validated.longitude
     });
 
     return res.status(200).json({

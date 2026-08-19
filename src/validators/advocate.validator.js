@@ -85,7 +85,9 @@ export const completeAdvocateRegistrationSchema = z.object({
   languagesSpoken: languagesSpokenSchema,
   state: z.string().trim().min(2, { message: 'State must be at least 2 characters.' }).max(100),
   city: z.string().trim().min(2, { message: 'City must be at least 2 characters.' }).max(100),
-  pincode: pincodeSchema
+  pincode: pincodeSchema,
+  latitude: z.union([z.number(), z.string().transform(v => parseFloat(v))]).optional().nullable(),
+  longitude: z.union([z.number(), z.string().transform(v => parseFloat(v))]).optional().nullable()
 });
 
 // Login schemas

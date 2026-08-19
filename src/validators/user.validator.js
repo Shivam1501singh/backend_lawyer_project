@@ -31,11 +31,13 @@ export const completeProfileSchema = z.object({
   city: z.string().trim().min(2, { message: 'City must be at least 2 characters.' }),
   state: z.string().trim().min(2, { message: 'State must be at least 2 characters.' }),
   pincode: pincodeSchema,
-  phone: phoneSchema
+  latitude: z.union([z.number(), z.string().transform(v => parseFloat(v))]).optional().nullable(),
+  longitude: z.union([z.number(), z.string().transform(v => parseFloat(v))]).optional().nullable()
 });
 
 export const sendPhoneOtpSchema = z.object({
-  registrationId: z.string().uuid({ message: 'Invalid registration session ID.' })
+  registrationId: z.string().uuid({ message: 'Invalid registration session ID.' }),
+  phone: phoneSchema
 });
 
 export const verifyPhoneSchema = z.object({

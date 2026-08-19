@@ -101,7 +101,8 @@ export const completeProfile = async (req, res, next) => {
       city: validated.city,
       state: validated.state,
       pincode: validated.pincode,
-      phone: validated.phone
+      latitude: validated.latitude,
+      longitude: validated.longitude
     });
 
     return res.status(200).json({
@@ -118,7 +119,8 @@ export const sendPhoneOtp = async (req, res, next) => {
     const validated = userValidator.sendPhoneOtpSchema.parse(req.body);
 
     await authService.sendPhoneOtpForRegistration({
-      registrationId: validated.registrationId
+      registrationId: validated.registrationId,
+      phone: validated.phone
     });
 
     return res.status(200).json({
@@ -141,7 +143,8 @@ export const verifyPhone = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Registration successful. Please login using your phone number.'
+      message: 'Phone number verified successfully',
+      phoneVerified: true
     });
   } catch (error) {
     next(error);

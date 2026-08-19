@@ -159,29 +159,56 @@ export const verifyEmailOtpForRegistration = async ({ registrationId, otp }) => 
 };
 
 // 4. Complete Profile Details (Used for USER flow)
-export const completeProfileForRegistration = async ({ registrationId, city, state, pincode, phone }) => {
+export const completeProfileForRegistration = async ({ registrationId, city, state, pincode, latitude, longitude }) => {
   const session = await getValidSession(registrationId);
 
   if (!session.emailVerified) {
     throw new Error('Please verify your email address before completing your profile.');
   }
 
-  const cleanPhone = phone.trim();
+  if (!session.phoneVerified || !session.phone) {
+    throw new Error('Please verify your phone number before adding your address.');
+  }
 
-  // Check duplicate phone
-  await checkDuplicatePhone(cleanPhone);
+  return await prisma.$transaction(async (tx) => {
+    const normalizedEmail = session.email.toLowerCase().trim();
+    const cleanPhone = session.phone.trim();
 
-  await prisma.registrationSession.update({
-    where: { id: registrationId },
-    data: {
-      city: city.trim(),
-      state: state.trim(),
-      pincode: pincode.trim(),
-      phone: cleanPhone
+    const emailUser = await tx.user.findUnique({ where: { email: normalizedEmail } });
+    const emailAdv = await tx.advocate.findUnique({ where: { email: normalizedEmail } });
+    if (emailUser || emailAdv) {
+      throw new Error('An account with this email was registered in another session.');
     }
-  });
 
-  return true;
+    const phoneUser = await tx.user.findUnique({ where: { phone: cleanPhone } });
+    const phoneAdv = await tx.advocate.findUnique({ where: { phone: cleanPhone } });
+    if (phoneUser || phoneAdv) {
+      throw new Error('An account with this phone number was registered in another session.');
+    }
+
+    const createdAccount = await tx.user.create({
+      data: {
+        fullName: session.fullName,
+        email: normalizedEmail,
+        phone: cleanPhone,
+        city: city.trim(),
+        state: state.trim(),
+        pincode: pincode.trim(),
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true,
+        latitude: latitude !== undefined && latitude !== null ? parseFloat(latitude) : null,
+        longitude: longitude !== undefined && longitude !== null ? parseFloat(longitude) : null
+      }
+    });
+
+    // Delete registration session (cascade deletes OTP records associated with it)
+    await tx.registrationSession.delete({
+      where: { id: session.id }
+    });
+
+    return createdAccount;
+  });
 };
 
 // 5. Send Phone OTP
@@ -199,7 +226,7 @@ export const sendPhoneOtpForRegistration = async ({ registrationId, phone }) => 
 
   await checkDuplicatePhone(cleanPhone);
 
-  // If a phone is provided explicitly (e.g. in Advocate flow), update it in session
+  // If a phone is provided explicitly, update it in session
   if (phone) {
     await prisma.registrationSession.update({
       where: { id: registrationId },
@@ -223,7 +250,7 @@ export const sendPhoneOtpForRegistration = async ({ registrationId, phone }) => 
   return true;
 };
 
-// 6. Verify Phone OTP (and auto-finalize for USER only)
+// 6. Verify Phone OTP
 export const verifyPhoneOtpForRegistration = async ({ registrationId, otp }) => {
   const session = await getValidSession(registrationId);
 
@@ -248,47 +275,6 @@ export const verifyPhoneOtpForRegistration = async ({ registrationId, otp }) => 
     data: { phoneVerified: true }
   });
 
-  // Finalize auto-creation ONLY if USER. Advocate requires final step.
-  if (session.accountType === 'USER') {
-    return await prisma.$transaction(async (tx) => {
-      const normalizedEmail = session.email.toLowerCase().trim();
-      const cleanPhone = session.phone.trim();
-
-      const emailUser = await tx.user.findUnique({ where: { email: normalizedEmail } });
-      const emailAdv = await tx.advocate.findUnique({ where: { email: normalizedEmail } });
-      if (emailUser || emailAdv) {
-        throw new Error('An account with this email was registered in another session.');
-      }
-
-      const phoneUser = await tx.user.findUnique({ where: { phone: cleanPhone } });
-      const phoneAdv = await tx.advocate.findUnique({ where: { phone: cleanPhone } });
-      if (phoneUser || phoneAdv) {
-        throw new Error('An account with this phone number was registered in another session.');
-      }
-
-      const createdAccount = await tx.user.create({
-        data: {
-          fullName: session.fullName,
-          email: normalizedEmail,
-          phone: cleanPhone,
-          city: session.city,
-          state: session.state,
-          pincode: session.pincode,
-          emailVerified: true,
-          phoneVerified: true,
-          isActive: true
-        }
-      });
-
-      // Delete registration session (cascade deletes OTP records associated with it)
-      await tx.registrationSession.delete({
-        where: { id: session.id }
-      });
-
-      return createdAccount;
-    });
-  }
-
   return true;
 };
 
@@ -301,7 +287,9 @@ export const completeAdvocateRegistration = async ({
   languagesSpoken,
   state,
   city,
-  pincode
+  pincode,
+  latitude,
+  longitude
 }) => {
   const session = await getValidSession(registrationId);
 
@@ -372,7 +360,9 @@ export const completeAdvocateRegistration = async ({
         pincode: pincode ? pincode.trim() : null,
         emailVerified: true,
         phoneVerified: true,
-        isActive: true
+        isActive: true,
+        latitude: latitude !== undefined && latitude !== null ? parseFloat(latitude) : null,
+        longitude: longitude !== undefined && longitude !== null ? parseFloat(longitude) : null
       }
     });
 

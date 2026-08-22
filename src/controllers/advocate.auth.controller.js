@@ -236,7 +236,8 @@ export const loginVerifyOtp = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Login successful'
+      message: 'Login successful',
+      token
     });
   } catch (error) {
     next(error);
@@ -257,7 +258,8 @@ export const loginEmailPassword = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Login successful'
+      message: 'Login successful',
+      token
     });
   } catch (error) {
     // If it's a validation error, let next(error) handle it
@@ -269,5 +271,53 @@ export const loginEmailPassword = async (req, res, next) => {
       success: false,
       message: 'Invalid email or password'
     });
+  }
+};
+
+export const initiateAadhaar = async (req, res, next) => {
+  try {
+    const validated = advocateValidator.initiateAadhaarSchema.parse(req.body);
+
+    const result = await authService.initiateAadhaarVerificationService({
+      registrationId: validated.registrationId,
+      aadhaarNumber: validated.aadhaarNumber
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        remainingAttempts: error.remainingAttempts,
+        blocked: error.blocked,
+        blockedUntil: error.blockedUntil
+      });
+    }
+    next(error);
+  }
+};
+
+export const verifyAadhaar = async (req, res, next) => {
+  try {
+    const validated = advocateValidator.verifyAadhaarSchema.parse(req.body);
+
+    const result = await authService.verifyAadhaarStatusService({
+      registrationId: validated.registrationId,
+      clientId: validated.clientId
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        remainingAttempts: error.remainingAttempts,
+        blocked: error.blocked,
+        blockedUntil: error.blockedUntil
+      });
+    }
+    next(error);
   }
 };

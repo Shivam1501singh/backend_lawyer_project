@@ -3,7 +3,8 @@ import { createOtp, verifyOtp } from './otp.service.js';
 import { sendEmailOtp } from './email.service.js';
 import { sendOtpSms } from './sms.service.js';
 import bcrypt from 'bcryptjs';
-import { encrypt } from '../utils/crypto.js';
+import { encrypt, decrypt } from '../utils/crypto.js';
+import { initiateAadhaarDigiLocker, fetchAadhaarDetails } from './idspay.service.js';
 
 // Helper to check duplicates in both tables
 export const checkDuplicateEmail = async (email) => {
@@ -105,7 +106,13 @@ export const getCurrentRegistrationSession = async (registrationId) => {
     profilePhotoUrl: session.profilePhotoUrl,
     profilePhotoPublicId: session.profilePhotoPublicId,
     gender: session.gender,
-    accountType: session.accountType
+    accountType: session.accountType,
+    aadhaarVerified: session.aadhaarVerified,
+    aadhaarVerificationAttempts: session.aadhaarVerificationAttempts,
+    aadhaarBlockedUntil: session.aadhaarBlockedUntil,
+    aadhaarVerificationId: session.aadhaarVerificationId,
+    aadhaarVerifiedAt: session.aadhaarVerifiedAt,
+    aadhaarNumber: session.aadhaarNumber ? decrypt(session.aadhaarNumber) : null
   };
 };
 
@@ -309,6 +316,10 @@ export const completeAdvocateRegistration = async ({
     throw new Error('Profile photo must be uploaded.');
   }
 
+  if (!session.aadhaarVerified) {
+    throw new Error('Aadhaar verification is required to complete profile.');
+  }
+
   const cleanBarCouncilId = barCouncilId.trim();
   const cleanAadhaar = aadhaarNumber.replace(/\s/g, ''); // Strip spaces
 
@@ -362,7 +373,12 @@ export const completeAdvocateRegistration = async ({
         phoneVerified: true,
         isActive: true,
         latitude: latitude !== undefined && latitude !== null ? parseFloat(latitude) : null,
-        longitude: longitude !== undefined && longitude !== null ? parseFloat(longitude) : null
+        longitude: longitude !== undefined && longitude !== null ? parseFloat(longitude) : null,
+        aadhaarVerified: session.aadhaarVerified,
+        aadhaarVerificationId: session.aadhaarVerificationId,
+        aadhaarVerifiedAt: session.aadhaarVerifiedAt,
+        aadhaarVerificationAttempts: session.aadhaarVerificationAttempts,
+        aadhaarBlockedUntil: session.aadhaarBlockedUntil
       }
     });
 
@@ -580,5 +596,180 @@ export const getCurrentUserProfile = async (id, accountType) => {
       voiceCallChargePerMinute: profile.voiceCallChargePerMinute !== null ? Number(profile.voiceCallChargePerMinute) : null,
       offlineVisitingFee: profile.offlineVisitingFee !== null ? Number(profile.offlineVisitingFee) : null
     };
+  }
+};
+
+// Aadhaar Initiate Verification service
+export const initiateAadhaarVerificationService = async ({ registrationId, aadhaarNumber }) => {
+  const session = await getValidSession(registrationId);
+
+  if (session.accountType !== 'ADVOCATE') {
+    const err = new Error('Invalid account type for this operation.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const now = new Date();
+
+  // Check if currently blocked
+  if (session.aadhaarBlockedUntil && now < new Date(session.aadhaarBlockedUntil)) {
+    const err = new Error('Aadhaar verification is temporarily blocked. Please try again after 24 hours.');
+    err.statusCode = 403;
+    err.blocked = true;
+    err.blockedUntil = session.aadhaarBlockedUntil;
+    throw err;
+  }
+
+  // Lazy unblock if 24 hours have passed
+  if (session.aadhaarBlockedUntil && now >= new Date(session.aadhaarBlockedUntil)) {
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarVerificationAttempts: 0,
+        aadhaarBlockedUntil: null
+      }
+    });
+    session.aadhaarVerificationAttempts = 0;
+    session.aadhaarBlockedUntil = null;
+  }
+
+  // Check if already verified
+  if (session.aadhaarVerified) {
+    return {
+      success: true,
+      aadhaarVerified: true,
+      message: 'Aadhaar already verified.'
+    };
+  }
+
+  // Validate format
+  const cleanAadhaar = aadhaarNumber.replace(/\s/g, '');
+  if (!/^\d{12}$/.test(cleanAadhaar)) {
+    // Malformed input: count it as a failed attempt to prevent bypass
+    const newAttempts = session.aadhaarVerificationAttempts + 1;
+    const isBlocked = newAttempts >= 3;
+    const blockedUntil = isBlocked ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : null;
+
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarVerificationAttempts: newAttempts,
+        aadhaarBlockedUntil: blockedUntil
+      }
+    });
+
+    const err = new Error('Aadhaar number must be exactly 12 digits.');
+    err.statusCode = 400;
+    err.remainingAttempts = Math.max(0, 3 - newAttempts);
+    err.blocked = isBlocked;
+    err.blockedUntil = blockedUntil;
+    throw err;
+  }
+
+  // Call IDSPay initiation
+  const response = await initiateAadhaarDigiLocker(cleanAadhaar, registrationId);
+
+  const statusType = response && typeof response.status === 'object' ? response.status?.type : response?.status;
+  const isInitiateSuccess = response && 
+                            (String(statusType || '').toLowerCase() === 'success' || response.status?.code === 200) && 
+                            response.data && 
+                            response.data.client_id;
+
+  if (isInitiateSuccess) {
+    // Save to session database
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarNumber: encrypt(cleanAadhaar),
+        aadhaarVerificationId: response.data.client_id
+      }
+    });
+
+    return {
+      success: true,
+      clientId: response.data.client_id,
+      url: response.data.url
+    };
+  } else {
+    // Technical failure - do NOT count as a failed attempt
+    const errorMsg = (typeof response?.status === 'object' ? response?.status?.message : null) || response?.message || 'Failed to initiate DigiLocker verification with provider.';
+    const err = new Error(errorMsg);
+    err.statusCode = 502;
+    throw err;
+  }
+};
+
+// Aadhaar Verify Status service
+export const verifyAadhaarStatusService = async ({ registrationId, clientId }) => {
+  const session = await getValidSession(registrationId);
+
+  if (session.accountType !== 'ADVOCATE') {
+    const err = new Error('Invalid account type for this operation.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const now = new Date();
+
+  // Check if currently blocked
+  if (session.aadhaarBlockedUntil && now < new Date(session.aadhaarBlockedUntil)) {
+    const err = new Error('Aadhaar verification is temporarily blocked. Please try again after 24 hours.');
+    err.statusCode = 403;
+    err.blocked = true;
+    err.blockedUntil = session.aadhaarBlockedUntil;
+    throw err;
+  }
+
+  // Call IDSPay status check
+  const response = await fetchAadhaarDetails(clientId);
+
+  const statusType = response && typeof response.status === 'object' ? response.status?.type : response?.status;
+  const statusStr = String(statusType || '').toLowerCase();
+  const statusCode = response?.status?.code;
+  const dataStatus = response?.data ? String(response.data.status || response.data.verification_status || '').toLowerCase() : '';
+
+  const isSuccess = (statusStr === 'success' || statusCode === 200) && 
+                     (dataStatus === 'success' || dataStatus === 'success_verified' || dataStatus === 'verified' || dataStatus === 'completed' || dataStatus === 'success_kyc' || dataStatus === 'approved' || dataStatus === '');
+
+  if (isSuccess) {
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarVerified: true,
+        aadhaarVerificationId: clientId,
+        aadhaarVerifiedAt: now,
+        aadhaarVerificationAttempts: 0,
+        aadhaarBlockedUntil: null
+      }
+    });
+
+    return {
+      success: true,
+      aadhaarVerified: true,
+      message: 'Aadhaar verified successfully.'
+    };
+  } else {
+    // Update attempts
+    const newAttempts = session.aadhaarVerificationAttempts + 1;
+    const isBlocked = newAttempts >= 3;
+    const blockedUntil = isBlocked ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : null;
+
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarVerified: false,
+        aadhaarVerifiedAt: null,
+        aadhaarVerificationAttempts: newAttempts,
+        aadhaarBlockedUntil: blockedUntil
+      }
+    });
+
+    const errorMsg = (typeof response?.status === 'object' ? response?.status?.message : null) || response?.message || 'Aadhaar verification failed.';
+    const err = new Error(errorMsg);
+    err.statusCode = 400;
+    err.remainingAttempts = Math.max(0, 3 - newAttempts);
+    err.blocked = isBlocked;
+    err.blockedUntil = blockedUntil;
+    throw err;
   }
 };

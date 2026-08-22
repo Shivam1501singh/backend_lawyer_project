@@ -145,3 +145,13 @@ export const advocateProfileUpdateSchema = z.object({
   languages: z.array(z.string().trim().min(1)).optional().nullable()
 }).strict();
 
+export const initiateAadhaarSchema = z.object({
+  registrationId: z.string().uuid({ message: 'Invalid registration session ID.' }),
+  aadhaarNumber: z.string().trim()
+});
+
+export const verifyAadhaarSchema = z.object({
+  registrationId: z.string().uuid({ message: 'Invalid registration session ID.' }),
+  clientId: z.string({ required_error: 'Client ID is required.' }).min(1)
+});
+

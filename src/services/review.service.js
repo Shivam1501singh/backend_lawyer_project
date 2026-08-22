@@ -14,8 +14,8 @@ export const updateAdvocateRatingStats = async (advocateId) => {
 
   if (totalReviews > 0) {
     const sum = reviews.reduce((acc, r) => acc + parseFloat(r.rating), 0);
-    // Round to 1 decimal place
-    averageRating = parseFloat((sum / totalReviews).toFixed(1));
+    // Round to 1 decimal place using standard round-half-up
+    averageRating = Math.round((sum / totalReviews) * 10) / 10;
   }
 
   await prisma.advocate.update({

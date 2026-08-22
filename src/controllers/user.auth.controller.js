@@ -184,7 +184,8 @@ export const loginVerifyOtp = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Login successful'
+      message: 'Login successful',
+      token
     });
   } catch (error) {
     next(error);
@@ -224,7 +225,8 @@ export const loginVerifyEmailOtp = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Login successful'
+      message: 'Login successful',
+      token
     });
   } catch (error) {
     next(error);

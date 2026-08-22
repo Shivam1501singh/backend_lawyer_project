@@ -3,7 +3,12 @@ import { getCurrentUserProfile } from '../services/auth.service.js';
 
 export const requireAuth = async (req, res, next) => {
   try {
-    const token = req.cookies.auth_token;
+    let token = req.cookies.auth_token;
+
+    // Check Authorization Header if cookie is not present (standard for mobile apps)
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
 
     if (!token) {
       return res.status(401).json({
@@ -37,4 +42,28 @@ export const requireAuth = async (req, res, next) => {
       message: 'Internal server authorization error.'
     });
   }
+};
+
+export const optionalAuth = async (req, res, next) => {
+  try {
+    let token = req.cookies?.auth_token;
+
+    // Check Authorization Header if cookie is not present
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded && decoded.id && decoded.type) {
+        const userProfile = await getCurrentUserProfile(decoded.id, decoded.type);
+        if (userProfile) {
+          req.user = userProfile;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Optional auth middleware error:', error);
+  }
+  next();
 };

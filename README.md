@@ -9,16 +9,37 @@ It covers both the **User** and the upgraded **Advocate** registration and login
 ## 1. Tech Stack & Connection Defaults
 - **Backend Base URL:** `http://localhost:5000`
 - **Prefix:** `/api` (All routes are prefixed, e.g. `http://localhost:5000/api/auth/me`)
-- **Session Mechanism:** JSON Web Tokens (JWT) signed and set as an HTTP-only secure cookie named `auth_token`.
-- **Axios Configuration requirement:** You **MUST** configure your Axios client or Fetch wrapper to send credentials. Otherwise, the session cookie will not be stored or sent back.
+- **Session Mechanism:** JSON Web Tokens (JWT) signed and set as an HTTP-only secure cookie named `auth_token` (Web) OR via `Authorization: Bearer <token>` header (Mobile / App Clients).
+- **Axios Configuration requirement (Web):** You **MUST** configure your Axios client or Fetch wrapper to send credentials (`withCredentials: true`). Otherwise, the session cookie will not be stored or sent back.
+- **Header Configuration (Mobile/App):** You can retrieve the `token` directly from the JSON body of login responses and pass it in subsequent authenticated requests using the header `Authorization: Bearer <your_token>`.
 
-### Client Configuration Example
+### Client Configuration Example (Web with Cookies)
 ```javascript
 import axios from 'axios';
 
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
-  withCredentials: true // MANDATORY for HTTP-only cookie synchronization
+  withCredentials: true // MANDATORY for HTTP-only cookie synchronization on Web
+});
+
+export default api;
+```
+
+### Client Configuration Example (Mobile / Bearer Token)
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5000/api'
+});
+
+// Attach bearer token if stored in mobile storage
+api.interceptors.request.use((config) => {
+  const token = getSavedToken(); // Fetch token from secure storage (SecureStore, Keychain, etc.)
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export default api;
@@ -421,7 +442,8 @@ Callback will set the JWT cookie and automatically redirect back to `/dashboard`
   ```json
   {
     "success": true,
-    "message": "Login successful"
+    "message": "Login successful",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
   ```
 
@@ -439,7 +461,7 @@ To register using Google OAuth without losing existing registration wizard input
 
 - **Method:** `GET`
 - **Endpoint:** `/api/auth/me`
-- **Requires:** `auth_token` HTTP-only Cookie
+- **Requires:** `auth_token` HTTP-only Cookie OR `Authorization: Bearer <token>` Header
 
 ### User Response Structure
 ```json
@@ -927,29 +949,87 @@ This feature provides a public support ticketing system that does NOT require lo
 3. Request Body:
    ```json
    {
-     "response": "We have resolved the login issue. Please try now.",
-     "status": "RESOLVED"
-   }
-   ```
 4. Send and verify it successfully updates the database.
-5. Re-run step 2 (Public Status Lookup) and verify `status` is now `RESOLVED` and `response` contains the admin reply text.## Lawyer Directory & Reviews API
+5. Re-run step 2 (Public Status Lookup) and verify `status` is now `RESOLVED` and `response` contains the admin reply text.
 
-All endpoints are prefixed with `{{BASE_URL}}/api`.
-
-### 1. Get Lawyers Directory
-- **Method:** `GET`
+## Lawyer Directory - Method: `GET`
 - **Endpoint:** `/api/advocates`
-- **Authentication:** None (Public)
+- **Authentication:** Optional (Supports Guest Users & Authenticated Users)
+  * **Guest Users:** Default listing and sorting (or manual filters).
+  * **Authenticated Users:** If the user is logged in as a Client/User (via `auth_token` cookie), their location coordinates (`latitude`/`longitude` or resolved `pincode`) are automatically resolved and used to sort matching advocates nearest-first by default (when no explicit manual `sort` parameter is provided).
 - **Query Parameters:**
   - `page`: Page number (default: `1`)
   - `limit`: Number of advocates per page (default: `12`)
   - `search`: Case-insensitive search on Name, Top Court Practised, City, State, and exact match on Practice Areas.
-  - `sort`: `rating` (sort by rating descending), `experience` (sort by experience descending), `casesWon` (sort by cases won descending).
+  - `sort`: `rating` (sort by rating descending), `experience` (sort by experience descending), `casesWon` (sort by cases won descending). Ignored for proximity sorting when `pincode` is supplied or when an authenticated user location is available and the default sort option is selected.
   - `practiceArea`: Filter by practice area name string.
+  - `practiceAreaId`: Filter by practice area ID.
   - `topCourtPractised`: Filter by top court practised name string.
+  - `topCourtPractisedId`: Filter by top court practised ID.
+  - `bestPracticeArea`: Filter by best practice area name.
+  - `courtPractice`: Filter by specific court practice (e.g., array item matches).
   - `state`: Filter by state.
   - `city`: Filter by city.
+  - `experienceYears`: Filter by minimum years of experience (greater than or equal).
   - `rating`: Filter by minimum average rating (e.g. `4.5`).
+  - `pincode`: Optional 6-digit numeric Indian pincode (e.g. `110001`). If supplied, overrides user location and calculates distance to each advocate using the Haversine formula and sorts results by nearest distance first.
+
+#### Proximity Sorting & Distance Calculation
+* **Location Resolution:** 
+  1. If `pincode` query param is supplied, it is resolved first (manually overridden).
+  2. Otherwise, if the user is authenticated, the backend looks up their user profile. If `latitude` and `longitude` are present, they are used directly. If only a `pincode` is present on the user, it is resolved.
+* **Distance Sorting:**
+  * Distance is calculated in kilometers using the Haversine formula ($R = 6371\text{ km}$).
+  * Advocates with resolved location coordinates will have their distance computed.
+  * If a manual `sort` key is selected (e.g., experience or rating), results are sorted by that key instead, but the calculated distance is still attached to the results if reference coordinates are available.
+  * Advocates with no coordinate data are placed at the end of the list (distance is set to `null`).
+
+#### Postman Testing Guide
+
+##### Test 1 — Public Guest Listing (No Authentication)
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates`
+* **Expected Response:** `200 OK`. Returns advocates sorted by creation date descending. No `distance` field is present.
+
+##### Test 2 — Authenticated User Proximity Sorting (Delhi User)
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates`
+* **Headers:** Pass the HTTP-only cookie `auth_token` for a user located in Delhi (e.g. `client.rahul@example.com`).
+* **Expected Response:** `200 OK`. Returns advocates sorted with nearest (Delhi advocates) first. Each advocate has a `"distance"` key showing kilometers from the user.
+
+##### Test 3 — Authenticated User + Practice Area Filter
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates?practiceArea=Criminal%20Law`
+* **Headers:** Pass the HTTP-only cookie `auth_token`.
+* **Expected Response:** `200 OK`. Returns only advocates who practice `Criminal Law`, ordered by proximity to the logged-in user.
+
+##### Test 4 — Manual Pincode Override (Overriding Logged-in User Location)
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates?pincode=400001`
+* **Headers:** Pass the HTTP-only cookie `auth_token` for a Delhi user.
+* **Expected Response:** `200 OK`. Returns advocates sorted by distance to Mumbai (`400001`) instead of the user's location in Delhi.
+
+##### Test 5 — Authenticated User with Manual Sort Override
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates?sort=experience`
+* **Headers:** Pass the HTTP-only cookie `auth_token`.
+* **Expected Response:** `200 OK`. Returns advocates sorted by experience descending. The `"distance"` field is still calculated and attached to each record.
+
+##### Test 6 — Invalid Pincode Format
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates?pincode=1100` (less than 6 digits) or `pincode=ABC001` (non-numeric)
+* **Expected Response:** `400 Bad Request`.
+
+##### Test 7 — Unknown Pincode
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates?pincode=999999`
+* **Expected Response:** `400 Bad Request`.
+
+##### Test 8 — Pagination
+* **Method:** `GET`
+* **URL:** `{{BASE_URL}}/api/advocates?page=2&limit=5`
+* **Expected Response:** `200 OK`. Returns the next slice of proximity-sorted advocates. Sorting occurs before pagination.
+
 - **Response Example (200 OK):**
   ```json
   {
@@ -1018,6 +1098,15 @@ All endpoints are prefixed with `{{BASE_URL}}/api`.
   }
   ```
 
+### Review & Rating Rules & Constraints
+- **Review Rating Range:** Individual reviews can only have integer ratings from `0` to `5` inclusive.
+- **Average-Rating Calculation:** The average rating of an advocate is calculated as the sum of all their review ratings divided by the total number of reviews.
+- **Rounding Rule:** The calculated average is rounded to exactly **one decimal place** using standard round half-up behavior. E.g., `4.34` rounds to `4.3`, `4.35` to `4.4`, `4.36` to `4.4`, and `5` to `5.0` (which is formatted to one decimal place on display).
+- **Reviewing Constraints:**
+  - Only authenticated standard Users can submit, edit, or delete reviews.
+  - Advocates cannot submit reviews.
+  - A standard User can review a specific Advocate only once (enforced by a database unique constraint `@@unique([userId, advocateId])`).
+
 ### 3. Get Lawyer Reviews
 - **Method:** `GET`
 - **Endpoint:** `/api/advocates/:id/reviews`
@@ -1032,7 +1121,7 @@ All endpoints are prefixed with `{{BASE_URL}}/api`.
     "reviews": [
       {
         "id": "uuid-string",
-        "rating": 4.5,
+        "rating": 5,
         "reviewText": "Very professional advocate.",
         "createdAt": "2026-08-15T00:00:00.000Z",
         "user": {
@@ -1047,15 +1136,15 @@ All endpoints are prefixed with `{{BASE_URL}}/api`.
       "totalPages": 1
     },
     "summary": {
-      "averageRating": 4.5,
+      "averageRating": 5.0,
       "totalReviews": 1,
       "distribution": {
         "0": 0,
         "1": 0,
         "2": 0,
         "3": 0,
-        "4": 1,
-        "5": 0
+        "4": 0,
+        "5": 1
       }
     }
   }
@@ -1068,7 +1157,7 @@ All endpoints are prefixed with `{{BASE_URL}}/api`.
 - **Request Body:**
   ```json
   {
-    "rating": 4.5,
+    "rating": 5,
     "reviewText": "The advocate was professional and explained everything clearly."
   }
   ```
@@ -1081,7 +1170,7 @@ All endpoints are prefixed with `{{BASE_URL}}/api`.
       "id": "uuid-string",
       "userId": "user-uuid",
       "advocateId": "adv-uuid",
-      "rating": 4.5,
+      "rating": 5,
       "reviewText": "..."
     }
   }
@@ -1097,3 +1186,365 @@ All endpoints are prefixed with `{{BASE_URL}}/api`.
 - **Method:** `DELETE`
 - **Endpoint:** `/api/advocates/:advocateId/review`
 - **Authentication:** Required (User accounts only, owner only)
+
+---
+
+## 9. Aadhaar DigiLocker Verification & Lockout (Advocate registration Step 4)
+
+To complete the profile registration, advocates must verify their Aadhaar using IDSPay DigiLocker KYC. The backend enforces a 3-attempt failure limit and a 24-hour lockout.
+
+### 1. Initiate Verification
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/initiate`
+- **Request Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "aadhaarNumber": "123456789012"
+  }
+  ```
+- **Response Example (200 OK - Successful Initiation):**
+  ```json
+  {
+    "success": true,
+    "clientId": "mock_success_id",
+    "url": "http://localhost:5173/digilocker-mock-success"
+  }
+  ```
+- **Response Example (400 Bad Request - Malformed Aadhaar, increments failed attempts):**
+  ```json
+  {
+    "success": false,
+    "message": "Aadhaar number must be exactly 12 digits.",
+    "remainingAttempts": 2,
+    "blocked": false,
+    "blockedUntil": null
+  }
+  ```
+- **Response Example (403 Forbidden - Locked Out):**
+  ```json
+  {
+    "success": false,
+    "message": "Aadhaar verification is temporarily blocked. Please try again after 24 hours.",
+    "blocked": true,
+    "blockedUntil": "2026-08-21T10:30:00.000Z"
+  }
+  ```
+
+### 2. Fetch Verification Status
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/verify`
+- **Request Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "clientId": "mock_success_id"
+  }
+  ```
+- **Response Example (200 OK - Successful Verification):**
+  ```json
+  {
+    "success": true,
+    "aadhaarVerified": true,
+    "message": "Aadhaar verified successfully."
+  }
+  ```
+- **Response Example (400 Bad Request - Verification failed / not completed):**
+  ```json
+  {
+    "success": false,
+    "message": "Aadhaar verification failed.",
+    "remainingAttempts": 1,
+    "blocked": false,
+    "blockedUntil": null
+  }
+  ```
+
+---
+
+# Aadhaar Verification Attempt Limit - Postman Testing
+
+Follow these steps in Postman to verify the 3-attempt limit and 24-hour lockout.
+
+### Prerequisites
+1. Start Advocate registration using `POST /api/auth/advocate/register/start`.
+2. Extract the returned `<registrationId>`.
+3. Complete Email verification and Phone verification steps to unlock the professional information stage.
+
+---
+
+### Test 1 — First Failed Verification (Incorrect/Fail Aadhaar)
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/initiate`
+- **Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "aadhaarNumber": "123456789000"
+  }
+  ```
+  *(Returns `clientId: "mock_fail_id"`, which simulates a failed DigiLocker validation).*
+- Check status using:
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/verify`
+- **Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "clientId": "mock_fail_id"
+  }
+  ```
+- **Expected Response:**
+  ```json
+  {
+    "success": false,
+    "message": "Aadhaar verification failed.",
+    "remainingAttempts": 2,
+    "blocked": false,
+    "blockedUntil": null
+  }
+  ```
+
+---
+
+### Test 2 — Second Failed Verification (Incorrect format)
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/initiate`
+- **Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "aadhaarNumber": "12345"
+  }
+  ```
+  *(Invalid 5-digit string triggers validation failure, which counts as an attempt).*
+- **Expected Response:**
+  ```json
+  {
+    "success": false,
+    "message": "Aadhaar number must be exactly 12 digits.",
+    "remainingAttempts": 1,
+    "blocked": false,
+    "blockedUntil": null
+  }
+  ```
+
+---
+
+### Test 3 — Third Failed Verification
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/initiate`
+- **Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "aadhaarNumber": "123456789000"
+  }
+  ```
+- Check status:
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/verify`
+- **Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "clientId": "mock_fail_id"
+  }
+  ```
+- **Expected Response:**
+  ```json
+  {
+    "success": false,
+    "message": "Aadhaar verification failed. Aadhaar verification has been blocked for 24 hours.",
+    "remainingAttempts": 0,
+    "blocked": true,
+    "blockedUntil": "2026-08-21T12:22:00.000Z"
+  }
+  ```
+
+---
+
+### Test 4 — Fourth Attempt During Block
+- Try initiating another verification:
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/initiate`
+- **Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "aadhaarNumber": "123456789012"
+  }
+  ```
+- **Expected Response (403 Forbidden):**
+  ```json
+  {
+    "success": false,
+    "message": "Aadhaar verification is temporarily blocked. Please try again after 24 hours.",
+    "blocked": true,
+    "blockedUntil": "2026-08-21T12:22:00.000Z"
+  }
+  ```
+  *(Notice that IDSPay is NOT called and request is rejected instantly).*
+
+---
+
+### Test 5 — Reset/Success After 24 Hours
+If you wait 24 hours (or manually change the database `aadhaarBlockedUntil` in Neon to a past date), the block expires:
+- **Method:** `POST`
+- **Endpoint:** `/api/auth/advocate/aadhaar/initiate`
+- **Body:**
+  ```json
+  {
+    "registrationId": "<registrationId>",
+    "aadhaarNumber": "123456789012"
+  }
+  ```
+- **Expected Response:**
+  ```json
+  {
+    "success": true,
+    "clientId": "mock_success_id",
+    "url": "http://localhost:5173/digilocker-mock-success"
+  }
+  ```
+  *(Attempts counter is reset to 0, blockedUntil becomes null, and verification initiates successfully).*
+
+---
+
+## 9. Saved Lawyers Feature
+
+This feature allows authenticated users to save (bookmark) advocates for future reference, view their list of saved advocates, and remove advocates from their saved list.
+
+### Base Endpoint: `/api/saved-lawyers`
+*All endpoints below require authentication. Standard cookie session `auth_token` must be present.*
+
+---
+
+### A. Save Lawyer
+Allows an authenticated user to save an advocate.
+- **Method:** `POST`
+- **Endpoint:** `/api/saved-lawyers`
+- **Authentication:** Required (Standard Client/User type only)
+- **Request Body:**
+  ```json
+  {
+    "advocateId": "uuid-of-advocate"
+  }
+  ```
+- **Response Example (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "Lawyer saved successfully.",
+    "saved": {
+      "id": "uuid-of-saved-record",
+      "userId": "uuid-of-user",
+      "advocateId": "uuid-of-advocate",
+      "createdAt": "2026-08-21T16:25:20.000Z"
+    }
+  }
+  ```
+- **Error Response Example (400 Bad Request - Already Saved):**
+  ```json
+  {
+    "success": false,
+    "message": "Lawyer is already saved"
+  }
+  ```
+
+---
+
+### B. Get Saved Lawyers
+Retrieves all advocates saved by the currently authenticated user.
+- **Method:** `GET`
+- **Endpoint:** `/api/saved-lawyers`
+- **Authentication:** Required (Standard Client/User type only)
+- **Response Example (200 OK):**
+  ```json
+  {
+    "success": true,
+    "advocates": [
+      {
+        "id": "uuid-of-advocate",
+        "fullName": "Adv. Rajesh Sharma",
+        "profilePhotoUrl": "...",
+        "gender": "Male",
+        "experienceYears": 14,
+        "casesWon": 245,
+        "practiceAreas": ["Criminal Law", "Civil Law"],
+        "bestPracticeArea": "Criminal Law",
+        "courtPractice": ["Delhi High Court"],
+        "languagesSpoken": ["English", "Hindi"],
+        "state": "Delhi",
+        "city": "New Delhi",
+        "completeAddress": "Chamber 405...",
+        "videoCallChargePerMinute": 60,
+        "voiceCallChargePerMinute": 40,
+        "offlineVisitingFee": 2500,
+        "averageRating": 4.3,
+        "totalReviews": 3,
+        "isSaved": true
+      }
+    ]
+  }
+  ```
+
+---
+
+### C. Remove Saved Lawyer
+Removes an advocate from the authenticated user's saved list.
+- **Method:** `DELETE`
+- **Endpoint:** `/api/saved-lawyers/:advocateId`
+- **Authentication:** Required (Standard Client/User type only)
+- **Response Example (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Lawyer removed from saved list successfully."
+  }
+  ```
+- **Error Response Example (400 Bad Request - Not Saved):**
+  ```json
+  {
+    "success": false,
+    "message": "Saved lawyer not found"
+  }
+  ```
+
+---
+
+### Postman Testing Steps
+
+#### Test 1 — Save Valid Lawyer
+1. Login as standard user (e.g. `client.rahul@example.com`).
+2. Make `POST /api/saved-lawyers` request with a valid `advocateId`.
+3. Verify status code is `201 Created` and `success` is `true`.
+
+#### Test 2 — Duplicate Save Protection
+1. Make the exact same `POST /api/saved-lawyers` request with the same `advocateId`.
+2. Verify status code is `400 Bad Request` and `message` is `"Lawyer is already saved"`.
+
+#### Test 3 — Unauthorized Access
+1. Make `GET /api/saved-lawyers` without passing the `auth_token` cookie.
+2. Verify status code is `401 Unauthorized` (or matches standard auth middleware format).
+
+#### Test 4 — Retrieve Saved Lawyers List
+1. Make `GET /api/saved-lawyers` with user session cookie.
+2. Verify status code is `200 OK` and the returned `advocates` array contains the saved advocate.
+
+#### Test 5 — User Isolation
+1. Login as User A (`client.rahul@example.com`) and save Advocate X.
+2. Login as User B (`client.rohit@example.com`) and call `GET /api/saved-lawyers`.
+3. Verify that Advocate X is **NOT** present in User B's saved lawyers list.
+
+#### Test 6 — Remove Saved Lawyer
+1. Make `DELETE /api/saved-lawyers/<advocateId>` with user session cookie.
+2. Verify status code is `200 OK` and `"success": true`.
+3. Call `GET /api/saved-lawyers` and verify the list is now empty.
+4. Verify that the advocate still exists in the general directory `GET /api/advocates` (the advocate itself was not deleted).
+
+#### Test 7 — Remove Unsaved Lawyer
+1. Make `DELETE /api/saved-lawyers/<advocateId>` for a lawyer that is not saved.
+2. Verify status code is `400 Bad Request` and `message` is `"Saved lawyer not found"`.
+
+

@@ -35,6 +35,12 @@ model RegistrationSession {
   
   otpVerifications     OtpVerification[]
 
+  aadhaarVerified             Boolean           @default(false)
+  aadhaarVerificationAttempts  Int               @default(0)
+  aadhaarBlockedUntil         DateTime?
+  aadhaarVerificationId       String?
+  aadhaarVerifiedAt           DateTime?
+
   // Temporary advocate registration details
   profilePhotoUrl      String?
   profilePhotoPublicId String?
@@ -85,6 +91,7 @@ model User {
   longitude     Float?
 
   reviews       Review[]
+  savedLawyers  SavedLawyer[]
 }
 
 model Advocate {
@@ -124,10 +131,17 @@ model Advocate {
   totalReviews             Int               @default(0)
   reviews                  Review[]
 
+  aadhaarVerified             Boolean           @default(false)
+  aadhaarVerificationAttempts  Int               @default(0)
+  aadhaarBlockedUntil         DateTime?
+  aadhaarVerificationId       String?
+  aadhaarVerifiedAt           DateTime?
+
   practiceAreas            String[]          @default([])
   topCourtPractised        String?
   latitude                 Float?
   longitude                Float?
+  savedBy                  SavedLawyer[]
 }
 
 enum HelpRequestStatus {
@@ -176,6 +190,20 @@ model Review {
   @@index([createdAt])
 
   @@unique([userId, advocateId])
+}
+
+model SavedLawyer {
+  id         String   @id @default(uuid())
+  userId     String
+  advocateId String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  advocate   Advocate @relation(fields: [advocateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, advocateId])
+  @@index([userId])
+  @@index([advocateId])
 }
 
 

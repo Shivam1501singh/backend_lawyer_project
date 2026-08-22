@@ -9,7 +9,18 @@ async function main() {
   // 1. Clean existing seed data
   // We can delete by matching emails/phones of our mock data to avoid deleting real user data,
   // or do a clean reset of mock records. Let's delete reviews first, then advocates/users.
-  const mockUserEmails = ['client.rahul@example.com', 'client.ananya@example.com', 'client.rohit@example.com'];
+  const mockUserEmails = [
+    'client.rahul@example.com',
+    'client.ananya@example.com',
+    'client.rohit@example.com',
+    'client.pooja@example.com',
+    'client.vikram@example.com',
+    'client.sneha@example.com',
+    'client.amit@example.com',
+    'client.rajesh@example.com',
+    'client.neha@example.com',
+    'client.priya@example.com'
+  ];
   const mockAdvocateEmails = [
     'adv.rajesh@example.com',
     'adv.priya@example.com',
@@ -58,6 +69,8 @@ async function main() {
         city: 'New Delhi',
         state: 'Delhi',
         pincode: '110001',
+        latitude: 28.6304,
+        longitude: 77.2177,
         emailVerified: true,
         phoneVerified: true,
         isActive: true
@@ -71,6 +84,8 @@ async function main() {
         city: 'Mumbai',
         state: 'Maharashtra',
         pincode: '400001',
+        latitude: 18.9696,
+        longitude: 72.8230,
         emailVerified: true,
         phoneVerified: true,
         isActive: true
@@ -84,6 +99,113 @@ async function main() {
         city: 'Bengaluru',
         state: 'Karnataka',
         pincode: '560001',
+        latitude: 12.9716,
+        longitude: 77.5946,
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.user.create({
+      data: {
+        fullName: 'Pooja Patel',
+        email: 'client.pooja@example.com',
+        phone: '9876543213',
+        city: 'Ahmedabad',
+        state: 'Gujarat',
+        pincode: '380001',
+        latitude: 23.0225,
+        longitude: 72.5714,
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.user.create({
+      data: {
+        fullName: 'Vikram Rao',
+        email: 'client.vikram@example.com',
+        phone: '9876543214',
+        city: 'Hyderabad',
+        state: 'Telangana',
+        pincode: '500001',
+        latitude: 17.3850,
+        longitude: 78.4867,
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.user.create({
+      data: {
+        fullName: 'Sneha Reddy',
+        email: 'client.sneha@example.com',
+        phone: '9876543215',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        pincode: '600001',
+        latitude: 13.0827,
+        longitude: 80.2707,
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.user.create({
+      data: {
+        fullName: 'Amit Kumar',
+        email: 'client.amit@example.com',
+        phone: '9876543216',
+        city: 'Noida',
+        state: 'Uttar Pradesh',
+        pincode: '201301',
+        latitude: 28.5800,
+        longitude: 77.3300,
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.user.create({
+      data: {
+        fullName: 'Rajesh Gupta',
+        email: 'client.rajesh@example.com',
+        phone: '9876543217',
+        city: 'Lucknow',
+        state: 'Uttar Pradesh',
+        pincode: '226001',
+        latitude: 26.8467,
+        longitude: 80.9462,
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.user.create({
+      data: {
+        fullName: 'Neha Singh',
+        email: 'client.neha@example.com',
+        phone: '9876543218',
+        city: 'Kolkata',
+        state: 'West Bengal',
+        pincode: '700001',
+        latitude: 22.5726,
+        longitude: 88.3639,
+        emailVerified: true,
+        phoneVerified: true,
+        isActive: true
+      }
+    }),
+    prisma.user.create({
+      data: {
+        fullName: 'Priya Verma',
+        email: 'client.priya@example.com',
+        phone: '9876543219',
+        city: 'Pune',
+        state: 'Maharashtra',
+        pincode: '411001',
+        latitude: 18.5284,
+        longitude: 73.8739,
         emailVerified: true,
         phoneVerified: true,
         isActive: true
@@ -111,6 +233,8 @@ async function main() {
       state: 'Delhi',
       city: 'New Delhi',
       pincode: '110002',
+      latitude: 28.6438,
+      longitude: 77.2415,
       isActive: true,
       experienceYears: 14,
       casesWon: 245,
@@ -140,6 +264,8 @@ async function main() {
       state: 'Maharashtra',
       city: 'Mumbai',
       pincode: '400021',
+      latitude: 18.9256,
+      longitude: 72.8242,
       isActive: true,
       experienceYears: 8,
       casesWon: 110,
@@ -169,6 +295,8 @@ async function main() {
       state: 'Uttar Pradesh',
       city: 'Noida',
       pincode: '201301',
+      latitude: 28.5800,
+      longitude: 77.3300,
       isActive: true,
       experienceYears: 10,
       casesWon: 180,
@@ -198,6 +326,8 @@ async function main() {
       state: 'Karnataka',
       city: 'Bengaluru',
       pincode: '560025',
+      latitude: 12.9619,
+      longitude: 77.6015,
       isActive: true,
       experienceYears: 6,
       casesWon: 65,
@@ -227,6 +357,8 @@ async function main() {
       state: 'Rajasthan',
       city: 'Jaipur',
       pincode: '302001',
+      latitude: 26.9124,
+      longitude: 75.7873,
       isActive: true,
       experienceYears: 16,
       casesWon: 310,
@@ -256,6 +388,8 @@ async function main() {
       state: 'Kerala',
       city: 'Kochi',
       pincode: '682011',
+      latitude: 9.9700,
+      longitude: 76.2800,
       isActive: true,
       experienceYears: 11,
       casesWon: 145,
@@ -278,18 +412,18 @@ async function main() {
   const lastNames = ['Sharma', 'Verma', 'Gupta', 'Singh', 'Kumar', 'Mishra', 'Joshi', 'Trivedi', 'Mehta', 'Patel', 'Shah', 'Desai', 'Kulkarni', 'Reddy', 'Rao', 'Nair', 'Pillai', 'Sen', 'Chatterjee', 'Banerjee'];
 
   const locations = [
-    { state: 'Delhi', city: 'New Delhi', pincode: '110001' },
-    { state: 'Maharashtra', city: 'Mumbai', pincode: '400001' },
-    { state: 'Maharashtra', city: 'Pune', pincode: '411001' },
-    { state: 'Karnataka', city: 'Bengaluru', pincode: '560001' },
-    { state: 'Tamil Nadu', city: 'Chennai', pincode: '600001' },
-    { state: 'West Bengal', city: 'Kolkata', pincode: '700001' },
-    { state: 'Uttar Pradesh', city: 'Noida', pincode: '201301' },
-    { state: 'Uttar Pradesh', city: 'Lucknow', pincode: '226001' },
-    { state: 'Gujarat', city: 'Ahmedabad', pincode: '380001' },
-    { state: 'Rajasthan', city: 'Jaipur', pincode: '302001' },
-    { state: 'Telangana', city: 'Hyderabad', pincode: '500001' },
-    { state: 'Kerala', city: 'Kochi', pincode: '682001' }
+    { state: 'Delhi', city: 'New Delhi', pincode: '110001', latitude: 28.6304, longitude: 77.2177 },
+    { state: 'Maharashtra', city: 'Mumbai', pincode: '400001', latitude: 18.9696, longitude: 72.8230 },
+    { state: 'Maharashtra', city: 'Pune', pincode: '411001', latitude: 18.5284, longitude: 73.8739 },
+    { state: 'Karnataka', city: 'Bengaluru', pincode: '560001', latitude: 12.9716, longitude: 77.5946 },
+    { state: 'Tamil Nadu', city: 'Chennai', pincode: '600001', latitude: 13.0827, longitude: 80.2707 },
+    { state: 'West Bengal', city: 'Kolkata', pincode: '700001', latitude: 22.5726, longitude: 88.3639 },
+    { state: 'Uttar Pradesh', city: 'Noida', pincode: '201301', latitude: 28.5800, longitude: 77.3300 },
+    { state: 'Uttar Pradesh', city: 'Lucknow', pincode: '226001', latitude: 26.8467, longitude: 80.9462 },
+    { state: 'Gujarat', city: 'Ahmedabad', pincode: '380001', latitude: 23.0225, longitude: 72.5714 },
+    { state: 'Rajasthan', city: 'Jaipur', pincode: '302001', latitude: 26.9124, longitude: 75.7873 },
+    { state: 'Telangana', city: 'Hyderabad', pincode: '500001', latitude: 17.3850, longitude: 78.4867 },
+    { state: 'Kerala', city: 'Kochi', pincode: '682001', latitude: 9.9816, longitude: 76.2999 }
   ];
 
   const practiceAreasList = [
@@ -371,6 +505,8 @@ async function main() {
       state: loc.state,
       city: loc.city,
       pincode: loc.pincode,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
       isActive: true,
       experienceYears: exp,
       casesWon: won,
@@ -398,25 +534,57 @@ async function main() {
   console.log('Seeding reviews...');
   const reviewsData = [];
 
-  // Static reviews for first 6 advocates
+  // Static reviews for first 7 advocates (to achieve target ratings of 4.3, 4.5, 4.0, 4.7, 5.0, 4.1, 4.9)
   const staticReviews = [
-    // Rajesh Sharma Reviews
+    // Rajesh Sharma: 5, 4, 4 -> 4.333... -> 4.3
     { userId: users[0].id, advocateId: advocates[0].id, rating: 5, reviewText: 'Advocate Rajesh is extremely knowledgeable and professional. He handled our family bail application with utmost diligence and secured the bail in record time. Highly recommended!' },
     { userId: users[1].id, advocateId: advocates[0].id, rating: 4, reviewText: 'Very experienced lawyer. Answered all my criminal litigation queries clearly. The fees are high but worth the professional expertise.' },
+    { userId: users[2].id, advocateId: advocates[0].id, rating: 4, reviewText: 'Knowledgeable and helpful.' },
     
-    // Priya Patel Reviews
-    { userId: users[1].id, advocateId: advocates[1].id, rating: 5, reviewText: 'Excellent corporate legal consultant. She reviewed our term sheets and shareholder agreements thoroughly. Great for tech startups.' },
-    { userId: users[2].id, advocateId: advocates[1].id, rating: 5, reviewText: 'Priya helped us register our trademark and patent files. Her advice was prompt and clear. Will definitely hire her again.' },
+    // Priya Patel: 5, 5, 4, 4 -> 4.5
+    { userId: users[0].id, advocateId: advocates[1].id, rating: 5, reviewText: 'Excellent corporate legal consultant. She reviewed our term sheets and shareholder agreements thoroughly. Great for tech startups.' },
+    { userId: users[1].id, advocateId: advocates[1].id, rating: 5, reviewText: 'Priya helped us register our trademark and patent files. Her advice was prompt and clear.' },
+    { userId: users[2].id, advocateId: advocates[1].id, rating: 4, reviewText: 'Detailed contract review.' },
+    { userId: users[3].id, advocateId: advocates[1].id, rating: 4, reviewText: 'Very professional interaction.' },
     
-    // Amit Verma Reviews
-    { userId: users[2].id, advocateId: advocates[2].id, rating: 4, reviewText: 'Amit helped resolving a property dispute with our tenant. Good knowledge of local RERA rules and civil procedures.' },
+    // Amit Verma: 4, 4, 4 -> 4.0
+    { userId: users[0].id, advocateId: advocates[2].id, rating: 4, reviewText: 'Amit helped resolving a property dispute with our tenant. Good knowledge of local RERA rules.' },
+    { userId: users[1].id, advocateId: advocates[2].id, rating: 4, reviewText: 'Good legal consultation.' },
+    { userId: users[2].id, advocateId: advocates[2].id, rating: 4, reviewText: 'Helped resolve our real estate issues.' },
     
-    // Sneha Iyer Reviews
+    // Sneha Iyer: 5, 4, 5 -> 4.666... -> 4.7
     { userId: users[0].id, advocateId: advocates[3].id, rating: 5, reviewText: 'Sneha was incredibly compassionate and logical during a stressful child custody dispute. Excellent family court advocacy.' },
-    { userId: users[2].id, advocateId: advocates[3].id, rating: 4, reviewText: 'Highly supportive lawyer. Handled my mutual divorce proceedings smoothly.' },
+    { userId: users[1].id, advocateId: advocates[3].id, rating: 4, reviewText: 'Highly supportive lawyer. Handled my mutual divorce proceedings smoothly.' },
+    { userId: users[2].id, advocateId: advocates[3].id, rating: 5, reviewText: 'Very compassionate and professional.' },
 
-    // Vikram Singh Reviews
-    { userId: users[1].id, advocateId: advocates[4].id, rating: 5, reviewText: 'Superb taxation advice. Solved a complicated corporate tax audit problem easily.' }
+    // Vikram Singh: 5, 5, 5 -> 5.0
+    { userId: users[0].id, advocateId: advocates[4].id, rating: 5, reviewText: 'Superb taxation advice. Solved a complicated corporate tax audit problem easily.' },
+    { userId: users[1].id, advocateId: advocates[4].id, rating: 5, reviewText: 'Highly recommended for direct tax issues.' },
+    { userId: users[2].id, advocateId: advocates[4].id, rating: 5, reviewText: 'Brilliant representation in tax tribunal.' },
+
+    // Meera Nair: 5, 4, 4, 4, 4, 4, 4, 4, 4, 4 -> 4.1
+    { userId: users[0].id, advocateId: advocates[5].id, rating: 5, reviewText: 'A dedicated environmental advocate fighting for sustainable industrial development.' },
+    { userId: users[1].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Good feedback and solid presence.' },
+    { userId: users[2].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Helpful consultation on land usage.' },
+    { userId: users[3].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Responsive' },
+    { userId: users[4].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Professional approach' },
+    { userId: users[5].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Good advice' },
+    { userId: users[6].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Satisfactory service' },
+    { userId: users[7].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Solid litigation lawyer' },
+    { userId: users[8].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Nice behavior' },
+    { userId: users[9].id, advocateId: advocates[5].id, rating: 4, reviewText: 'Very clear explanation' },
+
+    // Generated Advocate 0 (advocates[6]): 5, 5, 5, 5, 5, 5, 5, 5, 5, 4 -> 4.9
+    { userId: users[0].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Highly recommended' },
+    { userId: users[1].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Excellent representation' },
+    { userId: users[2].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Great results' },
+    { userId: users[3].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Fantastic support' },
+    { userId: users[4].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Professional client care' },
+    { userId: users[5].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Brilliant knowledge' },
+    { userId: users[6].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Outstanding skills' },
+    { userId: users[7].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Top notch legal assistance' },
+    { userId: users[8].id, advocateId: advocates[6].id, rating: 5, reviewText: 'Very reliable' },
+    { userId: users[9].id, advocateId: advocates[6].id, rating: 4, reviewText: 'A minor delay but excellent work overall' }
   ];
 
   reviewsData.push(...staticReviews);
@@ -431,11 +599,14 @@ async function main() {
     'Superb experience. Detail-oriented planning and solid defense/representation.'
   ];
 
-  // For each advocate, check which users have not reviewed them and add reviews from them
+  // For each remaining advocate, check if reviews already added. If not, add reviews from a random subset of users
   for (const adv of advocates) {
-    for (const user of users) {
-      const exists = reviewsData.some(r => r.advocateId === adv.id && r.userId === user.id);
-      if (!exists) {
+    const exists = reviewsData.some(r => r.advocateId === adv.id);
+    if (!exists) {
+      const numReviews = 1 + Math.floor(Math.random() * 6);
+      const shuffledUsers = [...users].sort(() => 0.5 - Math.random());
+      for (let j = 0; j < numReviews; j++) {
+        const user = shuffledUsers[j];
         const rating = 3 + Math.floor(Math.random() * 3); // 3 to 5 stars
         const reviewText = reviewComments[Math.floor(Math.random() * reviewComments.length)];
         reviewsData.push({
@@ -463,7 +634,7 @@ async function main() {
     if (dbReviews.length > 0) {
       const totalReviews = dbReviews.length;
       const sumRating = dbReviews.reduce((acc, curr) => acc + curr.rating, 0);
-      const averageRating = sumRating / totalReviews;
+      const averageRating = Math.round((sumRating / totalReviews) * 10) / 10;
 
       await prisma.advocate.update({
         where: { id: adv.id },
@@ -472,7 +643,7 @@ async function main() {
           totalReviews: totalReviews
         }
       });
-      console.log(`Updated rating for ${adv.fullName}: Avg: ${averageRating.toFixed(2)}, Count: ${totalReviews}`);
+      console.log(`Updated rating for ${adv.fullName}: Avg: ${averageRating.toFixed(1)}, Count: ${totalReviews}`);
     } else {
       await prisma.advocate.update({
         where: { id: adv.id },

@@ -1,14 +1,14 @@
 import express from 'express';
 import * as advocateController from '../controllers/advocate.controller.js';
 import * as reviewController from '../controllers/review.controller.js';
-import { requireAuth } from '../middleware/auth.middleware.js';
+import { requireAuth, optionalAuth } from '../middleware/auth.middleware.js';
 import { reviewLimiter } from '../middleware/rate-limit.middleware.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', advocateController.getAdvocatesDirectory);
-router.get('/:id', advocateController.getAdvocateProfilePublic);
+// Public/Optional Auth routes
+router.get('/', optionalAuth, advocateController.getAdvocatesDirectory);
+router.get('/:id', optionalAuth, advocateController.getAdvocateProfilePublic);
 router.get('/:id/reviews', reviewController.getReviewsList);
 
 // Authenticated User routes

@@ -1,6 +1,6 @@
 import * as authService from '../services/auth.service.js';
 import * as advocateValidator from '../validators/advocate.validator.js';
-import { signToken, sendTokenCookie } from '../utils/jwt.js';
+import { signToken, sendTokenCookie, clearTokenCookie } from '../utils/jwt.js';
 import { uploadBufferToCloudinary } from '../services/cloudinary.service.js';
 import bcrypt from 'bcryptjs';
 
@@ -318,6 +318,19 @@ export const verifyAadhaar = async (req, res, next) => {
         blockedUntil: error.blockedUntil
       });
     }
+    next(error);
+  }
+};
+
+// Logout
+export const logout = async (req, res, next) => {
+  try {
+    clearTokenCookie(res);
+    return res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
     next(error);
   }
 };

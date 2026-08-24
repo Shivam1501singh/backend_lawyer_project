@@ -17,7 +17,8 @@ import savedLawyerRoutes from './routes/savedLawyer.routes.js';
 import { requireAuth } from './middleware/auth.middleware.js';
 import { generalLimiter } from './middleware/rate-limit.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
-import { getCurrentUser, logout } from './controllers/user.auth.controller.js';
+import { getCurrentUser, logout as userLogout } from './controllers/user.auth.controller.js';
+import { logout as advocateLogout } from './controllers/advocate.auth.controller.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -59,7 +60,9 @@ app.use('/api/saved-lawyers', savedLawyerRoutes);
 
 // Common protected authentication endpoints
 app.get('/api/auth/me', requireAuth, getCurrentUser);
-app.post('/api/auth/logout', requireAuth, logout);
+app.post('/api/auth/logout', requireAuth, userLogout);
+app.post('/api/user/logout', requireAuth, userLogout);
+app.post('/api/advocate/logout', requireAuth, advocateLogout);
 
 // Global Error Handler Middleware
 app.use(errorHandler);

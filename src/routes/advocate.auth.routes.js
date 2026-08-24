@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import * as advocateController from '../controllers/advocate.auth.controller.js';
 import { sendOtpLimiter, verifyOtpLimiter, generalLimiter } from '../middleware/rate-limit.middleware.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -23,5 +24,8 @@ router.post('/aadhaar/verify', generalLimiter, advocateController.verifyAadhaar)
 router.post('/login', generalLimiter, advocateController.loginEmailPassword);
 router.post('/login/send-otp', sendOtpLimiter, advocateController.loginSendOtp);
 router.post('/login/verify-otp', verifyOtpLimiter, advocateController.loginVerifyOtp);
+
+// Logout Flow
+router.post('/logout', requireAuth, advocateController.logout);
 
 export default router;

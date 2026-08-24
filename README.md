@@ -1547,4 +1547,136 @@ Removes an advocate from the authenticated user's saved list.
 1. Make `DELETE /api/saved-lawyers/<advocateId>` for a lawyer that is not saved.
 2. Verify status code is `400 Bad Request` and `message` is `"Saved lawyer not found"`.
 
+---
 
+## 9. Logout APIs & Client Integration Guide
+
+This section documents the User and Advocate logout APIs, including testing instructions for both Web (Cookie-based) and Mobile/API (Header-based) environments.
+
+### Authentication & Stateless JWT Architecture Note
+> [!NOTE]
+> The backend session mechanism uses completely stateless JSON Web Tokens (JWT). Because JWT tokens are stateless, **logout cannot physically revoke or invalidate an already-issued token on the server side** (as there is no database storage or token blacklist).
+> - **Web Clients:** The server clears the `auth_token` cookie from the browser on logout.
+> - **Mobile/API Clients:** The client must delete the stored JWT access token from its local secure storage (e.g., Keychain, SharedPreferences, Expo SecureStore) upon receiving a successful logout response. Subsequent requests with that token will naturally be accepted until it expires, unless deleted locally by the client.
+
+---
+
+### API Specifications
+
+#### User Logout
+- **Endpoint:** `POST /api/user/logout` (Alternative: `POST /api/auth/user/logout`)
+- **HTTP Method:** `POST`
+- **Authentication Required:** Yes (Active User session via Cookie or Bearer Token)
+- **Headers:** 
+  - Web: None (Cookie is automatically sent by the browser)
+  - Mobile: `Authorization: Bearer <ACCESS_TOKEN>`
+- **Request Body:** None
+- **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Logged out successfully"
+  }
+  ```
+- **Error Responses:**
+  - **401 Unauthorized (Missing/Expired/Invalid Token or Cookie):**
+    ```json
+    {
+      "success": false,
+      "message": "Authentication required. Please login."
+    }
+    ```
+
+#### Advocate Logout
+- **Endpoint:** `POST /api/advocate/logout` (Alternative: `POST /api/auth/advocate/logout`)
+- **HTTP Method:** `POST`
+- **Authentication Required:** Yes (Active Advocate session via Cookie or Bearer Token)
+- **Headers:** 
+  - Web: None (Cookie is automatically sent by the browser)
+  - Mobile: `Authorization: Bearer <ACCESS_TOKEN>`
+- **Request Body:** None
+- **Success Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Logged out successfully"
+  }
+  ```
+- **Error Responses:**
+  - **401 Unauthorized (Missing/Expired/Invalid Token or Cookie):**
+    ```json
+    {
+      "success": false,
+      "message": "Authentication required. Please login."
+    }
+    ```
+
+---
+
+### Postman Testing Guides
+
+#### 1. Web / Cookie Testing Flow
+
+This test validates standard web browser sessions using HTTP-only cookies.
+
+##### User Flow:
+1. **Login:** Send a request to `POST /api/auth/user/login/verify-otp` (or the equivalent OTP login verification endpoint) with valid credentials.
+2. **Verify Cookie:** Confirm that the server returns a Set-Cookie header for `auth_token`.
+3. **Protected API Access:** Make a `GET /api/auth/me` request. Confirm it succeeds and returns user details.
+4. **Logout:** Call `POST /api/user/logout` (or `POST /api/auth/user/logout`).
+5. **Verify Cookie Cleared:** Confirm that the response clears the `auth_token` cookie (sets it to expire immediately).
+6. **Protected API Check:** Call `GET /api/auth/me` again. Verify that the response returns `401 Unauthorized`.
+
+##### Advocate Flow:
+1. **Login:** Send a request to `POST /api/auth/advocate/login` with valid email and password credentials.
+2. **Verify Cookie:** Confirm that the server returns a Set-Cookie header for `auth_token`.
+3. **Protected API Access:** Make a `GET /api/auth/me` request. Confirm it succeeds and returns advocate details.
+4. **Logout:** Call `POST /api/advocate/logout` (or `POST /api/auth/advocate/logout`).
+5. **Verify Cookie Cleared:** Confirm that the response clears the `auth_token` cookie.
+6. **Protected API Check:** Call `GET /api/auth/me` again. Verify that the response returns `401 Unauthorized`.
+
+---
+
+#### 2. Mobile / Bearer Token Testing Flow
+
+This test validates mobile app sessions using Authorization headers.
+
+##### User Flow:
+1. **Login:** Send a request to `POST /api/auth/user/login/verify-otp` (or the equivalent OTP login verification endpoint).
+2. **Retrieve Token:** Copy the `"token"` string returned in the JSON response body.
+3. **Protected API Access:** Call `GET /api/auth/me`, passing the token in the header:
+   ```http
+   Authorization: Bearer <ACCESS_TOKEN>
+   ```
+   Confirm that the response returns the user profile.
+4. **Logout:** Send a request to `POST /api/user/logout` (or `POST /api/auth/user/logout`), passing the same Authorization header.
+5. **Client Cleanup:** Delete the token from your local storage/testing client variables.
+6. **Protected API Check:** Attempt to call `GET /api/auth/me` without headers. Verify that the response returns `401 Unauthorized`.
+
+##### Advocate Flow:
+1. **Login:** Send a request to `POST /api/auth/advocate/login` with email and password.
+2. **Retrieve Token:** Copy the `"token"` string returned in the JSON response body.
+3. **Protected API Access:** Call `GET /api/auth/me` passing the token in the header:
+   ```http
+   Authorization: Bearer <ACCESS_TOKEN>
+   ```
+   Confirm that the response returns the advocate profile.
+4. **Logout:** Send a request to `POST /api/advocate/logout` (or `POST /api/auth/advocate/logout`), passing the same Authorization header.
+5. **Client Cleanup:** Delete the token from your local storage/testing client variables.
+6. **Protected API Check:** Attempt to call `GET /api/auth/me` without headers. Verify that the response returns `401 Unauthorized`.
+
+---
+
+### Mobile Developer Integration Reference
+
+#### Web Client
+* **Authentication Storage:** Browsers automatically receive, store, and send the HTTP-only `auth_token` cookie.
+* **Logout Actions:** Make a `POST` request to the logout API. The backend handles clearing the cookie automatically.
+
+#### Mobile Client
+* **Authentication Storage:** Mobile apps must extract the `token` string from the successful login response JSON body, and save it locally in secure storage (Keychain / SharedPreferences / Expo SecureStore).
+* **Authenticated Requests:** Send the stored token in the `Authorization` header as a Bearer token:
+  ```http
+  Authorization: Bearer <your_token>
+  ```
+* **Logout Actions:** Make a `POST` request to the logout API (with the Authorization header). Upon success, the mobile app **must delete the token from local storage**. Do not rely on browser cookie clearing.

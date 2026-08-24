@@ -1,6 +1,7 @@
 import express from 'express';
 import * as userController from '../controllers/user.auth.controller.js';
 import { sendOtpLimiter, verifyOtpLimiter, generalLimiter } from '../middleware/rate-limit.middleware.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -19,5 +20,8 @@ router.post('/login/send-otp', sendOtpLimiter, userController.loginSendOtp);
 router.post('/login/verify-otp', verifyOtpLimiter, userController.loginVerifyOtp);
 router.post('/login/send-email-otp', sendOtpLimiter, userController.loginSendEmailOtp);
 router.post('/login/verify-email-otp', verifyOtpLimiter, userController.loginVerifyEmailOtp);
+
+// Logout Flow
+router.post('/logout', requireAuth, userController.logout);
 
 export default router;

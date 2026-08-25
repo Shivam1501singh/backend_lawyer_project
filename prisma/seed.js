@@ -655,6 +655,26 @@ async function main() {
     }
   }
 
+  // Idempotent Seeding of Content Creator
+  const creatorEmail = 'trainee6@techvunex.in';
+  const existingCreator = await prisma.contentCreator.findUnique({
+    where: { email: creatorEmail }
+  });
+  if (!existingCreator) {
+    console.log('Seeding Content Creator...');
+    const creatorPasswordHash = await bcrypt.hash('1234', 10);
+    await prisma.contentCreator.create({
+      data: {
+        email: creatorEmail,
+        passwordHash: creatorPasswordHash,
+        fullName: 'Content Creator'
+      }
+    });
+    console.log('Content Creator seeded successfully.');
+  } else {
+    console.log('Content Creator already exists. Skipping seed.');
+  }
+
   console.log('Database seeding successfully finished!');
 }
 

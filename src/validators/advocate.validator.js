@@ -155,3 +155,19 @@ export const verifyAadhaarSchema = z.object({
   clientId: z.string({ required_error: 'Client ID is required.' }).min(1)
 });
 
+export const generateAadhaarOtpSchema = z.object({
+  registrationId: z.string().uuid({ message: 'Invalid registration session ID.' }),
+  aadhaar_number: z.string({ required_error: 'Aadhaar number is required.' })
+    .trim()
+    .regex(/^\d{12}$/, { message: 'Aadhaar number must be exactly 12 digits without spaces or special characters.' })
+});
+
+export const verifyAadhaarOtpSchema = z.object({
+  registrationId: z.string().uuid({ message: 'Invalid registration session ID.' }),
+  reference_id: z.string({ required_error: 'Reference ID is required.' }).min(1),
+  otp: z.string({ required_error: 'OTP is required.' })
+    .trim()
+    .regex(/^\d{6}$/, { message: 'OTP must be exactly 6 numeric digits.' })
+});
+
+

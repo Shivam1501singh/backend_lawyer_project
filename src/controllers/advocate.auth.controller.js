@@ -322,6 +322,57 @@ export const verifyAadhaar = async (req, res, next) => {
   }
 };
 
+// Sandbox Generate Aadhaar OTP
+export const generateAadhaarOtp = async (req, res, next) => {
+  try {
+    const validated = advocateValidator.generateAadhaarOtpSchema.parse(req.body);
+
+    const result = await authService.generateAadhaarOtpService({
+      registrationId: validated.registrationId,
+      aadhaarNumber: validated.aadhaar_number
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        remainingAttempts: error.remainingAttempts,
+        blocked: error.blocked,
+        blockedUntil: error.blockedUntil
+      });
+    }
+    next(error);
+  }
+};
+
+// Sandbox Verify Aadhaar OTP
+export const verifyAadhaarOtp = async (req, res, next) => {
+  try {
+    const validated = advocateValidator.verifyAadhaarOtpSchema.parse(req.body);
+
+    const result = await authService.verifyAadhaarOtpService({
+      registrationId: validated.registrationId,
+      reference_id: validated.reference_id,
+      otp: validated.otp
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        remainingAttempts: error.remainingAttempts,
+        blocked: error.blocked,
+        blockedUntil: error.blockedUntil
+      });
+    }
+    next(error);
+  }
+};
+
 // Logout
 export const logout = async (req, res, next) => {
   try {

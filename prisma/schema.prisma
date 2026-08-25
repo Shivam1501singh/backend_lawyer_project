@@ -10,6 +10,7 @@ generator client {
 enum AccountType {
   USER
   ADVOCATE
+  CONTENT_CREATOR
 }
 
 enum OtpPurpose {
@@ -40,6 +41,7 @@ model RegistrationSession {
   aadhaarBlockedUntil         DateTime?
   aadhaarVerificationId       String?
   aadhaarVerifiedAt           DateTime?
+  aadhaarVerificationMethod   String?
 
   // Temporary advocate registration details
   profilePhotoUrl      String?
@@ -136,6 +138,7 @@ model Advocate {
   aadhaarBlockedUntil         DateTime?
   aadhaarVerificationId       String?
   aadhaarVerifiedAt           DateTime?
+  aadhaarVerificationMethod   String?
 
   practiceAreas            String[]          @default([])
   topCourtPractised        String?
@@ -208,4 +211,33 @@ model SavedLawyer {
 
 
 
+model ContentCreator {
+  id           String   @id @default(uuid())
+  fullName     String   @default("Content Creator")
+  email        String   @unique
+  passwordHash String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  blogs        Blog[]
+}
 
+model Blog {
+  id            String         @id @default(uuid())
+  image         String?
+  imagePublicId String?
+  heading       String
+  title         String
+  date          DateTime
+  writtenBy     String
+  content       String         @db.Text
+  published     Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  authorId      String
+  author        ContentCreator  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([createdAt])
+}

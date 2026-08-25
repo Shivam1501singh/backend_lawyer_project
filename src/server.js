@@ -13,6 +13,8 @@ import advocateRoutes from './routes/advocate.routes.js';
 import practiceAreaRoutes from './routes/practiceArea.routes.js';
 import courtRoutes from './routes/court.routes.js';
 import savedLawyerRoutes from './routes/savedLawyer.routes.js';
+import blogRoutes from './routes/blog.routes.js';
+
 
 import { requireAuth } from './middleware/auth.middleware.js';
 import { generalLimiter } from './middleware/rate-limit.middleware.js';
@@ -57,6 +59,8 @@ app.use('/api/advocates', advocateRoutes);
 app.use('/api/practice-areas', practiceAreaRoutes);
 app.use('/api/courts', courtRoutes);
 app.use('/api/saved-lawyers', savedLawyerRoutes);
+app.use('/', blogRoutes);
+
 
 // Common protected authentication endpoints
 app.get('/api/auth/me', requireAuth, getCurrentUser);

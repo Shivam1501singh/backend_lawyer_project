@@ -1680,3 +1680,368 @@ This test validates mobile app sessions using Authorization headers.
   Authorization: Bearer <your_token>
   ```
 * **Logout Actions:** Make a `POST` request to the logout API (with the Authorization header). Upon success, the mobile app **must delete the token from local storage**. Do not rely on browser cookie clearing.
+
+---
+
+## 11. Advocate Aadhaar OTP Verification (Sandbox API)
+
+The legal platform supports two methods for Advocate Aadhaar verification during registration:
+1. **DigiLocker/IDSPay** (Existing redirection-based flow)
+2. **Aadhaar OTP** (Direct OTP-based flow using Sandbox API)
+
+### 11.1 Method 2: Sandbox Aadhaar OTP Flow Details
+
+This is a direct 2-step verification method:
+1. **Generate OTP:** The advocate submits their 12-digit Aadhaar number. The backend calls Sandbox to trigger an OTP sent to the mobile number linked with their Aadhaar. Sandbox returns a `reference_id`.
+2. **Verify OTP:** The advocate enters the 6-digit OTP received on their phone. The backend sends the `reference_id` and `otp` to Sandbox. If successful, Aadhaar is marked as verified, and the advocate can proceed to step 4 of registration.
+
+---
+
+### 11.2 API Reference
+
+#### 11.2.1 Generate Aadhaar OTP
+* **Endpoint:** `POST /api/auth/advocate/aadhaar/otp/generate`
+* **Headers:**
+  ```http
+  Content-Type: application/json
+  ```
+* **Request Body:**
+  ```json
+  {
+    "registrationId": "uuid-registration-session-id",
+    "aadhaar_number": "123456789012"
+  }
+  ```
+* **Request Validation:**
+  * `registrationId` must be a valid UUID.
+  * `aadhaar_number` must be exactly 12 digits (no spaces, special characters, or alphabets allowed).
+* **Response (Success):**
+  ```json
+  {
+    "success": true,
+    "message": "OTP sent successfully",
+    "reference_id": "1234567"
+  }
+  ```
+* **Common Errors:**
+  * `400 Bad Request`: Invalid Aadhaar format or invalid session ID.
+  * `403 Forbidden`: Aadhaar verification temporarily blocked (due to 3 incorrect verification attempts).
+  * `502 Bad Gateway`: Sandbox provider connection error.
+
+---
+
+#### 11.2.2 Verify Aadhaar OTP
+* **Endpoint:** `POST /api/auth/advocate/aadhaar/otp/verify`
+* **Headers:**
+  ```http
+  Content-Type: application/json
+  ```
+* **Request Body:**
+  ```json
+  {
+    "registrationId": "uuid-registration-session-id",
+    "reference_id": "1234567",
+    "otp": "123456"
+  }
+  ```
+* **Request Validation:**
+  * `registrationId` must be a valid UUID.
+  * `reference_id` must be a non-empty string.
+  * `otp` must be exactly 6 numeric digits.
+* **Response (Success):**
+  ```json
+  {
+    "success": true,
+    "aadhaarVerified": true,
+    "message": "Aadhaar verified successfully."
+  }
+  ```
+* **Common Errors:**
+  * `400 Bad Request`: Incorrect OTP or reference ID mismatch. Returns `remainingAttempts`, `blocked` (boolean), and `blockedUntil` (timestamp if blocked).
+  * `403 Forbidden`: Aadhaar verification temporarily blocked (max attempts reached).
+
+---
+
+### 11.3 Postman Testing Workflow
+
+Use these instructions to test the direct Aadhaar OTP verification via Postman.
+
+#### Setup Postman Environment Variables
+Create a Postman Environment and add these variables:
+* `BACKEND_URL` - `http://localhost:5000`
+* `registrationId` - The UUID received from `POST /api/auth/advocate/register/start` response.
+* `reference_id` - Leave blank (will be populated from the OTP generation response).
+
+*(Note: Keep your actual Sandbox API credentials secure in your local backend `.env` file; do not put them in shared collection files or READMEs).*
+
+#### Test Cases
+
+##### Step 1: Start Registration
+* **Method & URL:** `POST {{BACKEND_URL}}/api/auth/advocate/register/start`
+* **Body:**
+  ```json
+  {
+    "fullName": "Demo Lawyer",
+    "email": "demo.lawyer@example.com"
+  }
+  ```
+* Save the returned `registrationId` to your Postman environment.
+
+##### Step 2: Generate OTP (Success & Mock Bypass)
+* **Method & URL:** `POST {{BACKEND_URL}}/api/auth/advocate/aadhaar/otp/generate`
+* **Body:**
+  ```json
+  {
+    "registrationId": "{{registrationId}}",
+    "aadhaar_number": "123456789012"
+  }
+  ```
+  *(Note: `123456789012` is the mock bypass Aadhaar. For a live test, use a real Aadhaar number).*
+* **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "OTP sent successfully",
+    "reference_id": "mock_ref_xxxxxxx"
+  }
+  ```
+* Copy the returned `reference_id` into your Postman environment variable `reference_id`.
+
+##### Step 3: Verify OTP (Incorrect Code)
+* **Method & URL:** `POST {{BACKEND_URL}}/api/auth/advocate/aadhaar/otp/verify`
+* **Body:**
+  ```json
+  {
+    "registrationId": "{{registrationId}}",
+    "reference_id": "{{reference_id}}",
+    "otp": "000000"
+  }
+  ```
+* **Response:**
+  ```json
+  {
+    "success": false,
+    "message": "Invalid OTP.",
+    "remainingAttempts": 2,
+    "blocked": false,
+    "blockedUntil": null
+  }
+  ```
+
+##### Step 4: Verify OTP (Correct Code & Success)
+* **Method & URL:** `POST {{BACKEND_URL}}/api/auth/advocate/aadhaar/otp/verify`
+* **Body:**
+  ```json
+  {
+    "registrationId": "{{registrationId}}",
+    "reference_id": "{{reference_id}}",
+    "otp": "123456"
+  }
+  ```
+  *(Note: `123456` is the mock bypass OTP for mock reference IDs).*
+* **Response:**
+  ```json
+  {
+    "success": true,
+    "aadhaarVerified": true,
+    "message": "Aadhaar verified successfully."
+  }
+  ```
+
+##### Step 5: Complete Registration
+* Proceed to submit additional profile photos, verify email/phone, and call `POST /api/auth/advocate/profile` to complete registration. The Advocate record in the database will be created with `aadhaarVerificationMethod` saved as `OTP`.
+
+
+---
+
+## 12. Content Creator & Blog Feature
+
+This feature adds a third role (`CONTENT_CREATOR`) to the application and introduces a public read-only Blog system.
+
+### 12.1 Authentication defaults
+- **Role:** `CONTENT_CREATOR`
+- **Default Account:**
+  - **Email:** `trainee6@techvunex.in`
+  - **Password:** `1234`
+- **Session:** Uses the same HTTP-only secure cookie `auth_token` or `Authorization: Bearer <token>` header as other roles.
+
+---
+
+### 12.2 API Reference
+
+#### 1. Content Creator Login
+- **Endpoint:** `POST /api/content-creator/login`
+- **Request Body:**
+  ```json
+  {
+    "email": "trainee6@techvunex.in",
+    "password": "1234"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Login successful",
+    "token": "JWT_TOKEN",
+    "contentCreator": {
+      "id": "content-creator-uuid",
+      "email": "trainee6@techvunex.in",
+      "fullName": "Content Creator"
+    }
+  }
+  ```
+  *(Note: It also sets the `auth_token` HTTP-only cookie).*
+
+#### 2. Create Blog
+- **Endpoint:** `POST /api/blogs`
+- **Authentication:** `CONTENT_CREATOR` role required.
+- **Content-Type:** `multipart/form-data`
+- **Form Fields:**
+  - `image`: Image file (required, max 5MB, JPEG/PNG/WEBP)
+  - `heading`: string (required)
+  - `title`: string (required)
+  - `date`: string (valid date format, e.g. `2026-08-25`) (required)
+  - `writtenBy`: string (required)
+  - `content`: string (required)
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Blog created successfully",
+    "blog": {
+      "id": "blog-uuid",
+      "heading": "Legal Awareness",
+      "title": "What Every Citizen Should Know About Their Legal Rights",
+      "date": "2026-08-25T00:00:00.000Z",
+      "writtenBy": "Content Creator",
+      "content": "...",
+      "image": "https://res.cloudinary.com/...",
+      "imagePublicId": "...",
+      "authorId": "content-creator-uuid",
+      "published": true,
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  }
+  ```
+
+#### 3. Get All Blogs — PUBLIC
+- **Endpoint:** `GET /api/blogs`
+- **Authentication:** None (Public)
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "blogs": [
+      {
+        "id": "blog-uuid",
+        "image": "https://res.cloudinary.com/...",
+        "heading": "Legal Awareness",
+        "title": "What Every Citizen Should Know About Their Legal Rights",
+        "date": "2026-08-25T00:00:00.000Z",
+        "writtenBy": "Content Creator",
+        "content": "...",
+        "createdAt": "...",
+        "updatedAt": "..."
+      }
+    ]
+  }
+  ```
+
+#### 4. Get Single Blog — PUBLIC
+- **Endpoint:** `GET /api/blogs/:id`
+- **Authentication:** None (Public)
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "blog": {
+      "id": "blog-uuid",
+      "image": "https://res.cloudinary.com/...",
+      "heading": "Legal Awareness",
+      "title": "What Every Citizen Should Know About Their Legal Rights",
+      "date": "2026-08-25T00:00:00.000Z",
+      "writtenBy": "Content Creator",
+      "content": "...",
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  }
+  ```
+
+#### 5. Update Blog
+- **Endpoint:** `PUT /api/blogs/:id`
+- **Authentication:** `CONTENT_CREATOR` (Owner only)
+- **Content-Type:** `multipart/form-data`
+- **Form Fields (All optional):**
+  - `image`: New image file (max 5MB, JPEG/PNG/WEBP)
+  - `heading`: string
+  - `title`: string
+  - `date`: string (valid date format)
+  - `writtenBy`: string
+  - `content`: string
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Blog updated successfully",
+    "blog": { ... }
+  }
+  ```
+
+#### 6. Delete Blog
+- **Endpoint:** `DELETE /api/blogs/:id`
+- **Authentication:** `CONTENT_CREATOR` (Owner only)
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "message": "Blog deleted successfully"
+  }
+  ```
+
+---
+
+### 12.3 Postman Testing Flow
+
+Follow this structured flow to test the entire public read-only Blog functionality:
+
+1. **Start the backend server:** Run `npm run dev`.
+2. **Login as Content Creator:**
+   - Send `POST /api/content-creator/login` with:
+     ```json
+     { "email": "trainee6@techvunex.in", "password": "1234" }
+     ```
+   - Verify success and ensure the cookie/token is received.
+3. **Create a Blog:**
+   - Send `POST /api/blogs` as Content Creator.
+   - Use `multipart/form-data` with:
+     - `image`: `<choose a local image file>`
+     - `heading`: `Legal Awareness`
+     - `title`: `Understanding Your Legal Rights`
+     - `date`: `2026-08-25`
+     - `writtenBy`: `Content Creator`
+     - `content`: `This article explains basic legal rights of citizens.`
+   - Store the returned blog `id`.
+4. **Get All Blogs Without Authentication:**
+   - Remove cookies/auth headers and call `GET /api/blogs` publicly.
+   - Verify that the response returns the list of blogs successfully.
+5. **Get Single Blog Without Authentication:**
+   - Send public request `GET /api/blogs/:id` using the saved blog ID.
+   - Verify that the blog details are retrieved successfully without authentication.
+6. **Login as Normal User:**
+   - Authenticate as a normal User.
+   - Verify they can read blogs publicly, but attempting `POST`, `PUT` or `DELETE` on blog routes returns `403 Forbidden`.
+7. **Login as Advocate:**
+   - Authenticate as an Advocate.
+   - Verify they can read blogs publicly, but attempting `POST`, `PUT` or `DELETE` on blog routes returns `403 Forbidden`.
+8. **Update Blog as Content Creator:**
+   - Log back in as Content Creator and send `PUT /api/blogs/:id` to update the heading or content.
+   - Verify that the update is successful.
+9. **Delete Blog as Content Creator:**
+   - Send `DELETE /api/blogs/:id` as Content Creator.
+   - Ensure it deletes the blog and cleans up the associated Cloudinary image file.
+10. **Verify Authorization Restrictions:**
+    - Verify that unauthenticated users, Users, and Advocates are strictly read-only and have no likes/comments tables or APIs.
+

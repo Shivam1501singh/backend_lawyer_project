@@ -5,6 +5,7 @@ import { sendOtpSms } from './sms.service.js';
 import bcrypt from 'bcryptjs';
 import { encrypt, decrypt } from '../utils/crypto.js';
 import { initiateAadhaarDigiLocker, fetchAadhaarDetails } from './idspay.service.js';
+import { generateAadhaarOtpSandbox, verifyAadhaarOtpSandbox } from './sandboxAadhaar.service.js';
 
 // Helper to check duplicates in both tables
 export const checkDuplicateEmail = async (email) => {
@@ -378,7 +379,8 @@ export const completeAdvocateRegistration = async ({
         aadhaarVerificationId: session.aadhaarVerificationId,
         aadhaarVerifiedAt: session.aadhaarVerifiedAt,
         aadhaarVerificationAttempts: session.aadhaarVerificationAttempts,
-        aadhaarBlockedUntil: session.aadhaarBlockedUntil
+        aadhaarBlockedUntil: session.aadhaarBlockedUntil,
+        aadhaarVerificationMethod: session.aadhaarVerificationMethod
       }
     });
 
@@ -553,6 +555,10 @@ export const getCurrentUserProfile = async (id, accountType) => {
     profile = await prisma.advocate.findUnique({
       where: { id }
     });
+  } else if (accountType === 'content_creator') {
+    profile = await prisma.contentCreator.findUnique({
+      where: { id }
+    });
   }
 
   if (!profile || !profile.isActive) {
@@ -568,6 +574,13 @@ export const getCurrentUserProfile = async (id, accountType) => {
       city: profile.city,
       state: profile.state,
       pincode: profile.pincode,
+      type: accountType
+    };
+  } else if (accountType === 'content_creator') {
+    return {
+      id: profile.id,
+      fullName: profile.fullName,
+      email: profile.email,
       type: accountType
     };
   } else {
@@ -681,7 +694,8 @@ export const initiateAadhaarVerificationService = async ({ registrationId, aadha
       where: { id: registrationId },
       data: {
         aadhaarNumber: encrypt(cleanAadhaar),
-        aadhaarVerificationId: response.data.client_id
+        aadhaarVerificationId: response.data.client_id,
+        aadhaarVerificationMethod: 'DIGILOCKER'
       }
     });
 
@@ -773,3 +787,158 @@ export const verifyAadhaarStatusService = async ({ registrationId, clientId }) =
     throw err;
   }
 };
+
+// Sandbox Aadhaar OTP Generate service
+export const generateAadhaarOtpService = async ({ registrationId, aadhaarNumber }) => {
+  const session = await getValidSession(registrationId);
+
+  if (session.accountType !== 'ADVOCATE') {
+    const err = new Error('Invalid account type for this operation.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const now = new Date();
+
+  // Check if currently blocked
+  if (session.aadhaarBlockedUntil && now < new Date(session.aadhaarBlockedUntil)) {
+    const err = new Error('Aadhaar verification is temporarily blocked. Please try again after 24 hours.');
+    err.statusCode = 403;
+    err.blocked = true;
+    err.blockedUntil = session.aadhaarBlockedUntil;
+    throw err;
+  }
+
+  // Lazy unblock if 24 hours have passed
+  if (session.aadhaarBlockedUntil && now >= new Date(session.aadhaarBlockedUntil)) {
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarVerificationAttempts: 0,
+        aadhaarBlockedUntil: null
+      }
+    });
+    session.aadhaarVerificationAttempts = 0;
+    session.aadhaarBlockedUntil = null;
+  }
+
+  // Already verified?
+  if (session.aadhaarVerified) {
+    return {
+      success: true,
+      aadhaarVerified: true,
+      message: 'Aadhaar already verified.'
+    };
+  }
+
+  const cleanAadhaar = aadhaarNumber.replace(/\s/g, '');
+
+  // Invoke Sandbox API
+  const response = await generateAadhaarOtpSandbox(cleanAadhaar);
+
+  const isSuccess = response && response.code === 200 && response.data && response.data.reference_id;
+
+  if (isSuccess) {
+    // Encrypt Aadhaar & save details to session
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarNumber: encrypt(cleanAadhaar),
+        aadhaarVerificationId: String(response.data.reference_id),
+        aadhaarVerificationMethod: 'OTP'
+      }
+    });
+
+    return {
+      success: true,
+      message: response.data.message || 'OTP sent successfully',
+      reference_id: String(response.data.reference_id)
+    };
+  } else {
+    // Technical/validation failure from provider
+    const errorMsg = response?.message || 'Failed to generate Aadhaar OTP with Sandbox.';
+    const statusCode = response?.code || 502;
+    const err = new Error(errorMsg);
+    err.statusCode = statusCode >= 400 && statusCode < 600 ? statusCode : 502;
+    throw err;
+  }
+};
+
+// Sandbox Aadhaar OTP Verify service
+export const verifyAadhaarOtpService = async ({ registrationId, reference_id, otp }) => {
+  const session = await getValidSession(registrationId);
+
+  if (session.accountType !== 'ADVOCATE') {
+    const err = new Error('Invalid account type for this operation.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const now = new Date();
+
+  // Check if currently blocked
+  if (session.aadhaarBlockedUntil && now < new Date(session.aadhaarBlockedUntil)) {
+    const err = new Error('Aadhaar verification is temporarily blocked. Please try again after 24 hours.');
+    err.statusCode = 403;
+    err.blocked = true;
+    err.blockedUntil = session.aadhaarBlockedUntil;
+    throw err;
+  }
+
+  // Verify ID matches session's initiated verification ID
+  if (session.aadhaarVerificationId !== reference_id) {
+    const err = new Error('Invalid reference ID. Please initiate OTP generation first.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  // Invoke Sandbox API
+  const response = await verifyAadhaarOtpSandbox(reference_id, otp);
+
+  const statusStr = String(response?.data?.status || '').toUpperCase();
+  const isSuccess = response && response.code === 200 && (statusStr === 'VALID' || statusStr === 'SUCCESS' || statusStr === 'VERIFIED');
+
+  if (isSuccess) {
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarVerified: true,
+        aadhaarVerifiedAt: now,
+        aadhaarVerificationAttempts: 0,
+        aadhaarBlockedUntil: null,
+        aadhaarVerificationMethod: 'OTP'
+      }
+    });
+
+    return {
+      success: true,
+      aadhaarVerified: true,
+      message: 'Aadhaar verified successfully.'
+    };
+  } else {
+    // Increment attempts
+    const newAttempts = session.aadhaarVerificationAttempts + 1;
+    const isBlocked = newAttempts >= 3;
+    const blockedUntil = isBlocked ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : null;
+
+    await prisma.registrationSession.update({
+      where: { id: registrationId },
+      data: {
+        aadhaarVerified: false,
+        aadhaarVerifiedAt: null,
+        aadhaarVerificationAttempts: newAttempts,
+        aadhaarBlockedUntil: blockedUntil
+      }
+    });
+
+    const errorMsg = response?.message || 'Aadhaar verification failed.';
+    const statusCode = response?.code || 400;
+    const err = new Error(errorMsg);
+    err.statusCode = statusCode >= 400 && statusCode < 600 ? statusCode : 400;
+    err.remainingAttempts = Math.max(0, 3 - newAttempts);
+    err.blocked = isBlocked;
+    err.blockedUntil = blockedUntil;
+    throw err;
+  }
+};
+

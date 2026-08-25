@@ -19,6 +19,8 @@ router.post('/send-phone-otp', sendOtpLimiter, advocateController.sendPhoneOtp);
 router.post('/verify-phone', verifyOtpLimiter, advocateController.verifyPhone);
 router.post('/aadhaar/initiate', generalLimiter, advocateController.initiateAadhaar);
 router.post('/aadhaar/verify', generalLimiter, advocateController.verifyAadhaar);
+router.post('/aadhaar/otp/generate', generalLimiter, advocateController.generateAadhaarOtp);
+router.post('/aadhaar/otp/verify', generalLimiter, advocateController.verifyAadhaarOtp);
 
 // Login Flow
 router.post('/login', generalLimiter, advocateController.loginEmailPassword);

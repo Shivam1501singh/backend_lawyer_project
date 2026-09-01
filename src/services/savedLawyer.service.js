@@ -9,7 +9,7 @@ export const saveLawyer = async ({ userId, advocateId }) => {
     where: { id: advocateId }
   });
 
-  if (!advocate || !advocate.isActive) {
+  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE') {
     const error = new Error('Advocate not found');
     error.statusCode = 404;
     throw error;
@@ -48,9 +48,9 @@ export const listSavedLawyers = async (userId) => {
     }
   });
 
-  // Filter out any advocates that are not active and map to public profiles
+  // Filter out any advocates that are not active or blocked and map to public profiles
   return saved
-    .filter(s => s.advocate && s.advocate.isActive)
+    .filter(s => s.advocate && s.advocate.isActive && s.advocate.status === 'ACTIVE')
     .map(s => {
       const adv = s.advocate;
       return {

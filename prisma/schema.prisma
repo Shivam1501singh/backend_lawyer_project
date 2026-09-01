@@ -11,6 +11,18 @@ enum AccountType {
   USER
   ADVOCATE
   CONTENT_CREATOR
+  ADMIN
+}
+
+enum AdvocateStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum RequestStatus {
+  PENDING
+  CONNECTED
+  REJECTED
 }
 
 enum OtpPurpose {
@@ -92,8 +104,10 @@ model User {
   latitude      Float?
   longitude     Float?
 
-  reviews       Review[]
-  savedLawyers  SavedLawyer[]
+  reviews         Review[]
+  savedLawyers    SavedLawyer[]
+  caseRequests    CaseConnectionRequest[]
+  caseConnections CaseConnection[]
 }
 
 model Advocate {
@@ -114,8 +128,9 @@ model Advocate {
   state                    String
   city                     String
   pincode                  String?
-  isActive                 Boolean  @default(true)
-  createdAt                DateTime @default(now())
+  isActive                 Boolean        @default(true)
+  status                   AdvocateStatus @default(ACTIVE)
+  createdAt                DateTime       @default(now())
   updatedAt                DateTime @updatedAt
 
   // Professional profile fields
@@ -145,6 +160,8 @@ model Advocate {
   latitude                 Float?
   longitude                Float?
   savedBy                  SavedLawyer[]
+  caseRequests             CaseConnectionRequest[]
+  caseConnections          CaseConnection[]
 }
 
 enum HelpRequestStatus {
@@ -247,4 +264,65 @@ model Blog {
 
   @@index([authorId])
   @@index([createdAt])
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  fullName     String   @default("Admin")
+  email        String   @unique
+  passwordHash String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model CaseConnectionRequest {
+  id          String                   @id @default(uuid())
+  userId      String
+  advocateId  String
+  note        String                   @db.Text
+  description String                   @db.Text
+  status      RequestStatus            @default(PENDING)
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  user        User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  advocate    Advocate                 @relation(fields: [advocateId], references: [id], onDelete: Cascade)
+
+  attachments CaseRequestAttachment[]
+  connection  CaseConnection?
+
+  @@index([userId])
+  @@index([advocateId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model CaseRequestAttachment {
+  id        String                @id @default(uuid())
+  requestId String
+  fileUrl   String
+  publicId  String?
+  fileType  String?
+  fileName  String?
+  createdAt DateTime              @default(now())
+
+  request   CaseConnectionRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+}
+
+model CaseConnection {
+  id         String                @id @default(uuid())
+  requestId  String                @unique
+  userId     String
+  advocateId String
+  createdAt  DateTime              @default(now())
+
+  request    CaseConnectionRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  advocate   Advocate              @relation(fields: [advocateId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([advocateId])
 }

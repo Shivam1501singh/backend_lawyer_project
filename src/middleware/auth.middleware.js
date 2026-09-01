@@ -67,3 +67,28 @@ export const optionalAuth = async (req, res, next) => {
   }
   next();
 };
+
+export const requireRole = (...roles) => {
+  const allowedRoles = roles.map(r => r.toUpperCase());
+
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required. Please login.'
+      });
+    }
+
+    const rawRole = req.user.role || req.user.type || '';
+    const userRole = rawRole.toUpperCase();
+
+    if (!allowedRoles.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access forbidden. Insufficient permissions.'
+      });
+    }
+
+    next();
+  };
+};

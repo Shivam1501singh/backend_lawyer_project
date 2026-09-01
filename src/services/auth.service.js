@@ -549,14 +549,20 @@ export const verifyEmailPasswordLoginService = async ({ email, password }) => {
 // 9. Get Current User profile
 export const getCurrentUserProfile = async (id, accountType) => {
   let profile = null;
-  if (accountType === 'user') {
+  const normalizedType = (accountType || '').toLowerCase();
+
+  if (normalizedType === 'user') {
     profile = await prisma.user.findUnique({ where: { id } });
-  } else if (accountType === 'advocate') {
+  } else if (normalizedType === 'advocate') {
     profile = await prisma.advocate.findUnique({
       where: { id }
     });
-  } else if (accountType === 'content_creator') {
+  } else if (normalizedType === 'content_creator') {
     profile = await prisma.contentCreator.findUnique({
+      where: { id }
+    });
+  } else if (normalizedType === 'admin') {
+    profile = await prisma.admin.findUnique({
       where: { id }
     });
   }
@@ -565,7 +571,7 @@ export const getCurrentUserProfile = async (id, accountType) => {
     return null;
   }
 
-  if (accountType === 'user') {
+  if (normalizedType === 'user') {
     return {
       id: profile.id,
       fullName: profile.fullName,
@@ -574,14 +580,24 @@ export const getCurrentUserProfile = async (id, accountType) => {
       city: profile.city,
       state: profile.state,
       pincode: profile.pincode,
-      type: accountType
+      type: 'user',
+      role: 'USER'
     };
-  } else if (accountType === 'content_creator') {
+  } else if (normalizedType === 'content_creator') {
     return {
       id: profile.id,
       fullName: profile.fullName,
       email: profile.email,
-      type: accountType
+      type: 'content_creator',
+      role: 'CONTENT_CREATOR'
+    };
+  } else if (normalizedType === 'admin') {
+    return {
+      id: profile.id,
+      fullName: profile.fullName,
+      email: profile.email,
+      type: 'admin',
+      role: 'ADMIN'
     };
   } else {
     return {
@@ -596,7 +612,8 @@ export const getCurrentUserProfile = async (id, accountType) => {
       state: profile.state,
       city: profile.city,
       pincode: profile.pincode,
-      type: accountType,
+      type: 'advocate',
+      role: 'ADVOCATE',
       experienceYears: profile.experienceYears,
       casesWon: profile.casesWon,
       practiceAreas: profile.practiceAreas,

@@ -2164,3 +2164,442 @@ Follow this structured flow to test the pagination and creator profile integrati
 
 > [!NOTE]
 > Pushing SEO metadata fields through this API provides structured content for the frontend to populate HTML page headers (`<title>`, `<meta name="description">`, `<meta name="keywords">`). The backend validates and returns this structured data, but does not guarantee search engine ranking. Search engine ranking depends on content quality, mobile usability, page performance, crawlability, and page experience. Modern search engines generally do not use the `meta keywords` tag as a ranking factor, but they are supported for metadata organization.
+
+---
+
+## 13. ADMIN APIs & Advocate Management
+
+This section documents the Admin authentication system, Content Creator account creation, Advocate status management, and the Lawyer Visibility Rules.
+
+### 13.1 Role Model Overview
+
+The system supports four distinct roles:
+1. `USER`: Normal client looking for legal services.
+2. `ADVOCATE`: Legal practitioner providing services.
+3. `CONTENT_CREATOR`: Content manager who writes and maintains public blogs.
+4. `ADMIN`: Administrative account with access to system management.
+
+---
+
+### 13.2 Default Admin Credentials & Seeding
+
+The system automatically seeds an idempotent Admin account:
+* **Email:** `it2@techvunex.in`
+* **Password:** `123456` *(Stored as a bcrypt password hash, never plain text)*
+* **Role:** `ADMIN`
+
+---
+
+### 13.3 Critical Lawyer Visibility Rule
+
+> [!IMPORTANT]
+> **Database-Enforced Advocate Visibility**:
+> Normal Users can ONLY discover Advocates whose `status` is set to `ACTIVE`.
+> When an Admin sets an Advocate's status to `BLOCKED`:
+> - The Advocate is strictly excluded from `GET /api/advocates` (Directory / Discovery / Search / Filter).
+> - The Advocate is strictly excluded from nearby lawyer searches (`GET /api/advocates?pincode=...` or location-based sorting).
+> - Direct profile access via `GET /api/advocates/:id` returns `404 Not Found`.
+> - Saved lawyer listings (`GET /api/saved-lawyers`) exclude blocked Advocates.
+> 
+> When an Admin changes the Advocate's status back to `ACTIVE`, the Advocate becomes discoverable again across all normal user APIs.
+
+---
+
+### 13.4 Admin API Endpoints
+
+#### 1. Admin Login
+* **Endpoint:** `POST /api/admin/login`
+* **Authentication:** Public
+* **Request Body:**
+  ```json
+  {
+    "email": "it2@techvunex.in",
+    "password": "123456"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Login successful",
+    "token": "eyJhbGciOiJIUzI1Ni...",
+    "admin": {
+      "id": "admin-uuid",
+      "email": "it2@techvunex.in",
+      "fullName": "System Admin",
+      "role": "ADMIN"
+    }
+  }
+  ```
+  *(Also sets HTTP-only `auth_token` cookie for web clients).*
+
+#### 2. Create Content Creator Account
+* **Endpoint:** `POST /api/admin/content-creators`
+* **Authentication:** `ADMIN` required (`requireAuth`, `requireRole('ADMIN')`)
+* **Request Body:**
+  ```json
+  {
+    "name": "Content Creator Name",
+    "email": "creator@example.com",
+    "password": "securePassword",
+    "bio": "Short bio about the content creator.",
+    "image": "https://example.com/image.jpg"
+  }
+  ```
+* **Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "Content Creator account created successfully",
+    "contentCreator": {
+      "id": "creator-uuid",
+      "name": "Content Creator Name",
+      "fullName": "Content Creator Name",
+      "email": "creator@example.com",
+      "image": "https://example.com/image.jpg",
+      "bio": "Short bio about the content creator.",
+      "role": "CONTENT_CREATOR",
+      "createdAt": "2026-09-01T07:48:51.138Z"
+    }
+  }
+  ```
+  *(Password/passwordHash is NEVER returned in the response. Creating a duplicate email returns `409 Conflict`).*
+
+#### 3. List Content Creators
+* **Endpoint:** `GET /api/admin/content-creators`
+* **Authentication:** `ADMIN` required
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "contentCreators": [
+      {
+        "id": "creator-uuid",
+        "name": "Techvunex Legal Content Team",
+        "fullName": "Techvunex Legal Content Team",
+        "email": "trainee6@techvunex.in",
+        "image": "https://...",
+        "bio": "Legal content creator...",
+        "role": "CONTENT_CREATOR",
+        "createdAt": "2026-08-01T00:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+#### 4. List Advocates (Management View)
+* **Endpoint:** `GET /api/admin/advocates`
+* **Authentication:** `ADMIN` required
+* **Description:** Returns both `ACTIVE` and `BLOCKED` Advocates for management. Excludes sensitive auth secrets (password hashes, Aadhaar numbers, tokens).
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "advocates": [
+      {
+        "id": "advocate-uuid",
+        "name": "Adv. Rajesh Sharma",
+        "fullName": "Adv. Rajesh Sharma",
+        "email": "adv.rajesh@example.com",
+        "phone": "9876543210",
+        "status": "ACTIVE",
+        "lawType": "Criminal Law",
+        "barCouncilId": "D/1234/2015",
+        "state": "Delhi",
+        "city": "New Delhi",
+        "pincode": "110001",
+        "createdAt": "2026-08-01T00:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+#### 5. Block Advocate
+* **Endpoint:** `PATCH /api/admin/advocates/:advocateId/status`
+* **Authentication:** `ADMIN` required
+* **Request Body:**
+  ```json
+  {
+    "status": "BLOCKED"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate status updated successfully",
+    "data": {
+      "id": "advocate-uuid",
+      "status": "BLOCKED"
+    }
+  }
+  ```
+
+#### 6. Activate Advocate
+* **Endpoint:** `PATCH /api/admin/advocates/:advocateId/status`
+* **Authentication:** `ADMIN` required
+* **Request Body:**
+  ```json
+  {
+    "status": "ACTIVE"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate status updated successfully",
+    "data": {
+      "id": "advocate-uuid",
+      "status": "ACTIVE"
+    }
+  }
+  ```
+
+---
+
+### 13.5 Postman & Role Authorization Matrix
+
+| Endpoint | Unauthenticated | Normal User | Advocate | Content Creator | Admin |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `POST /api/admin/login` | ✅ 200 | ✅ 200 | ✅ 200 | ✅ 200 | ✅ 200 |
+| `POST /api/admin/content-creators` | ❌ 401 | ❌ 403 | ❌ 403 | ❌ 403 | ✅ 201 |
+| `GET /api/admin/content-creators` | ❌ 401 | ❌ 403 | ❌ 403 | ❌ 403 | ✅ 200 |
+| `GET /api/admin/advocates` | ❌ 401 | ❌ 403 | ❌ 403 | ❌ 403 | ✅ 200 |
+| `PATCH /api/admin/advocates/:id/status` | ❌ 401 | ❌ 403 | ❌ 403 | ❌ 403 | ✅ 200 |
+
+---
+
+## 14. USER-LAWYER CONNECTION REQUEST WORKFLOW
+
+This section details the workflow where a Normal User submits a case connection request to a selected lawyer, routed through the **Admin as the intermediary gatekeeper**.
+
+```text
+NORMAL USER
+     │
+     │ Submit Request (Note + Case Description + Images)
+     ▼
+Connection Request (Status: PENDING)
+     │
+     ├── Selected Lawyer receives NO access while PENDING or REJECTED
+     │
+     ▼
+   ADMIN
+     │
+     ├── Review Request
+     │
+     ├───────────────┐
+     │               │
+   Reject          Connect
+     │               │
+     ▼               ▼
+  REJECTED        CONNECTED (Creates CaseConnection)
+     │               │
+  User sees       Lawyer + User
+  Rejected        Connected
+```
+
+> [!IMPORTANT]
+> **Core Gatekeeper Privacy Rule**:
+> The selected Lawyer does NOT receive access to the User's case request, note, description, uploaded documents, or user contact information until the Admin explicitly approves and connects the request (`PATCH /api/admin/case-requests/:requestId/connect`).
+
+---
+
+### 14.1 User Create Connection Request
+* **Endpoint:** `POST /api/lawyers/:advocateId/connect`
+* **Authentication:** `USER` required (`requireAuth`, `requireRole('USER')`)
+* **Content-Type:** `multipart/form-data`
+* **Request Fields:**
+  - `note` *(string, required, max 500 chars)*: Short note explaining the assistance needed.
+  - `description` *(string, required, max 5000 chars)*: Detailed case background.
+  - `images` / `images[]` *(files, optional, max 5 files, 5MB per file, formats: JPG, JPEG, PNG, WEBP, PDF)*: Supporting documents/images.
+* **Pre-conditions & Validation**:
+  - Advocate must exist and have `status = ACTIVE`. If `BLOCKED`, returns `400 Bad Request` (`"This lawyer is currently unavailable."`).
+  - User cannot submit multiple active `PENDING` requests for the same lawyer (returns `409 Conflict`).
+* **Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "Connection request submitted successfully",
+    "data": {
+      "id": "request-uuid",
+      "status": "PENDING",
+      "advocateId": "advocate-uuid",
+      "advocateName": "Adv. Rajesh Sharma",
+      "createdAt": "2026-09-01T11:11:37.909Z",
+      "attachmentsCount": 2
+    }
+  }
+  ```
+
+---
+
+### 14.2 User Track Requests
+#### 1. List User Requests
+* **Endpoint:** `GET /api/user/case-requests`
+* **Authentication:** `USER` required
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "requests": [
+      {
+        "id": "request-uuid",
+        "advocate": {
+          "id": "advocate-uuid",
+          "name": "Adv. Rajesh Sharma",
+          "profilePhotoUrl": "https://...",
+          "bestPracticeArea": "Property Law"
+        },
+        "note": "Need assistance with property dispute.",
+        "description": "My family has received a notice regarding property division...",
+        "status": "PENDING",
+        "attachments": [],
+        "connectionId": null,
+        "createdAt": "2026-09-01T11:11:37.909Z"
+      }
+    ]
+  }
+  ```
+
+#### 2. Get User Request Detail
+* **Endpoint:** `GET /api/user/case-requests/:requestId`
+* **Authentication:** `USER` required (Owner only)
+
+---
+
+### 14.3 Admin Review & Connection APIs
+
+#### 1. Admin List Case Requests
+* **Endpoint:** `GET /api/admin/case-requests`
+* **Authentication:** `ADMIN` required
+* **Query Parameters:** `?status=PENDING` (or `CONNECTED` / `REJECTED`)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "requests": [
+      {
+        "id": "request-uuid",
+        "user": {
+          "id": "user-uuid",
+          "name": "Rahul Verma",
+          "email": "user@example.com",
+          "phone": "9876543210"
+        },
+        "advocate": {
+          "id": "advocate-uuid",
+          "name": "Adv. Rajesh Sharma",
+          "email": "adv.rajesh@example.com",
+          "phone": "9876543211",
+          "status": "ACTIVE"
+        },
+        "note": "Need assistance with property dispute.",
+        "description": "My family has received a notice...",
+        "status": "PENDING",
+        "attachments": [],
+        "createdAt": "2026-09-01T11:11:37.909Z"
+      }
+    ]
+  }
+  ```
+
+#### 2. Admin Get Request Detail
+* **Endpoint:** `GET /api/admin/case-requests/:requestId`
+* **Authentication:** `ADMIN` required
+
+#### 3. Admin Connect Request
+* **Endpoint:** `PATCH /api/admin/case-requests/:requestId/connect`
+* **Authentication:** `ADMIN` required
+* **Description:** Transition status from `PENDING` -> `CONNECTED` and create `CaseConnection` record.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Case connection request connected successfully",
+    "data": {
+      "id": "request-uuid",
+      "status": "CONNECTED",
+      "connectionId": "connection-uuid",
+      "connectedAt": "2026-09-01T11:11:50.337Z"
+    }
+  }
+  ```
+
+#### 4. Admin Reject Request
+* **Endpoint:** `PATCH /api/admin/case-requests/:requestId/reject`
+* **Authentication:** `ADMIN` required
+* **Description:** Transition status from `PENDING` -> `REJECTED`.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Case connection request rejected successfully",
+    "data": {
+      "id": "request-uuid",
+      "status": "REJECTED"
+    }
+  }
+  ```
+
+---
+
+### 14.4 Advocate Case Connection APIs
+
+#### 1. Advocate List Connected Cases
+* **Endpoint:** `GET /api/advocate/case-connections`
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Description:** Returns ONLY cases assigned to the authenticated advocate where `status = CONNECTED`. `PENDING` or `REJECTED` requests are never returned.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "connections": [
+      {
+        "connectionId": "connection-uuid",
+        "requestId": "request-uuid",
+        "user": {
+          "id": "user-uuid",
+          "name": "Rahul Verma",
+          "email": "user@example.com",
+          "phone": "9876543210",
+          "city": "New Delhi",
+          "state": "Delhi"
+        },
+        "note": "Need assistance with property dispute.",
+        "description": "My family has received a notice...",
+        "attachments": [],
+        "connectedAt": "2026-09-01T11:11:50.337Z"
+      }
+    ]
+  }
+  ```
+
+#### 2. Advocate Get Specific Connected Case Detail
+* **Endpoint:** `GET /api/advocate/case-connections/:connectionId`
+* **Authentication:** `ADVOCATE` required (Assigned advocate only)
+* **Security:** If the connection belongs to another advocate, returns `403 Forbidden`.
+
+---
+
+### 14.5 Secure Attachment Viewing Endpoint
+* **Endpoint:** `GET /api/case-requests/:requestId/attachments/:attachmentId`
+* **Authentication:** Authenticated user required
+* **Authorization:** Accessible ONLY to the submitting `USER`, `ADMIN`, or assigned `ADVOCATE` (after `CONNECTED`). Returns `403 Forbidden` for unauthorized requests.
+
+---
+
+### 14.6 Complete Permission Matrix
+
+| Feature | User | Advocate | Content Creator | Admin |
+| :--- | :---: | :---: | :---: | :---: |
+| Submit Connection Request | ✅ | ❌ | ❌ | ❌ |
+| View Own Connection Requests | ✅ (Own) | ❌ | ❌ | ❌ |
+| View All Connection Requests | ❌ | ❌ | ❌ | ✅ |
+| View Pending Request Details | ✅ (Own) | ❌ | ❌ | ✅ |
+| Connect Request (Approve) | ❌ | ❌ | ❌ | ✅ |
+| Reject Request | ❌ | ❌ | ❌ | ✅ |
+| View Connected Case | ✅ (Own) | ✅ (Assigned Only) | ❌ | ✅ |
+| View Case Attachments | ✅ (Own) | ✅ (Assigned Only) | ❌ | ✅ |
+
+

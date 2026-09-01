@@ -14,6 +14,8 @@ import practiceAreaRoutes from './routes/practiceArea.routes.js';
 import courtRoutes from './routes/court.routes.js';
 import savedLawyerRoutes from './routes/savedLawyer.routes.js';
 import blogRoutes from './routes/blog.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import caseRequestRoutes from './routes/caseRequest.routes.js';
 
 
 import { requireAuth } from './middleware/auth.middleware.js';
@@ -49,6 +51,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Auth Routes Mounting
+app.use('/api/admin', adminRoutes);
 app.use('/api/auth/user', userAuthRoutes);
 app.use('/api/auth/advocate', advocateAuthRoutes);
 app.use('/api/auth', oauthRoutes); // mounts google auth callback routes
@@ -59,6 +62,7 @@ app.use('/api/advocates', advocateRoutes);
 app.use('/api/practice-areas', practiceAreaRoutes);
 app.use('/api/courts', courtRoutes);
 app.use('/api/saved-lawyers', savedLawyerRoutes);
+app.use('/', caseRequestRoutes);
 app.use('/', blogRoutes);
 
 

@@ -655,6 +655,27 @@ async function main() {
     }
   }
 
+  // Idempotent Seeding of Admin
+  const adminEmail = 'it2@techvunex.in';
+  let admin = await prisma.admin.findUnique({
+    where: { email: adminEmail }
+  });
+
+  if (!admin) {
+    console.log('Seeding Admin...');
+    const adminPasswordHash = await bcrypt.hash('123456', 10);
+    admin = await prisma.admin.create({
+      data: {
+        email: adminEmail,
+        passwordHash: adminPasswordHash,
+        fullName: 'System Admin'
+      }
+    });
+    console.log('Admin seeded successfully.');
+  } else {
+    console.log('Admin already exists.');
+  }
+
   // Idempotent Seeding of Content Creator
   const creatorEmail = 'trainee6@techvunex.in';
   let creator = await prisma.contentCreator.findUnique({

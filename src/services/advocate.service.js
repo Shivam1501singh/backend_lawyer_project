@@ -107,7 +107,8 @@ export const listAdvocates = async ({
   const where = {
     isActive: true,
     phoneVerified: true,
-    emailVerified: true
+    emailVerified: true,
+    status: 'ACTIVE'
   };
 
   // 1. Search (Matches Name, topCourtPractised, City, State case-insensitively, and practiceAreas exact match)
@@ -356,7 +357,7 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     where: { id }
   });
 
-  if (!advocate || !advocate.isActive) {
+  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE') {
     const error = new Error('Advocate not found.');
     error.statusCode = 404;
     throw error;

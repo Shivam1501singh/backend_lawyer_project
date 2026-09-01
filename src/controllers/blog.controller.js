@@ -5,6 +5,78 @@ import * as blogValidator from '../validators/blog.validator.js';
 import { uploadBufferToCloudinary, deleteFromCloudinary } from '../services/cloudinary.service.js';
 
 /**
+ * Helper to format/map blog response object for API, returning SEO fields & array formatting for keywords
+ */
+export const mapBlogResponse = (blog) => {
+  if (!blog) return null;
+  
+  const creatorData = blog.author ? {
+    id: blog.author.id,
+    name: blog.author.fullName,
+    image: blog.author.image || null,
+    bio: blog.author.bio || null
+  } : null;
+
+  return {
+    id: blog.id,
+    image: blog.image || null,
+    heading: blog.heading,
+    title: blog.title,
+    slug: blog.slug || null,
+    date: blog.date,
+    writtenBy: blog.writtenBy,
+    content: blog.content,
+    metaTitle: blog.metaTitle || null,
+    metaDescription: blog.metaDescription || null,
+    metaKeywords: blog.metaKeywords
+      ? blog.metaKeywords.split(',').map(kw => kw.trim()).filter(Boolean)
+      : null,
+    contentCreator: creatorData,
+    createdAt: blog.createdAt,
+    updatedAt: blog.updatedAt
+  };
+};
+
+/**
+ * Generate a unique URL-friendly slug based on the title
+ */
+export const generateSlug = async (title, currentBlogId = null) => {
+  let slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+  if (!slug) {
+    slug = 'blog';
+  }
+
+  let existing = await prisma.blog.findFirst({
+    where: {
+      slug,
+      NOT: currentBlogId ? { id: currentBlogId } : undefined
+    }
+  });
+
+  if (!existing) {
+    return slug;
+  }
+
+  let uniqueSlug = slug;
+  let counter = 1;
+  while (existing) {
+    uniqueSlug = `${slug}-${counter}`;
+    existing = await prisma.blog.findFirst({
+      where: {
+        slug: uniqueSlug,
+        NOT: currentBlogId ? { id: currentBlogId } : undefined
+      }
+    });
+    counter++;
+  }
+  return uniqueSlug;
+};
+
+/**
  * Content Creator Login
  */
 export const loginContentCreator = async (req, res, next) => {
@@ -89,6 +161,8 @@ export const createBlog = async (req, res, next) => {
     const { url, publicId } = await uploadBufferToCloudinary(req.file.buffer);
 
     try {
+      const slug = await generateSlug(validated.title);
+
       const blog = await prisma.blog.create({
         data: {
           heading: validated.heading,
@@ -98,14 +172,21 @@ export const createBlog = async (req, res, next) => {
           content: validated.content,
           image: url,
           imagePublicId: publicId,
-          authorId: req.user.id
+          authorId: req.user.id,
+          metaTitle: validated.metaTitle,
+          metaDescription: validated.metaDescription,
+          metaKeywords: validated.metaKeywords || null,
+          slug
+        },
+        include: {
+          author: true
         }
       });
 
       return res.status(201).json({
         success: true,
         message: 'Blog created successfully',
-        blog
+        blog: mapBlogResponse(blog)
       });
     } catch (dbError) {
       await deleteFromCloudinary(publicId);
@@ -121,13 +202,37 @@ export const createBlog = async (req, res, next) => {
  */
 export const getBlogs = async (req, res, next) => {
   try {
-    const blogs = await prisma.blog.findMany({
-      orderBy: { createdAt: 'desc' }
-    });
+    const { page, limit } = blogValidator.getBlogsQuerySchema.parse(req.query);
+
+    const skip = (page - 1) * limit;
+
+    const [blogs, totalBlogs] = await prisma.$transaction([
+      prisma.blog.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          author: true
+        }
+      }),
+      prisma.blog.count()
+    ]);
+
+    const totalPages = Math.ceil(totalBlogs / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
 
     return res.status(200).json({
       success: true,
-      blogs
+      blogs: blogs.map(mapBlogResponse),
+      pagination: {
+        currentPage: page,
+        limit,
+        totalBlogs,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage
+      }
     });
   } catch (error) {
     next(error);
@@ -141,8 +246,16 @@ export const getSingleBlog = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const blog = await prisma.blog.findUnique({
-      where: { id }
+    const blog = await prisma.blog.findFirst({
+      where: {
+        OR: [
+          { id },
+          { slug: id }
+        ]
+      },
+      include: {
+        author: true
+      }
     });
 
     if (!blog) {
@@ -154,7 +267,7 @@ export const getSingleBlog = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      blog
+      blog: mapBlogResponse(blog)
     });
   } catch (error) {
     next(error);
@@ -195,11 +308,15 @@ export const updateBlog = async (req, res, next) => {
     const validated = blogValidator.updateBlogSchema.parse(req.body);
 
     const updateData = {};
-    const allowedFields = ['heading', 'title', 'date', 'writtenBy', 'content'];
+    const allowedFields = ['heading', 'title', 'date', 'writtenBy', 'content', 'metaTitle', 'metaDescription', 'metaKeywords'];
     for (const field of allowedFields) {
       if (validated[field] !== undefined) {
         updateData[field] = validated[field];
       }
+    }
+
+    if (validated.title) {
+      updateData.slug = await generateSlug(validated.title, id);
     }
 
     let newPublicId = null;
@@ -231,7 +348,10 @@ export const updateBlog = async (req, res, next) => {
     try {
       const updatedBlog = await prisma.blog.update({
         where: { id },
-        data: updateData
+        data: updateData,
+        include: {
+          author: true
+        }
       });
 
       if (newPublicId && oldPublicId) {
@@ -241,7 +361,7 @@ export const updateBlog = async (req, res, next) => {
       return res.status(200).json({
         success: true,
         message: 'Blog updated successfully',
-        blog: updatedBlog
+        blog: mapBlogResponse(updatedBlog)
       });
     } catch (dbError) {
       if (newPublicId) {

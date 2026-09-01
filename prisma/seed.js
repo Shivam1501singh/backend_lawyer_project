@@ -657,23 +657,247 @@ async function main() {
 
   // Idempotent Seeding of Content Creator
   const creatorEmail = 'trainee6@techvunex.in';
-  const existingCreator = await prisma.contentCreator.findUnique({
+  let creator = await prisma.contentCreator.findUnique({
     where: { email: creatorEmail }
   });
-  if (!existingCreator) {
+
+  if (!creator) {
     console.log('Seeding Content Creator...');
     const creatorPasswordHash = await bcrypt.hash('1234', 10);
-    await prisma.contentCreator.create({
+    creator = await prisma.contentCreator.create({
       data: {
         email: creatorEmail,
         passwordHash: creatorPasswordHash,
-        fullName: 'Content Creator'
+        fullName: 'Techvunex Legal Content Team',
+        image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60',
+        bio: 'Legal content creator focused on simplifying Indian legal information and making legal knowledge easier to understand.'
       }
     });
     console.log('Content Creator seeded successfully.');
   } else {
-    console.log('Content Creator already exists. Skipping seed.');
+    console.log('Content Creator already exists. Ensuring profile details are populated...');
+    if (creator.fullName === 'Content Creator' || !creator.image || !creator.bio) {
+      creator = await prisma.contentCreator.update({
+        where: { email: creatorEmail },
+        data: {
+          fullName: 'Techvunex Legal Content Team',
+          image: creator.image || 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60',
+          bio: creator.bio || 'Legal content creator focused on simplifying Indian legal information and making legal knowledge easier to understand.'
+        }
+      });
+      console.log('Content Creator profile details updated.');
+    }
   }
+
+  // Idempotent Seeding of Blogs (clean up blogs written by mock creator to prevent duplicates on rerun)
+  console.log('Cleaning up existing mock blogs...');
+  await prisma.blog.deleteMany({
+    where: { authorId: creator.id }
+  });
+
+  console.log('Seeding 15 mock blogs...');
+  const mockBlogs = [
+    {
+      heading: 'Constitutional Law',
+      title: 'Fundamental Rights in India',
+      slug: 'fundamental-rights-in-india',
+      date: new Date('2026-08-01'),
+      writtenBy: creator.fullName,
+      content: 'Fundamental Rights are a set of basic rights guaranteed to all citizens of India by the Constitution. These rights are essential for the personal, moral, and spiritual development of citizens. They are justiciable, meaning they can be enforced in court if violated. The six fundamental rights are: Right to Equality, Right to Freedom, Right against Exploitation, Right to Freedom of Religion, Cultural and Educational Rights, and Right to Constitutional Remedies.',
+      metaTitle: 'Fundamental Rights in India | Constitutional Guide',
+      metaDescription: 'An introduction to the six fundamental rights guaranteed by the Indian Constitution, their importance, and legal remedies.',
+      metaKeywords: 'Fundamental Rights, Indian Constitution, legal rights, justice, Right to Equality',
+      image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Criminal Law',
+      title: 'Understanding Bail Laws in India',
+      slug: 'understanding-bail-laws-in-india',
+      date: new Date('2026-08-02'),
+      writtenBy: creator.fullName,
+      content: 'Bail is the temporary release of an accused person awaiting trial, sometimes on condition that a sum of money is lodged to guarantee their appearance in court. In India, offenses are classified into bailable and non-bailable. For bailable offenses, bail is a matter of right. For non-bailable offenses, bail is a matter of court discretion, guided by principles of justice and the likelihood of the accused fleeing or tampering with evidence.',
+      metaTitle: 'Understanding Bail Laws in India | Legal Guide',
+      metaDescription: 'Learn about bail laws in India, different types of bail, eligibility, and the legal process explained in simple language.',
+      metaKeywords: 'bail laws India, bail process, legal rights, Indian law, advocate',
+      image: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Criminal Procedure',
+      title: 'What Is an FIR?',
+      slug: 'what-is-an-fir',
+      date: new Date('2026-08-03'),
+      writtenBy: creator.fullName,
+      content: 'First Information Report (FIR) is a document prepared by police when they receive information about the commission of a cognizable offense. It is the first step in the criminal justice process and initiates the investigation. Anyone who knows about a cognizable offense can file an FIR at a police station. It is crucial to file it as soon as possible after the incident to ensure evidence is fresh.',
+      metaTitle: 'What Is an FIR? | Criminal Procedure Guide',
+      metaDescription: 'Understand the legal significance of a First Information Report (FIR), how to file one, and your rights if police refuse to register it.',
+      metaKeywords: 'FIR, First Information Report, police investigation, Indian police, legal guide',
+      image: 'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Consumer Law',
+      title: 'How to File a Consumer Complaint',
+      slug: 'how-to-file-a-consumer-complaint',
+      date: new Date('2026-08-04'),
+      writtenBy: creator.fullName,
+      content: 'Under the Consumer Protection Act, 2019, consumer forums are established at district, state, and national levels to resolve consumer disputes. If a consumer has bought defective goods or experienced deficient service, they can file a complaint. The process involves sending a legal notice first. If the vendor does not resolve the issue, a formal complaint can be filed in the appropriate consumer court.',
+      metaTitle: 'How to File a Consumer Complaint | Consumer Rights',
+      metaDescription: 'A step-by-step guide to filing a consumer complaint in India, including sending notices and consumer court jurisdiction.',
+      metaKeywords: 'consumer court, consumer rights, filing complaint, Consumer Protection Act, legal help',
+      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Criminal Law',
+      title: 'Rights of an Accused Person',
+      slug: 'rights-of-an-accused-person',
+      date: new Date('2026-08-05'),
+      writtenBy: creator.fullName,
+      content: 'The Indian Constitution and criminal procedure codes protect the rights of accused persons to ensure a fair trial. Key rights include the Right to Silence (protection against self-incrimination), Right to know the grounds of arrest, Right to consult a lawyer, Right to be produced before a magistrate within 24 hours of arrest, and Right to legal aid if indigent.',
+      metaTitle: 'Rights of an Accused Person | Criminal Defense',
+      metaDescription: 'Discover the constitutional and statutory rights of an accused person under arrest in India to ensure a fair legal process.',
+      metaKeywords: 'accused rights, arrest rules, fair trial, legal defense, Indian law',
+      image: 'https://images.unsplash.com/photo-1505664194779-8bebcb95c024?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Property Law',
+      title: 'Understanding Property Rights',
+      slug: 'understanding-property-rights',
+      date: new Date('2026-08-06'),
+      writtenBy: creator.fullName,
+      content: 'Property rights in India have evolved from being a fundamental right to a constitutional right under Article 300A. The state cannot deprive a person of their property except by authority of law. Understanding property transfers, registration, inheritance, and mutations is critical for securing ownership and preventing real estate disputes.',
+      metaTitle: 'Understanding Property Rights in India | Property Law',
+      metaDescription: 'An overview of property ownership, title checks, transfer laws, and Article 300A rights under Indian property law.',
+      metaKeywords: 'property rights, RERA, land transfer, real estate, ownership inheritance',
+      image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Legal Procedure',
+      title: 'What Is a Legal Notice?',
+      slug: 'what-is-a-legal-notice',
+      date: new Date('2026-08-07'),
+      writtenBy: creator.fullName,
+      content: 'A legal notice is a formal communication sent by one party to another, informing them of an intention to initiate legal proceedings if certain demands are not met. It is an opportunity to settle disputes amicably without going to court. Serving a legal notice is mandatory in several civil cases, including consumer complaints and property evictions.',
+      metaTitle: 'What Is a Legal Notice? | Civil Litigation Guide',
+      metaDescription: 'Learn about the purpose, layout, and legal implications of sending or receiving a formal legal notice in civil disputes.',
+      metaKeywords: 'legal notice, dispute resolution, civil law, formal warning, court case',
+      image: 'https://images.unsplash.com/photo-1505664063603-23e56228b36e?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Cyber Law',
+      title: 'Cyber Crime and Legal Protection',
+      slug: 'cyber-crime-and-legal-protection',
+      date: new Date('2026-08-08'),
+      writtenBy: creator.fullName,
+      content: 'With rapid digitalization, cyber crime (identity theft, online fraud, cyber stalking, hacking) has risen. The Information Technology Act, 2000, along with the Indian Penal Code, provides legal frameworks to address and prosecute cyber criminals. Reporting cyber crimes through official portals is key to securing remedy and recovering financial losses.',
+      metaTitle: 'Cyber Crime and Legal Protection | Cyber Law India',
+      metaDescription: 'Explore the IT Act provisions, common cyber crimes, and steps to register complaints with cyber cell departments.',
+      metaKeywords: 'cyber crime, IT Act, online fraud, cyber cell, legal protection',
+      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Women and Law',
+      title: "Women's Legal Rights in India",
+      slug: 'women-s-legal-rights-in-india',
+      date: new Date('2026-08-09'),
+      writtenBy: creator.fullName,
+      content: "Women's legal rights in India span across constitutional protections, family law, criminal law protections, and employment benefits. Specific protections include the Domestic Violence Act, Maternity Benefit Act, POSH Act (sexual harassment at workplace), Equal Remuneration Act, and rights regarding equal inheritance of family property.",
+      metaTitle: "Women's Legal Rights in India | Gender Equality Guide",
+      metaDescription: 'A comprehensive summary of Indian legal provisions protecting women at home, in marriage, and at workplaces.',
+      metaKeywords: 'womens rights, POSH Act, domestic violence, equal pay, inheritance law',
+      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Rental Law',
+      title: 'Tenant Rights and Rental Disputes',
+      slug: 'tenant-rights-and-rental-disputes',
+      date: new Date('2026-08-10'),
+      writtenBy: creator.fullName,
+      content: 'Rent control laws in various states govern the relationship between landlords and tenants. Tenant rights include protection against arbitrary eviction, right to essential services (water, electricity), and fair rent determinations. Landlords must follow strict procedures, including sending eviction notices, before recovering possession.',
+      metaTitle: 'Tenant Rights and Rental Disputes | Rent Control Laws',
+      metaDescription: 'Understand tenant rights, rental agreements, security deposits, and how to resolve disputes with landlords legally.',
+      metaKeywords: 'tenant rights, rental agreement, eviction laws, rent control, landlord dispute',
+      image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Alternative Dispute Resolution',
+      title: 'How Mediation Works',
+      slug: 'how-mediation-works',
+      date: new Date('2026-08-11'),
+      writtenBy: creator.fullName,
+      content: 'Mediation is a structured, voluntary negotiation process where a neutral third party (mediator) helps disputing parties reach a mutually agreeable settlement. It is faster, cheaper, and more confidential than litigation. Courts in India frequently refer civil, commercial, and matrimonial disputes to mediation centres under Section 89 of CPC.',
+      metaTitle: 'How Mediation Works | ADR and Dispute Resolution',
+      metaDescription: 'An introduction to mediation processes, court-annexed mediation, and benefits of settling cases out of court.',
+      metaKeywords: 'mediation, ADR, arbitration, court settlement, out of court agreement',
+      image: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Civil Litigation',
+      title: 'Understanding Criminal and Civil Cases',
+      slug: 'understanding-criminal-and-civil-cases',
+      date: new Date('2026-08-12'),
+      writtenBy: creator.fullName,
+      content: 'Legal cases in India are divided into civil and criminal. Civil cases involve disputes between individuals or organizations over rights, contracts, or property (e.g., breach of contract, divorce). Criminal cases involve acts against state/society (e.g., theft, assault) prosecuted by the state. Civil cases seek compensation, while criminal cases seek punishment.',
+      metaTitle: 'Understanding Criminal and Civil Cases | Law Basics',
+      metaDescription: 'Learn to distinguish between civil and criminal cases in India, their court procedures, and legal remedies.',
+      metaKeywords: 'civil case, criminal law, court dispute, damages, legal basics',
+      image: 'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Legal Advice',
+      title: 'How to Find the Right Advocate',
+      slug: 'how-to-find-the-right-advocate',
+      date: new Date('2026-08-13'),
+      writtenBy: creator.fullName,
+      content: 'Finding the right advocate is critical for the outcome of any legal dispute. Important factors to consider include the advocate’s specialization, experience years, court of practice, average ratings/reviews from other clients, and communication transparency. The digital age makes checking bar credentials and online consultations very convenient.',
+      metaTitle: 'How to Find the Right Advocate | Legal Consultations',
+      metaDescription: 'A guide to choosing the best lawyer for your specific legal case, checking bar counsel registrations, and consulting fees.',
+      metaKeywords: 'find lawyer, hire advocate, legal advice, Bar Council, attorney review',
+      image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Senior Citizens',
+      title: 'Legal Rights of Senior Citizens',
+      slug: 'legal-rights-of-senior-citizens',
+      date: new Date('2026-08-14'),
+      writtenBy: creator.fullName,
+      content: 'The Maintenance and Welfare of Parents and Senior Citizens Act, 2007, makes it a legal obligation for children to maintain their parents. It establishes tribunals where parents can claim maintenance. Additionally, senior citizens enjoy special tax exemptions, banking benefits, and priority hearing of cases in Indian courts.',
+      metaTitle: 'Legal Rights of Senior Citizens | Maintenance Act',
+      metaDescription: 'Read about the Maintenance Act, legal rights of parents, and benefits provided to senior citizens in India.',
+      metaKeywords: 'senior citizen rights, Maintenance Act, parental support, old age protection',
+      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    },
+    {
+      heading: 'Constitutional History',
+      title: 'Understanding the Indian Constitution',
+      slug: 'understanding-the-indian-constitution',
+      date: new Date('2026-08-15'),
+      writtenBy: creator.fullName,
+      content: 'The Constitution of India is the supreme law of the land, adopted on 26th January 1950. It establishes a federal structure with unitary features, defining powers of the legislative, executive, and judicial branches. It contains directive principles, state structures, federal divisions, and sets the baseline for all statutory legislation.',
+      metaTitle: 'Understanding the Indian Constitution | Legal History',
+      metaDescription: 'A fundamental introduction to the drafting, structure, preamble, and key pillars of the Indian Constitution.',
+      metaKeywords: 'Indian Constitution, supreme law, drafting committee, legal democracy',
+      image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&auto=format&fit=crop&q=60',
+      authorId: creator.id
+    }
+  ];
+
+  for (const b of mockBlogs) {
+    await prisma.blog.create({ data: b });
+  }
+  console.log(`Seeded ${mockBlogs.length} mock blogs successfully.`);
 
   console.log('Database seeding successfully finished!');
 }

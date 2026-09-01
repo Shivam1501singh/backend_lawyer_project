@@ -33,7 +33,23 @@ export const createBlogSchema = z.object({
   content: z
     .string()
     .trim()
-    .min(1, 'Content is required')
+    .min(1, 'Content is required'),
+  metaTitle: z
+    .string({ required_error: 'Meta title is required' })
+    .trim()
+    .min(1, 'Meta title is required')
+    .max(60, 'Meta title must not exceed 60 characters'),
+  metaDescription: z
+    .string({ required_error: 'Meta description is required' })
+    .trim()
+    .min(1, 'Meta description is required')
+    .max(160, 'Meta description must not exceed 160 characters'),
+  metaKeywords: z
+    .string()
+    .trim()
+    .max(500, 'Meta keywords must not exceed 500 characters')
+    .optional()
+    .nullable()
 });
 
 export const updateBlogSchema = z.object({
@@ -63,5 +79,37 @@ export const updateBlogSchema = z.object({
     .string()
     .trim()
     .min(1, 'Content is required')
+    .optional(),
+  metaTitle: z
+    .string({ required_error: 'Meta title is required' })
+    .trim()
+    .min(1, 'Meta title is required')
+    .max(60, 'Meta title must not exceed 60 characters'),
+  metaDescription: z
+    .string({ required_error: 'Meta description is required' })
+    .trim()
+    .min(1, 'Meta description is required')
+    .max(160, 'Meta description must not exceed 160 characters'),
+  metaKeywords: z
+    .string()
+    .trim()
+    .max(500, 'Meta keywords must not exceed 500 characters')
     .optional()
+    .nullable()
+});
+
+export const getBlogsQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .default('1')
+    .transform((val) => parseInt(val, 10))
+    .refine((val) => !isNaN(val) && val > 0, { message: 'Page must be a positive integer' }),
+  limit: z
+    .string()
+    .optional()
+    .default('10')
+    .transform((val) => parseInt(val, 10))
+    .refine((val) => !isNaN(val) && val > 0, { message: 'Limit must be a positive integer' })
+    .refine((val) => val <= 50, { message: 'Limit cannot exceed 50' })
 });

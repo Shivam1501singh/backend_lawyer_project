@@ -217,6 +217,8 @@ model ContentCreator {
   email        String   @unique
   passwordHash String
   isActive     Boolean  @default(true)
+  image        String?
+  bio          String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   blogs        Blog[]
@@ -234,6 +236,11 @@ model Blog {
   published     Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  slug            String?        @unique
 
   authorId      String
   author        ContentCreator  @relation(fields: [authorId], references: [id], onDelete: Cascade)

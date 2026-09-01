@@ -1,7 +1,11 @@
 import { ZodError } from 'zod';
 
 export const errorHandler = (err, req, res, next) => {
-  console.error('[Error middleware caught error]:', err);
+  try {
+    console.error('[Error middleware caught error]:', err);
+  } catch (logErr) {
+    console.error('[Error middleware caught error (inspect failed)]:', err.message || String(err));
+  }
 
   // Zod Validation Errors
   if (err instanceof ZodError) {

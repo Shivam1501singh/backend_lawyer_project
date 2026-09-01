@@ -1901,9 +1901,12 @@ This feature adds a third role (`CONTENT_CREATOR`) to the application and introd
   - `image`: Image file (required, max 5MB, JPEG/PNG/WEBP)
   - `heading`: string (required)
   - `title`: string (required)
-  - `date`: string (valid date format, e.g. `2026-08-25`) (required)
+  - `date`: string (valid date format, e.g. `2026-08-26`) (required)
   - `writtenBy`: string (required)
   - `content`: string (required)
+  - `metaTitle`: string (required, trimmed, max 60 characters)
+  - `metaDescription`: string (required, trimmed, max 160 characters)
+  - `metaKeywords`: string (optional, trimmed, comma-separated keywords)
 - **Response:**
   ```json
   {
@@ -1912,12 +1915,27 @@ This feature adds a third role (`CONTENT_CREATOR`) to the application and introd
     "blog": {
       "id": "blog-uuid",
       "heading": "Legal Awareness",
-      "title": "What Every Citizen Should Know About Their Legal Rights",
-      "date": "2026-08-25T00:00:00.000Z",
-      "writtenBy": "Content Creator",
-      "content": "...",
+      "title": "Understanding Bail Laws in India",
+      "slug": "understanding-bail-laws-in-india",
+      "date": "2026-08-26T00:00:00.000Z",
+      "writtenBy": "Techvunex Legal Content Team",
+      "content": "Complete blog content...",
       "image": "https://res.cloudinary.com/...",
       "imagePublicId": "...",
+      "metaTitle": "Understanding Bail Laws in India | Legal Guide",
+      "metaDescription": "Learn about bail laws in India, types of bail, eligibility, and the legal process explained simply.",
+      "metaKeywords": [
+        "bail laws India",
+        "bail process",
+        "legal rights",
+        "Indian law"
+      ],
+      "contentCreator": {
+        "id": "creator-uuid",
+        "name": "Techvunex Legal Content Team",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60",
+        "bio": "Legal content creator focused on simplifying Indian legal information and making legal knowledge easier to understand."
+      },
       "authorId": "content-creator-uuid",
       "published": true,
       "createdAt": "...",
@@ -1926,8 +1944,11 @@ This feature adds a third role (`CONTENT_CREATOR`) to the application and introd
   }
   ```
 
-#### 3. Get All Blogs — PUBLIC
+#### 3. Get All Blogs — PUBLIC (Paginated)
 - **Endpoint:** `GET /api/blogs`
+- **Query Parameters:**
+  - `page`: positive integer (optional, default: `1`)
+  - `limit`: positive integer (optional, default: `10`, maximum: `50`)
 - **Authentication:** None (Public)
 - **Response:**
   ```json
@@ -1938,19 +1959,42 @@ This feature adds a third role (`CONTENT_CREATOR`) to the application and introd
         "id": "blog-uuid",
         "image": "https://res.cloudinary.com/...",
         "heading": "Legal Awareness",
-        "title": "What Every Citizen Should Know About Their Legal Rights",
-        "date": "2026-08-25T00:00:00.000Z",
-        "writtenBy": "Content Creator",
-        "content": "...",
+        "title": "Understanding Bail Laws in India",
+        "slug": "understanding-bail-laws-in-india",
+        "date": "2026-08-26T00:00:00.000Z",
+        "writtenBy": "Techvunex Legal Content Team",
+        "content": "Complete blog content...",
+        "metaTitle": "Understanding Bail Laws in India | Legal Guide",
+        "metaDescription": "Learn about bail laws in India, types of bail, eligibility, and the legal process explained simply.",
+        "metaKeywords": [
+          "bail laws India",
+          "bail process",
+          "legal rights",
+          "Indian law"
+        ],
+        "contentCreator": {
+          "id": "creator-uuid",
+          "name": "Techvunex Legal Content Team",
+          "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60",
+          "bio": "Legal content creator focused on simplifying Indian legal information and making legal knowledge easier to understand."
+        },
         "createdAt": "...",
         "updatedAt": "..."
       }
-    ]
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "limit": 10,
+      "totalBlogs": 15,
+      "totalPages": 2,
+      "hasNextPage": true,
+      "hasPreviousPage": false
+    }
   }
   ```
 
 #### 4. Get Single Blog — PUBLIC
-- **Endpoint:** `GET /api/blogs/:id`
+- **Endpoint:** `GET /api/blogs/:id` (Accepts either the UUID `id` or the unique URL `slug`)
 - **Authentication:** None (Public)
 - **Response:**
   ```json
@@ -1960,10 +2004,25 @@ This feature adds a third role (`CONTENT_CREATOR`) to the application and introd
       "id": "blog-uuid",
       "image": "https://res.cloudinary.com/...",
       "heading": "Legal Awareness",
-      "title": "What Every Citizen Should Know About Their Legal Rights",
-      "date": "2026-08-25T00:00:00.000Z",
-      "writtenBy": "Content Creator",
-      "content": "...",
+      "title": "Understanding Bail Laws in India",
+      "slug": "understanding-bail-laws-in-india",
+      "date": "2026-08-26T00:00:00.000Z",
+      "writtenBy": "Techvunex Legal Content Team",
+      "content": "Complete blog content...",
+      "metaTitle": "Understanding Bail Laws in India | Legal Guide",
+      "metaDescription": "Learn about bail laws in India, types of bail, eligibility, and the legal process explained simply.",
+      "metaKeywords": [
+        "bail laws India",
+        "bail process",
+        "legal rights",
+        "Indian law"
+      ],
+      "contentCreator": {
+        "id": "creator-uuid",
+        "name": "Techvunex Legal Content Team",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60",
+        "bio": "Legal content creator focused on simplifying Indian legal information and making legal knowledge easier to understand."
+      },
       "createdAt": "...",
       "updatedAt": "..."
     }
@@ -1974,19 +2033,50 @@ This feature adds a third role (`CONTENT_CREATOR`) to the application and introd
 - **Endpoint:** `PUT /api/blogs/:id`
 - **Authentication:** `CONTENT_CREATOR` (Owner only)
 - **Content-Type:** `multipart/form-data`
-- **Form Fields (All optional):**
-  - `image`: New image file (max 5MB, JPEG/PNG/WEBP)
-  - `heading`: string
-  - `title`: string
-  - `date`: string (valid date format)
-  - `writtenBy`: string
-  - `content`: string
+- **Form Fields:**
+  - `image`: New image file (optional, max 5MB, JPEG/PNG/WEBP)
+  - `heading`: string (optional)
+  - `title`: string (optional, regenerates `slug` if modified)
+  - `date`: string (optional, valid date format)
+  - `writtenBy`: string (optional)
+  - `content`: string (optional)
+  - `metaTitle`: string (required, trimmed, max 60 characters)
+  - `metaDescription`: string (required, trimmed, max 160 characters)
+  - `metaKeywords`: string (optional, trimmed, comma-separated keywords)
 - **Response:**
   ```json
   {
     "success": true,
     "message": "Blog updated successfully",
-    "blog": { ... }
+    "blog": {
+      "id": "blog-uuid",
+      "heading": "Legal Awareness",
+      "title": "Understanding Bail Laws in India",
+      "slug": "understanding-bail-laws-in-india",
+      "date": "2026-08-26T00:00:00.000Z",
+      "writtenBy": "Techvunex Legal Content Team",
+      "content": "Updated blog content...",
+      "image": "https://res.cloudinary.com/...",
+      "imagePublicId": "...",
+      "metaTitle": "Understanding Bail Laws in India | Legal Guide",
+      "metaDescription": "Learn about bail laws in India, types of bail, eligibility, and the legal process explained simply.",
+      "metaKeywords": [
+        "bail laws India",
+        "bail process",
+        "legal rights",
+        "Indian law"
+      ],
+      "contentCreator": {
+        "id": "creator-uuid",
+        "name": "Techvunex Legal Content Team",
+        "image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60",
+        "bio": "Legal content creator focused on simplifying Indian legal information and making legal knowledge easier to understand."
+      },
+      "authorId": "content-creator-uuid",
+      "published": true,
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
   }
   ```
 
@@ -2003,45 +2093,74 @@ This feature adds a third role (`CONTENT_CREATOR`) to the application and introd
 
 ---
 
-### 12.3 Postman Testing Flow
+### 12.3 Seeding Mock Blogs
 
-Follow this structured flow to test the entire public read-only Blog functionality:
+The project contains a database seed script to populate exactly 15 legal blog posts. This data is essential to verify pagination and relationship mapping.
+To run the seed script:
+```bash
+node prisma/seed.js
+```
+*Note: This operation is idempotent. Running it repeatedly cleans up existing mock creator blogs first, ensuring exactly 15 blogs exist in the database.*
 
-1. **Start the backend server:** Run `npm run dev`.
-2. **Login as Content Creator:**
-   - Send `POST /api/content-creator/login` with:
-     ```json
-     { "email": "trainee6@techvunex.in", "password": "1234" }
-     ```
-   - Verify success and ensure the cookie/token is received.
-3. **Create a Blog:**
-   - Send `POST /api/blogs` as Content Creator.
-   - Use `multipart/form-data` with:
-     - `image`: `<choose a local image file>`
-     - `heading`: `Legal Awareness`
-     - `title`: `Understanding Your Legal Rights`
-     - `date`: `2026-08-25`
-     - `writtenBy`: `Content Creator`
-     - `content`: `This article explains basic legal rights of citizens.`
-   - Store the returned blog `id`.
-4. **Get All Blogs Without Authentication:**
-   - Remove cookies/auth headers and call `GET /api/blogs` publicly.
-   - Verify that the response returns the list of blogs successfully.
-5. **Get Single Blog Without Authentication:**
-   - Send public request `GET /api/blogs/:id` using the saved blog ID.
-   - Verify that the blog details are retrieved successfully without authentication.
-6. **Login as Normal User:**
-   - Authenticate as a normal User.
-   - Verify they can read blogs publicly, but attempting `POST`, `PUT` or `DELETE` on blog routes returns `403 Forbidden`.
-7. **Login as Advocate:**
-   - Authenticate as an Advocate.
-   - Verify they can read blogs publicly, but attempting `POST`, `PUT` or `DELETE` on blog routes returns `403 Forbidden`.
-8. **Update Blog as Content Creator:**
-   - Log back in as Content Creator and send `PUT /api/blogs/:id` to update the heading or content.
-   - Verify that the update is successful.
-9. **Delete Blog as Content Creator:**
-   - Send `DELETE /api/blogs/:id` as Content Creator.
-   - Ensure it deletes the blog and cleans up the associated Cloudinary image file.
-10. **Verify Authorization Restrictions:**
-    - Verify that unauthenticated users, Users, and Advocates are strictly read-only and have no likes/comments tables or APIs.
+### 12.4 Postman Testing Flow (Pagination & Creator Profile)
 
+Follow this structured flow to test the pagination and creator profile integrations:
+
+#### Test 1 — First Page
+* **Method & URL:** `GET {{BACKEND_URL}}/api/blogs?page=1&limit=10`
+* **Authentication:** None (Public)
+* **Verify:** Returns status `200 OK` with 10 blogs. The pagination metadata should be:
+  ```json
+  "pagination": {
+    "currentPage": 1,
+    "limit": 10,
+    "totalBlogs": 15,
+    "totalPages": 2,
+    "hasNextPage": true,
+    "hasPreviousPage": false
+  }
+  ```
+  Ensure each blog in the response list includes the `contentCreator` nested object with `name`, `image`, and `bio`.
+
+#### Test 2 — Second Page
+* **Method & URL:** `GET {{BACKEND_URL}}/api/blogs?page=2&limit=10`
+* **Authentication:** None (Public)
+* **Verify:** Returns status `200 OK` with 5 blogs. The pagination metadata should be:
+  ```json
+  "pagination": {
+    "currentPage": 2,
+    "limit": 10,
+    "totalBlogs": 15,
+    "totalPages": 2,
+    "hasNextPage": false,
+    "hasPreviousPage": true
+  }
+  ```
+
+#### Test 3 — Different Page Size
+* **Method & URL:** `GET {{BACKEND_URL}}/api/blogs?page=1&limit=5`
+* **Authentication:** None (Public)
+* **Verify:** Returns status `200 OK` with 5 blogs, `totalBlogs` = 15, and `totalPages` = 3.
+
+#### Test 4 — Public Access
+* **Method & URL:** `GET {{BACKEND_URL}}/api/blogs?page=1&limit=10` without sending any authentication tokens/cookies.
+* **Verify:** Works successfully without any authorization issues.
+
+#### Test 5 — Invalid Page Parameter
+* **Method & URL:** `GET {{BACKEND_URL}}/api/blogs?page=0&limit=10`
+* **Verify:** Returns status `400 Bad Request` with Zod validation error: `"Page must be a positive integer"`.
+
+#### Test 6 — Invalid Limit Parameter
+* **Method & URL:** `GET {{BACKEND_URL}}/api/blogs?page=1&limit=0`
+* **Verify:** Returns status `400 Bad Request` with Zod validation error: `"Limit must be a positive integer"`.
+
+#### Test 7 — Maximum Limit Policy
+* **Method & URL:** `GET {{BACKEND_URL}}/api/blogs?page=1&limit=1000`
+* **Verify:** Returns status `400 Bad Request` with validation error: `"Limit cannot exceed 50"`, enforcing a strict client limit policy.
+
+---
+
+### 12.5 Important Note on SEO Ranking
+
+> [!NOTE]
+> Pushing SEO metadata fields through this API provides structured content for the frontend to populate HTML page headers (`<title>`, `<meta name="description">`, `<meta name="keywords">`). The backend validates and returns this structured data, but does not guarantee search engine ranking. Search engine ranking depends on content quality, mobile usability, page performance, crawlability, and page experience. Modern search engines generally do not use the `meta keywords` tag as a ranking factor, but they are supported for metadata organization.

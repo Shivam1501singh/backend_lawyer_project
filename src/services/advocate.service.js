@@ -185,19 +185,27 @@ export const listAdvocates = async ({
     totalReviews: true,
     pincode: true,
     latitude: true,
-    longitude: true
+    longitude: true,
+    _count: {
+      select: { likes: true }
+    }
   };
 
   // Resolve user coords if logged in
   let userCoords = null;
   let savedLawyerIds = new Set();
+  let likedAdvocateIds = new Set();
   if (currentUserId) {
-    const [dbUser, saved] = await prisma.$transaction([
+    const [dbUser, saved, liked] = await prisma.$transaction([
       prisma.user.findUnique({
         where: { id: currentUserId },
         select: { latitude: true, longitude: true, pincode: true }
       }),
       prisma.savedLawyer.findMany({
+        where: { userId: currentUserId },
+        select: { advocateId: true }
+      }),
+      prisma.advocateLike.findMany({
         where: { userId: currentUserId },
         select: { advocateId: true }
       })
@@ -215,6 +223,9 @@ export const listAdvocates = async ({
     }
     if (saved) {
       savedLawyerIds = new Set(saved.map(s => s.advocateId));
+    }
+    if (liked) {
+      likedAdvocateIds = new Set(liked.map(l => l.advocateId));
     }
   }
 
@@ -261,13 +272,15 @@ export const listAdvocates = async ({
 
     // Clean up internal coordinates/pincode fields for privacy and format distance
     const cleanAdvocates = paginated.map(adv => {
-      const { pincode, latitude, longitude, ...cleanAdv } = adv;
+      const { pincode, latitude, longitude, _count, ...cleanAdv } = adv;
       if (adv.distance !== Infinity) {
         cleanAdv.distance = parseFloat(adv.distance.toFixed(2));
       } else {
         cleanAdv.distance = null;
       }
+      cleanAdv.likeCount = _count?.likes ?? 0;
       cleanAdv.isSaved = savedLawyerIds.has(adv.id);
+      cleanAdv.isLiked = likedAdvocateIds.has(adv.id);
       return cleanAdv;
     });
 
@@ -290,34 +303,13 @@ export const listAdvocates = async ({
       skip,
       take,
       orderBy,
-      select: {
-        id: true,
-        fullName: true,
-        profilePhotoUrl: true,
-        experienceYears: true,
-        casesWon: true,
-        practiceAreas: true,
-        topCourtPractised: true,
-        bestPracticeArea: true,
-        courtPractice: true,
-        languagesSpoken: true,
-        state: true,
-        city: true,
-        videoCallChargePerMinute: true,
-        voiceCallChargePerMinute: true,
-        offlineVisitingFee: true,
-        averageRating: true,
-        totalReviews: true,
-        pincode: true,
-        latitude: true,
-        longitude: true
-      }
+      select: selectFields
     })
   ]);
 
   // Clean up coordinates and compute/attach distance if refCoords is available (e.g. user logged in but sorted by experience)
   const cleanAdvocates = advocates.map(adv => {
-    const { pincode, latitude, longitude, ...cleanAdv } = adv;
+    const { pincode, latitude, longitude, _count, ...cleanAdv } = adv;
     if (refCoords) {
       const coords = getAdvocateCoordinates(adv);
       if (coords) {
@@ -334,7 +326,9 @@ export const listAdvocates = async ({
     } else {
       cleanAdv.distance = null;
     }
+    cleanAdv.likeCount = _count?.likes ?? 0;
     cleanAdv.isSaved = savedLawyerIds.has(adv.id);
+    cleanAdv.isLiked = likedAdvocateIds.has(adv.id);
     return cleanAdv;
   });
 
@@ -354,7 +348,12 @@ export const listAdvocates = async ({
  */
 export const getAdvocateDetailsPublic = async (id, currentUserId) => {
   const advocate = await prisma.advocate.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      _count: {
+        select: { likes: true }
+      }
+    }
   });
 
   if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE') {
@@ -363,13 +362,20 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     throw error;
   }
 
-  // Determine if saved by current user
+  // Determine if saved/liked by current user
   let isSaved = false;
+  let isLiked = false;
   if (currentUserId) {
-    const saved = await prisma.savedLawyer.findFirst({
-      where: { userId: currentUserId, advocateId: id }
-    });
+    const [saved, liked] = await prisma.$transaction([
+      prisma.savedLawyer.findFirst({
+        where: { userId: currentUserId, advocateId: id }
+      }),
+      prisma.advocateLike.findFirst({
+        where: { userId: currentUserId, advocateId: id }
+      })
+    ]);
     isSaved = !!saved;
+    isLiked = !!liked;
   }
 
   // Exclude all sensitive details
@@ -395,6 +401,9 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     offlineVisitingFee: advocate.offlineVisitingFee,
     averageRating: advocate.averageRating,
     totalReviews: advocate.totalReviews,
-    isSaved
+    status: advocate.status,
+    likeCount: advocate._count?.likes ?? 0,
+    isSaved,
+    isLiked
   };
 };

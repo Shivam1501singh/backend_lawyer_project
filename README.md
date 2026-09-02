@@ -2602,4 +2602,397 @@ Connection Request (Status: PENDING)
 | View Connected Case | ✅ (Own) | ✅ (Assigned Only) | ❌ | ✅ |
 | View Case Attachments | ✅ (Own) | ✅ (Assigned Only) | ❌ | ✅ |
 
+---
+
+## 15. ADVOCATE LIKE FEATURE
+
+A logged-in Normal User can like an Advocate once and can later unlike the Advocate. Each User can have only one like per Advocate, enforced at the database level.
+
+### Overview & Rules
+* **Target:** Applies strictly to **Advocates/Lawyers**. (No likes or comments are added to Blogs).
+* **Combination:** Each like record represents `User + Advocate`.
+* **Database Constraint:** `@@unique([userId, advocateId])` prevents duplicate like records.
+* **Role Authorization:** Only users with `AccountType = USER` (`req.user.type === 'user'`) can create or remove likes.
+* **ACTIVE/BLOCKED Behavior:**
+  * Only `ACTIVE` Advocates can receive new likes from Normal Users. Attempting to like a `BLOCKED` Advocate returns `400 Bad Request` (`This lawyer is currently unavailable.`).
+  * Existing likes are preserved when an Advocate is blocked by Admin, but blocked Advocates are excluded from public discovery and `GET /api/user/liked-advocates`.
+  * If the Advocate is later unblocked (`ACTIVE`), historical likes become available again.
+
+---
+
+### 15.1 Like Advocate API
+* **Method:** `POST`
+* **Endpoint:** `/api/advocates/:advocateId/like`
+* **Authentication:** `USER` required (`requireAuth`, `requireRole('USER')`)
+* **Request Body:** None required (`userId` is automatically extracted from JWT/session token).
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate liked successfully",
+    "data": {
+      "advocateId": "advocate-uuid",
+      "liked": true,
+      "likeCount": 26
+    }
+  }
+  ```
+* **Duplicate Like Response (409 Conflict):**
+  ```json
+  {
+    "success": false,
+    "message": "You have already liked this advocate."
+  }
+  ```
+* **Blocked Advocate Response (400 Bad Request):**
+  ```json
+  {
+    "success": false,
+    "message": "This lawyer is currently unavailable."
+  }
+  ```
+
+---
+
+### 15.2 Unlike Advocate API
+* **Method:** `DELETE`
+* **Endpoint:** `/api/advocates/:advocateId/like`
+* **Authentication:** `USER` required (`requireAuth`, `requireRole('USER')`)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate unliked successfully",
+    "data": {
+      "advocateId": "advocate-uuid",
+      "liked": false,
+      "likeCount": 25
+    }
+  }
+  ```
+* **Not Liked Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "You have not liked this advocate."
+  }
+  ```
+
+---
+
+### 15.3 Get User's Liked Advocates API
+* **Method:** `GET`
+* **Endpoint:** `/api/user/liked-advocates`
+* **Authentication:** `USER` required (`requireAuth`, `requireRole('USER')`)
+* **Description:** Returns only `ACTIVE` Advocates liked by the currently authenticated User.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "advocate-uuid",
+        "name": "Advocate Name",
+        "fullName": "Advocate Name",
+        "profilePhotoUrl": "https://res.cloudinary.com/...",
+        "gender": "Male",
+        "experienceYears": 12,
+        "casesWon": 150,
+        "practiceAreas": ["Criminal Law", "Civil Law"],
+        "topCourtPractised": "Delhi High Court",
+        "bestPracticeArea": "Criminal Law",
+        "about": "Experienced High Court litigation advocate...",
+        "courtPractice": ["Delhi High Court", "Supreme Court"],
+        "languagesSpoken": ["English", "Hindi"],
+        "state": "Delhi",
+        "city": "New Delhi",
+        "completeAddress": "Chamber 402, High Court",
+        "videoCallChargePerMinute": 50,
+        "voiceCallChargePerMinute": 30,
+        "offlineVisitingFee": 1500,
+        "averageRating": 4.8,
+        "totalReviews": 25,
+        "status": "ACTIVE",
+        "likeCount": 26,
+        "isLiked": true
+      }
+    ]
+  }
+  ```
+
+---
+
+### 15.4 Advocate Discovery & Profile Integration
+All Advocate listing and public profile endpoints (`GET /api/advocates`, `GET /api/advocates/:id`, `GET /api/lawyers`) return:
+* `likeCount`: Total number of likes for the Advocate (computed via database relation count).
+* `isLiked`: `true` if the requesting client is an authenticated `USER` who has liked the Advocate; `false` for unauthenticated requests or users who have not liked the Advocate.
+
+---
+
+### 15.5 Complete Postman Testing Flow
+
+1. **Login as Normal User (User A)**
+   - `POST /api/auth/user/login/verify-otp` (or login endpoint).
+   - Save session cookie or JWT token.
+2. **Find an ACTIVE Advocate**
+   - `GET /api/advocates`
+   - Select an Advocate ID with `status: ACTIVE`.
+3. **Like Advocate**
+   - `POST /api/advocates/:advocateId/like`
+   - Verify `liked: true` and `likeCount` increases by 1.
+4. **Attempt Duplicate Like**
+   - `POST /api/advocates/:advocateId/like`
+   - Verify `409 Conflict` (`You have already liked this advocate.`). No duplicate DB record created.
+5. **Get Advocate Profile**
+   - `GET /api/advocates/:advocateId` as User A $\rightarrow$ Verify `likeCount` and `isLiked: true`.
+   - `GET /api/advocates/:advocateId` without token $\rightarrow$ Verify `likeCount` and `isLiked: false`.
+6. **Get User's Liked Advocates**
+   - `GET /api/user/liked-advocates` as User A
+   - Verify array contains the liked Advocate with `isLiked: true`.
+7. **Unlike Advocate**
+   - `DELETE /api/advocates/:advocateId/like`
+   - Verify `liked: false` and `likeCount` decreases by 1.
+8. **Attempt Unlike Again**
+   - `DELETE /api/advocates/:advocateId/like`
+   - Verify `404 Not Found` (`You have not liked this advocate.`).
+9. **Multiple Users Testing (User B)**
+   - Login as User B.
+   - `POST /api/advocates/:advocateId/like` $\rightarrow$ `likeCount: 1`.
+   - Login as User A and like $\rightarrow$ `likeCount: 2`.
+   - User A unlikes $\rightarrow$ User B still likes (`likeCount: 1`).
+10. **Blocked Advocate Rule**
+    - Admin changes Advocate status to `BLOCKED`.
+    - User A attempts `POST /api/advocates/:advocateId/like` $\rightarrow$ Rejection (`400 Bad Request`: `This lawyer is currently unavailable.`).
+11. **Permission Check**
+    - Unauthenticated, Advocate, Content Creator, or Admin attempts `POST /api/advocates/:advocateId/like` $\rightarrow$ `401 Unauthorized` / `403 Forbidden`.
+
+---
+
+### 15.6 Final Advocate Like Permission Matrix
+
+| Feature | User | Advocate | Content Creator | Admin |
+| :--- | :---: | :---: | :---: | :---: |
+| Like Advocate | ✅ | ❌ | ❌ | ❌ |
+| Unlike Advocate | ✅ | ❌ | ❌ | ❌ |
+| View Advocate Like Count | ✅ | ✅ | ✅ | ✅ |
+| View Own Liked Advocates | ✅ | ❌ | ❌ | ❌ |
+| Manage Advocate Likes | ❌ | ❌ | ❌ | ❌ |
+| Block / Activate Advocate | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+## 16. ADVOCATE TEAM MATE FEATURE
+
+An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advocate B) using their **BAR ID**, send a team member request, and verify it via a 6-digit OTP sent to Advocate B's registered mobile number. Once verified, a mutual team mate relationship is established.
+
+### Overview & Security Rules
+* **Role Authorization:** `ADVOCATE` only (`requireAuth`, `requireRole('ADVOCATE')`). Normal Users, Content Creators, and Admins cannot initiate or verify team requests.
+* **BAR ID Search:** Case-insensitive search on `barCouncilId`. Exposes only safe public profile data.
+* **Self-Add Protection:** An advocate cannot add themselves as a team mate (`400 Bad Request`).
+* **ACTIVE/BLOCKED Enforcement:** Target advocate must exist and be `ACTIVE`. Rejects requests to `BLOCKED` advocates (`403 Forbidden`).
+* **OTP Delivery:** 6-digit cryptographically secure OTP is hashed with `bcrypt` and sent to **Advocate B's registered mobile number** via SMS. Valid for 5 minutes.
+* **OTP Verification:** Only the requesting Advocate (Advocate A) can submit the OTP to complete the team connection. Limited to 5 attempts.
+* **Mutual Team Relationship:** Once verified, a single canonical DB record `(min(A,B), max(A,B))` establishes a mutual relationship (`A ↔ B`) visible in both advocates' team lists.
+
+---
+
+### 16.1 Search Advocate by BAR ID
+* **Method:** `GET`
+* **Endpoint:** `/api/advocates/search?barId=<BAR_ID>`
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Query Parameters:** `barId` (string, required)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "advocate": {
+      "id": "advocate-b-uuid",
+      "name": "Advocate Full Name",
+      "fullName": "Advocate Full Name",
+      "barId": "DL/10002/2026",
+      "barCouncilId": "DL/10002/2026",
+      "profileImage": "https://res.cloudinary.com/...",
+      "profilePhotoUrl": "https://res.cloudinary.com/...",
+      "lawType": "Criminal Law",
+      "bestPracticeArea": "Criminal Law",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "pincode": "110001",
+      "status": "ACTIVE",
+      "experienceYears": 8
+    }
+  }
+  ```
+* **Not Found Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "Advocate not found with the provided BAR ID."
+  }
+  ```
+
+---
+
+### 16.2 Send Team Request / Initiate OTP
+* **Method:** `POST`
+* **Endpoint:** `/api/advocates/:advocateId/team-request`
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Path Parameters:** `advocateId` (ID of Advocate B)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Team request initiated successfully. OTP sent to Advocate's registered mobile number.",
+    "data": {
+      "requestId": "team-request-uuid",
+      "targetAdvocateId": "advocate-b-uuid",
+      "maskedPhone": "******2222",
+      "expiresInMinutes": 5
+    }
+  }
+  ```
+* **Error Responses:**
+  * **Self-Add (400 Bad Request):** `{"success": false, "message": "You cannot add yourself as a team mate"}`
+  * **Blocked Advocate (403 Forbidden):** `{"success": false, "message": "Target advocate is currently unavailable or blocked."}`
+  * **Already Team Mates (409 Conflict):** `{"success": false, "message": "Advocate is already in your team."}`
+  * **Duplicate Pending Request (409 Conflict):** `{"success": false, "message": "A pending team request already exists for this advocate."}`
+
+---
+
+### 16.3 Verify Team Request OTP
+* **Method:** `POST`
+* **Endpoint:** `/api/advocates/team-request/:requestId/verify`
+* **Authentication:** `ADVOCATE` required (Must be the requesting Advocate A)
+* **Path Parameters:** `requestId`
+* **Request Body:**
+  ```json
+  {
+    "otp": "123456"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate successfully added as your team mate",
+    "data": {
+      "requestId": "team-request-uuid",
+      "teamMateId": "advocate-b-uuid",
+      "verified": true
+    }
+  }
+  ```
+* **Error Responses:**
+  * **Invalid OTP (400 Bad Request):** `{"success": false, "message": "Invalid OTP"}`
+  * **Expired OTP (400 Bad Request):** `{"success": false, "message": "OTP has expired"}`
+  * **Unauthorized Verifier (403 Forbidden):** `{"success": false, "message": "Access forbidden. You are not the requester of this team request."}`
+
+---
+
+### 16.4 View Advocate Team Mates
+* **Method:** `GET`
+* **Endpoint:** `/api/advocates/team-mates`
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "teamMates": [
+      {
+        "id": "advocate-b-uuid",
+        "name": "Advocate Beta",
+        "fullName": "Advocate Beta",
+        "barId": "DL/10002/2026",
+        "barCouncilId": "DL/10002/2026",
+        "profileImage": "https://res.cloudinary.com/...",
+        "profilePhotoUrl": "https://res.cloudinary.com/...",
+        "lawType": "Criminal Law",
+        "bestPracticeArea": "Criminal Law",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "pincode": "110001",
+        "status": "ACTIVE"
+      }
+    ]
+  }
+  ```
+
+---
+
+### 16.5 Remove Team Mate
+* **Method:** `DELETE`
+* **Endpoint:** `/api/advocates/team-mates/:advocateId`
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Path Parameters:** `advocateId` (ID of the team mate to remove)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Team mate removed successfully."
+  }
+  ```
+* **Not Found Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "Team mate relationship not found."
+  }
+  ```
+
+---
+
+### 16.6 Complete Postman Testing Flow
+
+```text
+1. Register/Login Advocate A  --> Obtain token A
+        ↓
+2. Register/Login Advocate B  --> Obtain token B
+        ↓
+3. Advocate A searches Advocate B by BAR ID:
+   GET /api/advocates/search?barId=DL/10002/2026
+        ↓
+4. Advocate A sends Team Request to Advocate B:
+   POST /api/advocates/:advocateBId/team-request
+   --> Returns requestId & sends SMS OTP to Advocate B's phone
+        ↓
+5. Obtain 6-digit OTP from SMS (or server log in dev mode)
+        ↓
+6. Advocate A verifies OTP:
+   POST /api/advocates/team-request/:requestId/verify
+   Body: { "otp": "123456" }
+        ↓
+7. Both advocates view team mates:
+   GET /api/advocates/team-mates  (as Advocate A) -> Advocate B appears
+   GET /api/advocates/team-mates  (as Advocate B) -> Advocate A appears
+        ↓
+8. Advocate A removes Advocate B:
+   DELETE /api/advocates/team-mates/:advocateBId
+```
+
+#### Negative Tests Checklist:
+* **Test 1 — Self Add:** Advocate A calls `POST /api/advocates/:advocateAId/team-request` $\rightarrow$ `400 Bad Request`.
+* **Test 2 — Non-existent BAR ID:** `GET /api/advocates/search?barId=INVALID` $\rightarrow$ `404 Not Found`.
+* **Test 3 — Blocked Advocate:** Admin sets Advocate B status to `BLOCKED`. Advocate A sends request $\rightarrow$ `403 Forbidden`.
+* **Test 4 — Duplicate Request:** Send team request while active pending request exists $\rightarrow$ `409 Conflict`.
+* **Test 5 — Invalid OTP:** Submit `"000000"` to verify endpoint $\rightarrow$ `400 Bad Request`.
+* **Test 6 — Role Authorization:** Normal `USER` or `CONTENT_CREATOR` calls `GET /api/advocates/search?barId=...` $\rightarrow$ `403 Forbidden`.
+
+---
+
+### 16.7 Complete Permission Matrix
+
+| Feature | User | Advocate | Content Creator | Admin |
+| :--- | :---: | :---: | :---: | :---: |
+| Search Advocate by BAR ID | ❌ | ✅ | ❌ | ❌ |
+| Initiate Team Request (Send OTP) | ❌ | ✅ | ❌ | ❌ |
+| Verify Team Request OTP | ❌ | ✅ (Requester Only) | ❌ | ❌ |
+| View Own Team Mates | ❌ | ✅ | ❌ | ❌ |
+| Remove Team Mate | ❌ | ✅ | ❌ | ❌ |
+| Like Advocate | ✅ | ❌ | ❌ | ❌ |
+| Submit Case Connection Request | ✅ | ❌ | ❌ | ❌ |
+| Connect / Approve Case Request | ❌ | ❌ | ❌ | ✅ |
+| Block / Activate Advocate | ❌ | ❌ | ❌ | ✅ |
+
+
+
 

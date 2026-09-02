@@ -18,14 +18,15 @@ import adminRoutes from './routes/admin.routes.js';
 import caseRequestRoutes from './routes/caseRequest.routes.js';
 
 
-import { requireAuth } from './middleware/auth.middleware.js';
+import { requireAuth, requireRole } from './middleware/auth.middleware.js';
 import { generalLimiter } from './middleware/rate-limit.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { getCurrentUser, logout as userLogout } from './controllers/user.auth.controller.js';
 import { logout as advocateLogout } from './controllers/advocate.auth.controller.js';
+import { getUserLikedAdvocates } from './controllers/advocateLike.controller.js';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // CORS setup
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -65,6 +66,8 @@ app.use('/api/saved-lawyers', savedLawyerRoutes);
 app.use('/', caseRequestRoutes);
 app.use('/', blogRoutes);
 
+// User Liked Advocates Endpoint
+app.get('/api/user/liked-advocates', requireAuth, requireRole('USER'), getUserLikedAdvocates);
 
 // Common protected authentication endpoints
 app.get('/api/auth/me', requireAuth, getCurrentUser);

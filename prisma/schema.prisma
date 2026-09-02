@@ -106,6 +106,7 @@ model User {
 
   reviews         Review[]
   savedLawyers    SavedLawyer[]
+  likedAdvocates  AdvocateLike[]
   caseRequests    CaseConnectionRequest[]
   caseConnections CaseConnection[]
 }
@@ -160,8 +161,21 @@ model Advocate {
   latitude                 Float?
   longitude                Float?
   savedBy                  SavedLawyer[]
+  likes                    AdvocateLike[]
   caseRequests             CaseConnectionRequest[]
   caseConnections          CaseConnection[]
+
+  sentTeamRequests     AdvocateTeamRequest[] @relation("SentTeamRequests")
+  receivedTeamRequests AdvocateTeamRequest[] @relation("ReceivedTeamRequests")
+  teamMatesPrimary     AdvocateTeamMate[]    @relation("TeamMatesPrimary")
+  teamMatesSecondary   AdvocateTeamMate[]    @relation("TeamMatesSecondary")
+}
+
+enum TeamRequestStatus {
+  PENDING
+  VERIFIED
+  EXPIRED
+  CANCELLED
 }
 
 enum HelpRequestStatus {
@@ -224,6 +238,54 @@ model SavedLawyer {
   @@unique([userId, advocateId])
   @@index([userId])
   @@index([advocateId])
+}
+
+model AdvocateLike {
+  id         String   @id @default(uuid())
+  userId     String
+  advocateId String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  advocate   Advocate @relation(fields: [advocateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, advocateId])
+  @@index([userId])
+  @@index([advocateId])
+}
+
+model AdvocateTeamRequest {
+  id                  String            @id @default(uuid())
+  requesterAdvocateId String
+  targetAdvocateId    String
+  status              TeamRequestStatus @default(PENDING)
+  otpHash             String
+  otpExpiresAt        DateTime
+  otpAttempts         Int               @default(0)
+  maxOtpAttempts      Int               @default(5)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  requesterAdvocate   Advocate          @relation("SentTeamRequests", fields: [requesterAdvocateId], references: [id], onDelete: Cascade)
+  targetAdvocate      Advocate          @relation("ReceivedTeamRequests", fields: [targetAdvocateId], references: [id], onDelete: Cascade)
+
+  @@index([requesterAdvocateId])
+  @@index([targetAdvocateId])
+  @@index([status])
+}
+
+model AdvocateTeamMate {
+  id          String   @id @default(uuid())
+  advocateId  String
+  teamMateId  String
+  createdAt   DateTime @default(now())
+
+  advocate    Advocate @relation("TeamMatesPrimary", fields: [advocateId], references: [id], onDelete: Cascade)
+  teamMate    Advocate @relation("TeamMatesSecondary", fields: [teamMateId], references: [id], onDelete: Cascade)
+
+  @@unique([advocateId, teamMateId])
+  @@index([advocateId])
+  @@index([teamMateId])
 }
 
 

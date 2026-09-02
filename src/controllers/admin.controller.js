@@ -156,7 +156,12 @@ export const listContentCreators = async (req, res, next) => {
 export const listAdvocates = async (req, res, next) => {
   try {
     const advocates = await prisma.advocate.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { likes: true }
+        }
+      }
     });
 
     const safeAdvocates = advocates.map(adv => ({
@@ -166,6 +171,7 @@ export const listAdvocates = async (req, res, next) => {
       email: adv.email,
       phone: adv.phone,
       status: adv.status,
+      likeCount: adv._count?.likes ?? 0,
       lawType: adv.bestPracticeArea || (adv.practiceAreas && adv.practiceAreas.length > 0 ? adv.practiceAreas[0] : null),
       barCouncilId: adv.barCouncilId,
       state: adv.state,

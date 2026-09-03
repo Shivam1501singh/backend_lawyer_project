@@ -4,30 +4,47 @@ import { generateSecureOtp } from './otp.service.js';
 import { sendOtpSms } from './sms.service.js';
 
 /**
- * Search Advocate by BAR ID (Exact/Case-insensitive)
+ * Search Advocates by Name or BAR ID
  */
-export const searchAdvocateByBarId = async (barId) => {
-  if (!barId || typeof barId !== 'string' || !barId.trim()) {
-    const error = new Error('BAR ID query parameter is required.');
+export const searchAdvocates = async ({ query, barId, currentAdvocateId, page = 1, limit = 10 }) => {
+  const rawQuery = query || barId;
+  if (!rawQuery || typeof rawQuery !== 'string' || !rawQuery.trim()) {
+    const error = new Error('Search query parameter is required.');
     error.statusCode = 400;
     throw error;
   }
 
-  const cleanBarId = barId.trim();
-
-  const advocate = await prisma.advocate.findFirst({
-    where: {
-      barCouncilId: { equals: cleanBarId, mode: 'insensitive' }
-    }
-  });
-
-  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE') {
-    const error = new Error('Advocate not found with the provided BAR ID.');
-    error.statusCode = 404;
+  const cleanQuery = rawQuery.trim();
+  if (cleanQuery.length > 100) {
+    const error = new Error('Search query must not exceed 100 characters.');
+    error.statusCode = 400;
     throw error;
   }
 
-  return {
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+
+  const whereClause = {
+    status: 'ACTIVE',
+    isActive: true,
+    ...(currentAdvocateId ? { id: { not: currentAdvocateId } } : {}),
+    OR: [
+      { barCouncilId: { equals: cleanQuery, mode: 'insensitive' } },
+      { fullName: { contains: cleanQuery, mode: 'insensitive' } }
+    ]
+  };
+
+  const [total, advocates] = await Promise.all([
+    prisma.advocate.count({ where: whereClause }),
+    prisma.advocate.findMany({
+      where: whereClause,
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
+      orderBy: { createdAt: 'desc' }
+    })
+  ]);
+
+  const data = advocates.map(advocate => ({
     id: advocate.id,
     name: advocate.fullName,
     fullName: advocate.fullName,
@@ -42,7 +59,32 @@ export const searchAdvocateByBarId = async (barId) => {
     pincode: advocate.pincode,
     status: advocate.status,
     experienceYears: advocate.experienceYears
+  }));
+
+  const totalPages = Math.ceil(total / limitNum) || 0;
+
+  return {
+    data,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      totalPages
+    }
   };
+};
+
+/**
+ * Search Advocate by BAR ID (Legacy helper)
+ */
+export const searchAdvocateByBarId = async (barId, currentAdvocateId) => {
+  const result = await searchAdvocates({ query: barId, currentAdvocateId, page: 1, limit: 1 });
+  if (!result.data || result.data.length === 0) {
+    const error = new Error('Advocate not found with the provided BAR ID.');
+    error.statusCode = 404;
+    throw error;
+  }
+  return result.data[0];
 };
 
 /**

@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { getTeamMates } from './advocateTeam.service.js';
 
 // Hardcoded mapping of coordinates for the common Indian pincodes used in the seed data/locations
 const PINCODE_COORDINATES = {
@@ -378,23 +379,41 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     isLiked = !!liked;
   }
 
+  // Fetch confirmed, ACTIVE team mates
+  const rawTeam = await getTeamMates(id);
+  const seenIds = new Set();
+  const team = [];
+  for (const member of rawTeam) {
+    if (member && member.id && !seenIds.has(member.id)) {
+      seenIds.add(member.id);
+      team.push(member);
+    }
+  }
+
   // Exclude all sensitive details
   return {
     id: advocate.id,
+    name: advocate.fullName,
     fullName: advocate.fullName,
+    barId: advocate.barCouncilId,
+    barCouncilId: advocate.barCouncilId,
+    profileImage: advocate.profilePhotoUrl,
     profilePhotoUrl: advocate.profilePhotoUrl,
     gender: advocate.gender,
     experienceYears: advocate.experienceYears,
+    experience: advocate.experienceYears,
     casesWon: advocate.casesWon,
     practiceAreas: advocate.practiceAreas,
     topCourtPractised: advocate.topCourtPractised,
     bestPracticeArea: advocate.bestPracticeArea,
+    lawType: advocate.bestPracticeArea || (advocate.practiceAreas?.[0] || null),
     about: advocate.about,
+    bio: advocate.about,
     courtPractice: advocate.courtPractice,
     languagesSpoken: advocate.languagesSpoken,
     state: advocate.state,
     city: advocate.city,
-    // pincode is NOT exposed publicly
+    pincode: advocate.pincode,
     completeAddress: advocate.completeAddress,
     videoCallChargePerMinute: advocate.videoCallChargePerMinute,
     voiceCallChargePerMinute: advocate.voiceCallChargePerMinute,
@@ -404,6 +423,7 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     status: advocate.status,
     likeCount: advocate._count?.likes ?? 0,
     isSaved,
-    isLiked
+    isLiked,
+    team
   };
 };

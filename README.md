@@ -2723,48 +2723,44 @@ A logged-in Normal User can like an Advocate once and can later unlike the Advoc
 ---
 
 ### 15.4 Advocate Discovery & Profile Integration
-All Advocate listing and public profile endpoints (`GET /api/advocates`, `GET /api/advocates/:id`, `GET /api/lawyers`) return:
-* `likeCount`: Total number of likes for the Advocate (computed via database relation count).
+All Advocate listing and public profile endpoints (`GET /api/advocates`, `GET /api/advocates/:id`, `GET /api/lawyers/:id`) return the latest database state including:
+* `likeCount`: Total number of Users who currently like this Advocate (computed via database relation count).
 * `isLiked`: `true` if the requesting client is an authenticated `USER` who has liked the Advocate; `false` for unauthenticated requests or users who have not liked the Advocate.
+* `team`: Contains confirmed, active mutual Team Mates of the Advocate (`[ { id, name, barId, profileImage, lawType, city, state, status } ]`). PENDING requests and BLOCKED team members are automatically excluded.
 
 ---
 
 ### 15.5 Complete Postman Testing Flow
 
 1. **Login as Normal User (User A)**
-   - `POST /api/auth/user/login/verify-otp` (or login endpoint).
-   - Save session cookie or JWT token.
-2. **Find an ACTIVE Advocate**
-   - `GET /api/advocates`
-   - Select an Advocate ID with `status: ACTIVE`.
+   - Login using the existing Normal User login API. Save access token / session.
+2. **Fetch Advocate Profile**
+   - Call `GET /api/advocates/:advocateId` or `GET /api/lawyers/:advocateId`.
+   - Verify the response contains `likeCount`, `isLiked`, `team`, and all existing Advocate fields.
 3. **Like Advocate**
-   - `POST /api/advocates/:advocateId/like`
-   - Verify `liked: true` and `likeCount` increases by 1.
-4. **Attempt Duplicate Like**
-   - `POST /api/advocates/:advocateId/like`
-   - Verify `409 Conflict` (`You have already liked this advocate.`). No duplicate DB record created.
-5. **Get Advocate Profile**
-   - `GET /api/advocates/:advocateId` as User A $\rightarrow$ Verify `likeCount` and `isLiked: true`.
-   - `GET /api/advocates/:advocateId` without token $\rightarrow$ Verify `likeCount` and `isLiked: false`.
-6. **Get User's Liked Advocates**
-   - `GET /api/user/liked-advocates` as User A
-   - Verify array contains the liked Advocate with `isLiked: true`.
-7. **Unlike Advocate**
-   - `DELETE /api/advocates/:advocateId/like`
-   - Verify `liked: false` and `likeCount` decreases by 1.
-8. **Attempt Unlike Again**
-   - `DELETE /api/advocates/:advocateId/like`
-   - Verify `404 Not Found` (`You have not liked this advocate.`).
-9. **Multiple Users Testing (User B)**
-   - Login as User B.
-   - `POST /api/advocates/:advocateId/like` $\rightarrow$ `likeCount: 1`.
-   - Login as User A and like $\rightarrow$ `likeCount: 2`.
-   - User A unlikes $\rightarrow$ User B still likes (`likeCount: 1`).
-10. **Blocked Advocate Rule**
-    - Admin changes Advocate status to `BLOCKED`.
-    - User A attempts `POST /api/advocates/:advocateId/like` $\rightarrow$ Rejection (`400 Bad Request`: `This lawyer is currently unavailable.`).
-11. **Permission Check**
-    - Unauthenticated, Advocate, Content Creator, or Admin attempts `POST /api/advocates/:advocateId/like` $\rightarrow$ `401 Unauthorized` / `403 Forbidden`.
+   - Call `POST /api/advocates/:advocateId/like` as User A.
+   - Then fetch `GET /api/advocates/:advocateId` $\rightarrow$ Verify `isLiked: true` and `likeCount` has increased by 1.
+4. **Unlike Advocate**
+   - Call `DELETE /api/advocates/:advocateId/like` as User A.
+   - Then fetch `GET /api/advocates/:advocateId` $\rightarrow$ Verify `isLiked: false` and `likeCount` has decreased.
+5. **Create Team Mate**
+   - Login as Advocate A.
+   - Search Advocate B by Name or BAR ID (`GET /api/advocates/search?query=...`).
+   - Send Team Request (`POST /api/advocates/:advocateId/team-request`).
+   - Complete OTP verification (`POST /api/advocates/team-request/:requestId/verify`).
+6. **Fetch Advocate Profile After Team Connection**
+   - As a Normal User, call `GET /api/advocates/:advocateAId` (or `GET /api/lawyers/:advocateAId`).
+   - Verify `team` array contains Advocate B.
+7. **Verify Pending Team Requests Are Hidden**
+   - Create a new Team Request from Advocate A to Advocate C, but do NOT complete OTP verification.
+   - Fetch Advocate A's profile as a Normal User $\rightarrow$ Verify pending Advocate C does NOT appear in `team`.
+8. **Verify Blocked Team Member Rule**
+   - Admin changes a team member's status to `BLOCKED`.
+   - Fetch Advocate profile as a Normal User $\rightarrow$ Verify the blocked Advocate is excluded from `team`.
+9. **Verify Multiple Users' Likes**
+   - Login as User B and like the same Advocate.
+   - Fetch profile as User B $\rightarrow$ Verify `isLiked: true` and `likeCount` reflects both likes.
+   - Switch back to User A $\rightarrow$ Verify `isLiked` is calculated per authenticated User, not globally stored.
 
 ---
 
@@ -2783,51 +2779,66 @@ All Advocate listing and public profile endpoints (`GET /api/advocates`, `GET /a
 
 ## 16. ADVOCATE TEAM MATE FEATURE
 
-An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advocate B) using their **BAR ID**, send a team member request, and verify it via a 6-digit OTP sent to Advocate B's registered mobile number. Once verified, a mutual team mate relationship is established.
+An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advocate B) using their **Name or BAR ID**, view their profile, send a team member request, and verify it via a 6-digit OTP sent to Advocate B's registered mobile number. Once verified, a mutual team mate relationship is established.
 
 ### Overview & Security Rules
 * **Role Authorization:** `ADVOCATE` only (`requireAuth`, `requireRole('ADVOCATE')`). Normal Users, Content Creators, and Admins cannot initiate or verify team requests.
-* **BAR ID Search:** Case-insensitive search on `barCouncilId`. Exposes only safe public profile data.
-* **Self-Add Protection:** An advocate cannot add themselves as a team mate (`400 Bad Request`).
-* **ACTIVE/BLOCKED Enforcement:** Target advocate must exist and be `ACTIVE`. Rejects requests to `BLOCKED` advocates (`403 Forbidden`).
+* **Name or BAR ID Search:** Case-insensitive search on `fullName` or `barCouncilId`. Exposes only safe public profile data. Supports partial name searches and pagination.
+* **Self-Exclusion & Self-Add Protection:** An advocate cannot find themselves in search results or send a team request to themselves (`400 Bad Request`).
+* **ACTIVE/BLOCKED Enforcement:** Target advocate must exist and have status `ACTIVE` (`isActive: true`). Rejects requests to `BLOCKED` advocates (`403 Forbidden`).
 * **OTP Delivery:** 6-digit cryptographically secure OTP is hashed with `bcrypt` and sent to **Advocate B's registered mobile number** via SMS. Valid for 5 minutes.
 * **OTP Verification:** Only the requesting Advocate (Advocate A) can submit the OTP to complete the team connection. Limited to 5 attempts.
 * **Mutual Team Relationship:** Once verified, a single canonical DB record `(min(A,B), max(A,B))` establishes a mutual relationship (`A ↔ B`) visible in both advocates' team lists.
 
 ---
 
-### 16.1 Search Advocate by BAR ID
+### 16.1 Search Advocate by Name or BAR ID
 * **Method:** `GET`
-* **Endpoint:** `/api/advocates/search?barId=<BAR_ID>`
+* **Endpoint:** `/api/advocates/search?query=<name-or-bar-id>&page=1&limit=10`
 * **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
-* **Query Parameters:** `barId` (string, required)
+* **Query Parameters:**
+  * `query` (string, required): Matches either Advocate's full name (partial, case-insensitive) or BAR ID (exact, case-insensitive). Max length 100 chars.
+  * `page` (integer, optional, default: 1): Page number for pagination.
+  * `limit` (integer, optional, default: 10, max: 50): Number of results per page.
+* **Example Requests:**
+  * Search by BAR ID: `GET /api/advocates/search?query=BAR12345`
+  * Search by Partial Name: `GET /api/advocates/search?query=Rahul&page=1&limit=10`
+  * Search by Full Name: `GET /api/advocates/search?query=Rahul%20Sharma`
 * **Response (200 OK):**
   ```json
   {
     "success": true,
-    "advocate": {
-      "id": "advocate-b-uuid",
-      "name": "Advocate Full Name",
-      "fullName": "Advocate Full Name",
-      "barId": "DL/10002/2026",
-      "barCouncilId": "DL/10002/2026",
-      "profileImage": "https://res.cloudinary.com/...",
-      "profilePhotoUrl": "https://res.cloudinary.com/...",
-      "lawType": "Criminal Law",
-      "bestPracticeArea": "Criminal Law",
-      "city": "New Delhi",
-      "state": "Delhi",
-      "pincode": "110001",
-      "status": "ACTIVE",
-      "experienceYears": 8
+    "data": [
+      {
+        "id": "advocate-b-uuid",
+        "name": "Rahul Sharma",
+        "fullName": "Rahul Sharma",
+        "barId": "BAR12345",
+        "barCouncilId": "BAR12345",
+        "profileImage": "https://res.cloudinary.com/...",
+        "profilePhotoUrl": "https://res.cloudinary.com/...",
+        "lawType": "Criminal Law",
+        "bestPracticeArea": "Criminal Law",
+        "city": "New Delhi",
+        "state": "Delhi",
+        "pincode": "110001",
+        "status": "ACTIVE",
+        "experienceYears": 8
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 1,
+      "totalPages": 1
     }
   }
   ```
-* **Not Found Response (404 Not Found):**
+* **Validation Error (400 Bad Request):**
   ```json
   {
     "success": false,
-    "message": "Advocate not found with the provided BAR ID."
+    "message": "Search query parameter is required."
   }
   ```
 
@@ -2900,10 +2911,10 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
     "teamMates": [
       {
         "id": "advocate-b-uuid",
-        "name": "Advocate Beta",
-        "fullName": "Advocate Beta",
-        "barId": "DL/10002/2026",
-        "barCouncilId": "DL/10002/2026",
+        "name": "Rahul Sharma",
+        "fullName": "Rahul Sharma",
+        "barId": "BAR12345",
+        "barCouncilId": "BAR12345",
         "profileImage": "https://res.cloudinary.com/...",
         "profilePhotoUrl": "https://res.cloudinary.com/...",
         "lawType": "Criminal Law",
@@ -2944,54 +2955,75 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
 ### 16.6 Complete Postman Testing Flow
 
 ```text
-1. Register/Login Advocate A  --> Obtain token A
-        ↓
-2. Register/Login Advocate B  --> Obtain token B
-        ↓
-3. Advocate A searches Advocate B by BAR ID:
-   GET /api/advocates/search?barId=DL/10002/2026
-        ↓
-4. Advocate A sends Team Request to Advocate B:
-   POST /api/advocates/:advocateBId/team-request
-   --> Returns requestId & sends SMS OTP to Advocate B's phone
-        ↓
-5. Obtain 6-digit OTP from SMS (or server log in dev mode)
-        ↓
-6. Advocate A verifies OTP:
-   POST /api/advocates/team-request/:requestId/verify
-   Body: { "otp": "123456" }
-        ↓
-7. Both advocates view team mates:
-   GET /api/advocates/team-mates  (as Advocate A) -> Advocate B appears
-   GET /api/advocates/team-mates  (as Advocate B) -> Advocate A appears
-        ↓
-8. Advocate A removes Advocate B:
-   DELETE /api/advocates/team-mates/:advocateBId
-```
+1. Login Advocate A
+   - Call Advocate login endpoint to obtain access token for Advocate A.
 
-#### Negative Tests Checklist:
-* **Test 1 — Self Add:** Advocate A calls `POST /api/advocates/:advocateAId/team-request` $\rightarrow$ `400 Bad Request`.
-* **Test 2 — Non-existent BAR ID:** `GET /api/advocates/search?barId=INVALID` $\rightarrow$ `404 Not Found`.
-* **Test 3 — Blocked Advocate:** Admin sets Advocate B status to `BLOCKED`. Advocate A sends request $\rightarrow$ `403 Forbidden`.
-* **Test 4 — Duplicate Request:** Send team request while active pending request exists $\rightarrow$ `409 Conflict`.
-* **Test 5 — Invalid OTP:** Submit `"000000"` to verify endpoint $\rightarrow$ `400 Bad Request`.
-* **Test 6 — Role Authorization:** Normal `USER` or `CONTENT_CREATOR` calls `GET /api/advocates/search?barId=...` $\rightarrow$ `403 Forbidden`.
+2. Search by BAR ID
+   - Call: GET /api/advocates/search?query=BAR12345
+   - Verify Advocate B is returned in data array.
+
+3. Search by Name
+   - Call: GET /api/advocates/search?query=Rahul
+   - Verify matching Advocates are returned with pagination meta.
+
+4. Search Full Name
+   - Call: GET /api/advocates/search?query=Rahul%20Sharma
+   - Verify correct Advocate is returned.
+
+5. Search Case Insensitivity
+   - Test queries: rahul, Rahul, RAHUL
+   - Verify output is consistent across letter cases.
+
+6. Search Own Name/BAR ID
+   - Search Advocate A's own Name or BAR ID.
+   - Verify Advocate A is excluded from results / cannot send team request to self.
+
+7. Select Advocate B
+   - Obtain advocateId for Advocate B from search results.
+
+8. Send Team Request
+   - Call: POST /api/advocates/:advocateId/team-request
+   - Verify OTP generated, sent to Advocate B's registered mobile, requestId returned. OTP itself NOT returned.
+
+9. Verify OTP
+   - Call: POST /api/advocates/team-request/:requestId/verify
+   - Body: { "otp": "123456" }
+   - Verify team relationship created.
+
+10. Get Team Mates
+    - Call: GET /api/advocates/team-mates
+    - Verify Advocate B appears in Advocate A's team list.
+
+11. Duplicate Team Request
+    - Try sending another team request to Advocate B.
+    - Verify 409 Conflict returned.
+
+12. Search BLOCKED Advocate
+    - Admin sets Advocate status to BLOCKED.
+    - Verify BLOCKED advocate is excluded from team search results / request rejected (403 Forbidden).
+
+13. Unauthorized User
+    - Login as Normal User and attempt: GET /api/advocates/search?query=Rahul
+    - Verify 403 Forbidden returned.
+
+14. Unauthenticated Request
+    - Call: GET /api/advocates/search?query=Rahul without token.
+    - Verify 401 Unauthorized returned.
+```
 
 ---
 
-### 16.7 Complete Permission Matrix
+### 16.7 Final Permission Matrix
 
-| Feature | User | Advocate | Content Creator | Admin |
+| Feature | Normal User | Advocate | Content Creator | Admin |
 | :--- | :---: | :---: | :---: | :---: |
-| Search Advocate by BAR ID | ❌ | ✅ | ❌ | ❌ |
-| Initiate Team Request (Send OTP) | ❌ | ✅ | ❌ | ❌ |
-| Verify Team Request OTP | ❌ | ✅ (Requester Only) | ❌ | ❌ |
+| Search Advocate by Name for Team | ❌ | ✅ | ❌ | ❌ |
+| Search Advocate by BAR ID for Team | ❌ | ✅ | ❌ | ❌ |
+| View Selected Advocate Profile | According to existing rules | ✅ | According to existing rules | ✅ |
+| Send Team Request | ❌ | ✅ | ❌ | ❌ |
+| Verify Team OTP | ❌ | ✅ | ❌ | ❌ |
 | View Own Team Mates | ❌ | ✅ | ❌ | ❌ |
 | Remove Team Mate | ❌ | ✅ | ❌ | ❌ |
-| Like Advocate | ✅ | ❌ | ❌ | ❌ |
-| Submit Case Connection Request | ✅ | ❌ | ❌ | ❌ |
-| Connect / Approve Case Request | ❌ | ❌ | ❌ | ✅ |
-| Block / Activate Advocate | ❌ | ❌ | ❌ | ✅ |
 
 
 

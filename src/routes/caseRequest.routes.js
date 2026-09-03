@@ -1,13 +1,20 @@
 import express from 'express';
 import multer from 'multer';
 import * as caseRequestController from '../controllers/caseRequest.controller.js';
-import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
+import * as advocateController from '../controllers/advocate.controller.js';
+import { requireAuth, requireRole, optionalAuth } from '../middleware/auth.middleware.js';
 import { generalLimiter } from '../middleware/rate-limit.middleware.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // 1. User Connection Request Endpoints
+router.get(
+  '/api/lawyers/:id',
+  optionalAuth,
+  advocateController.getAdvocateProfilePublic
+);
+
 router.post(
   '/api/lawyers/:advocateId/connect',
   requireAuth,

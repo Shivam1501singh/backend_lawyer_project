@@ -1,24 +1,31 @@
 import * as advocateTeamService from '../services/advocateTeam.service.js';
 
 /**
- * Express Controller: Search Advocate by BAR ID
- * GET /api/advocates/search?barId=<BAR_ID>
+ * Express Controller: Search Advocates by Name or BAR ID
+ * GET /api/advocates/search?query=<Name_or_BAR_ID>&page=1&limit=10
  */
-export const searchAdvocateByBarId = async (req, res, next) => {
+export const searchAdvocates = async (req, res, next) => {
   try {
     if (req.user.type !== 'advocate') {
       return res.status(403).json({
         success: false,
-        message: 'Access forbidden. Only advocates can search advocates by BAR ID.'
+        message: 'Access forbidden. Only advocates can search advocates for team requests.'
       });
     }
 
-    const { barId } = req.query;
-    const advocate = await advocateTeamService.searchAdvocateByBarId(barId);
+    const { query, barId, page, limit } = req.query;
+    const result = await advocateTeamService.searchAdvocates({
+      query,
+      barId,
+      currentAdvocateId: req.user.id,
+      page,
+      limit
+    });
 
     return res.status(200).json({
       success: true,
-      advocate
+      data: result.data,
+      pagination: result.pagination
     });
   } catch (error) {
     if (error.statusCode) {
@@ -30,6 +37,8 @@ export const searchAdvocateByBarId = async (req, res, next) => {
     next(error);
   }
 };
+
+export const searchAdvocateByBarId = searchAdvocates;
 
 /**
  * Express Controller: Initiate Team Request (Send OTP to Target Advocate)

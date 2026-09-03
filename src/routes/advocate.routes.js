@@ -9,7 +9,7 @@ import { reviewLimiter, generalLimiter } from '../middleware/rate-limit.middlewa
 const router = express.Router();
 
 // 1. Advocate Team Mate Routes (Must be defined before /:id)
-router.get('/search', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.searchAdvocateByBarId);
+router.get('/search', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.searchAdvocates);
 router.get('/team-mates', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.getTeamMates);
 router.delete('/team-mates/:advocateId', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.removeTeamMate);
 router.post('/team-request/:requestId/verify', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.verifyTeamRequest);

@@ -9,7 +9,7 @@ export const saveLawyer = async ({ userId, advocateId }) => {
     where: { id: advocateId }
   });
 
-  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE') {
+  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE' || advocate.approvalStatus !== 'APPROVED') {
     const error = new Error('Advocate not found');
     error.statusCode = 404;
     throw error;
@@ -48,9 +48,9 @@ export const listSavedLawyers = async (userId) => {
     }
   });
 
-  // Filter out any advocates that are not active or blocked and map to public profiles
+  // Filter out any advocates that are not active, blocked, or not approved and map to public profiles
   return saved
-    .filter(s => s.advocate && s.advocate.isActive && s.advocate.status === 'ACTIVE')
+    .filter(s => s.advocate && s.advocate.isActive && s.advocate.status === 'ACTIVE' && s.advocate.approvalStatus === 'APPROVED')
     .map(s => {
       const adv = s.advocate;
       return {

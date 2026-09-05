@@ -1,6 +1,7 @@
 import prisma from '../src/lib/prisma.js';
 
-const BASE_URL = 'http://localhost:5000';
+const PORT = process.env.PORT || 5001;
+const BASE_URL = `http://localhost:${PORT}`;
 
 async function runTests() {
   console.log('--- Starting Admin End-to-End Verification Tests ---');
@@ -91,7 +92,7 @@ async function runTests() {
     throw new Error('No advocates found for Admin listing!');
   }
 
-  const targetAdvocate = listAdvocatesData.advocates[0];
+  const targetAdvocate = listAdvocatesData.advocates.find(a => a.approvalStatus === 'APPROVED') || listAdvocatesData.advocates[0];
   console.log(`Target Advocate for Block/Activate: ID=${targetAdvocate.id}, Name=${targetAdvocate.name}`);
 
   // 7. Test Admin Block Advocate

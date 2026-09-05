@@ -13,5 +13,6 @@ router.use(requireAuth);
 router.get('/', generalLimiter, advocateProfileController.getProfile);
 router.patch('/', generalLimiter, advocateProfileController.updateProfile);
 router.post('/photo', generalLimiter, upload.single('profilePhoto'), advocateProfileController.uploadProfilePhoto);
+router.post('/submit-for-approval', generalLimiter, advocateProfileController.submitForApproval);
 
 export default router;

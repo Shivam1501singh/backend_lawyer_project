@@ -32,8 +32,99 @@ export const getProfile = async (req, res, next) => {
       success: true,
       advocate: {
         ...safeAdvocate,
+        accountStatus: advocate.status,
+        approvalStatus: advocate.approvalStatus,
+        rejectionReason: advocate.rejectionReason,
         type: 'advocate'
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Helper to validate advocate profile completeness.
+ */
+export const checkIsProfileComplete = (advocate) => {
+  const hasName = !!(advocate.fullName && advocate.fullName.trim());
+  const hasPhone = !!(advocate.phone && advocate.phone.trim());
+  const hasBarId = !!(advocate.barCouncilId && advocate.barCouncilId.trim());
+  const hasPhoto = !!(advocate.profilePhotoUrl && advocate.profilePhotoUrl.trim());
+  const hasLawType = !!(advocate.bestPracticeArea || (advocate.practiceAreas && advocate.practiceAreas.length > 0));
+  const hasExp = advocate.experienceYears !== null && advocate.experienceYears !== undefined;
+  const hasAbout = !!(advocate.about && advocate.about.trim());
+  const hasCity = !!(advocate.city && advocate.city.trim());
+  const hasState = !!(advocate.state && advocate.state.trim());
+  const hasPincode = !!(advocate.pincode && advocate.pincode.trim());
+
+  return hasName && hasPhone && hasBarId && hasPhoto && hasLawType && hasExp && hasAbout && hasCity && hasState && hasPincode;
+};
+
+/**
+ * Submit Advocate Profile for Admin Approval.
+ * POST /api/advocate/profile/submit-for-approval
+ * POST /api/advocates/profile/submit-for-approval
+ */
+export const submitForApproval = async (req, res, next) => {
+  try {
+    if (!req.user || (req.user.type !== 'advocate' && req.user.role !== 'ADVOCATE')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access forbidden. Advocate role required.'
+      });
+    }
+
+    const advocateId = req.user.id;
+
+    const advocate = await prisma.advocate.findUnique({
+      where: { id: advocateId }
+    });
+
+    if (!advocate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Advocate profile not found.'
+      });
+    }
+
+    // Check account status
+    if (advocate.status === 'BLOCKED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Your account is blocked. Cannot submit profile for approval.'
+      });
+    }
+
+    // Check if already approved
+    if (advocate.approvalStatus === 'APPROVED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Profile is already approved.'
+      });
+    }
+
+    // Check profile completion
+    if (!checkIsProfileComplete(advocate)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please complete your Advocate profile before submitting it for approval'
+      });
+    }
+
+    // Submit / Resubmit for approval -> PENDING
+    await prisma.advocate.update({
+      where: { id: advocateId },
+      data: {
+        approvalStatus: 'PENDING',
+        submittedForApprovalAt: new Date(),
+        rejectionReason: null
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Your profile has been submitted for admin approval'
     });
   } catch (error) {
     next(error);

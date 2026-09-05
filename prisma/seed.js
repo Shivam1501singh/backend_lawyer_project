@@ -525,7 +525,13 @@ async function main() {
 
   const advocates = [];
   for (const data of advocatesData) {
-    const adv = await prisma.advocate.create({ data });
+    const adv = await prisma.advocate.create({
+      data: {
+        ...data,
+        approvalStatus: 'APPROVED',
+        approvedAt: new Date()
+      }
+    });
     advocates.push(adv);
   }
   console.log(`Seeded ${advocates.length} advocates successfully.`);
@@ -918,7 +924,120 @@ async function main() {
   for (const b of mockBlogs) {
     await prisma.blog.create({ data: b });
   }
-  console.log(`Seeded ${mockBlogs.length} mock blogs successfully.`);
+  // Seed Demo Advocates (Idempotent)
+  console.log('Seeding Demo Advocates...');
+  const demoPasswordHash = await bcrypt.hash('123456789', 10);
+
+  const demoAdvocate1Data = {
+    fullName: 'Arjun Sharma',
+    email: 'demoadvocate1@gmail.com',
+    passwordHash: demoPasswordHash,
+    phone: '9999901001',
+    barCouncilId: 'DEMO-BAR-1001',
+    bestPracticeArea: 'Criminal Law',
+    practiceAreas: ['Criminal Law', 'Criminal Defense'],
+    experienceYears: 8,
+    casesWon: 45,
+    city: 'New Delhi',
+    state: 'Delhi',
+    pincode: '110001',
+    about: 'Experienced criminal law advocate specializing in criminal defense, bail matters, and litigation.',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&auto=format&fit=crop&q=60',
+    gender: 'Male',
+    country: 'India',
+    courtPractice: ['Delhi High Court', 'Supreme Court of India'],
+    topCourtPractised: 'Delhi High Court',
+    completeAddress: 'Chamber 101, Lawyers Block, High Court, New Delhi',
+    videoCallChargePerMinute: 50.00,
+    voiceCallChargePerMinute: 30.00,
+    offlineVisitingFee: 1500.00,
+    averageRating: 4.8,
+    totalReviews: 12,
+    status: 'ACTIVE',
+    isActive: true,
+    phoneVerified: true,
+    emailVerified: true,
+    aadhaarVerified: true,
+    latitude: 28.6139,
+    longitude: 77.2090
+  };
+
+  const demoAdvocate1 = await prisma.advocate.upsert({
+    where: { email: 'demoadvocate1@gmail.com' },
+    update: demoAdvocate1Data,
+    create: demoAdvocate1Data
+  });
+
+  const demoAdvocate2Data = {
+    fullName: 'Priya Verma',
+    email: 'demoadvocate2@gmail.com',
+    passwordHash: demoPasswordHash,
+    phone: '9999901002',
+    barCouncilId: 'DEMO-BAR-1002',
+    bestPracticeArea: 'Civil Law',
+    practiceAreas: ['Civil Law', 'Civil Litigation', 'Property Disputes'],
+    experienceYears: 6,
+    casesWon: 32,
+    city: 'Noida',
+    state: 'Uttar Pradesh',
+    pincode: '201301',
+    about: 'Civil law advocate specializing in property disputes, civil litigation, contracts, and related matters.',
+    profilePhotoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=60',
+    gender: 'Female',
+    country: 'India',
+    courtPractice: ['District Court Noida', 'Allahabad High Court'],
+    topCourtPractised: 'Allahabad High Court',
+    completeAddress: 'Suite 204, Legal Tower, Sector 62, Noida',
+    videoCallChargePerMinute: 45.00,
+    voiceCallChargePerMinute: 25.00,
+    offlineVisitingFee: 1200.00,
+    averageRating: 4.7,
+    totalReviews: 8,
+    status: 'ACTIVE',
+    isActive: true,
+    phoneVerified: true,
+    emailVerified: true,
+    aadhaarVerified: true,
+    latitude: 28.5355,
+    longitude: 77.3910
+  };
+
+  const demoAdvocate2 = await prisma.advocate.upsert({
+    where: { email: 'demoadvocate2@gmail.com' },
+    update: demoAdvocate2Data,
+    create: demoAdvocate2Data
+  });
+
+  // Seed Confirmed Team Mate relationship between Demo Advocate 1 & Demo Advocate 2
+  await prisma.advocateTeamMate.upsert({
+    where: {
+      advocateId_teamMateId: {
+        advocateId: demoAdvocate1.id,
+        teamMateId: demoAdvocate2.id
+      }
+    },
+    update: {},
+    create: {
+      advocateId: demoAdvocate1.id,
+      teamMateId: demoAdvocate2.id
+    }
+  });
+
+  await prisma.advocateTeamMate.upsert({
+    where: {
+      advocateId_teamMateId: {
+        advocateId: demoAdvocate2.id,
+        teamMateId: demoAdvocate1.id
+      }
+    },
+    update: {},
+    create: {
+      advocateId: demoAdvocate2.id,
+      teamMateId: demoAdvocate1.id
+    }
+  });
+
+  console.log('Demo Advocates (demoadvocate1@gmail.com & demoadvocate2@gmail.com) and team relationships seeded successfully.');
 
   console.log('Database seeding successfully finished!');
 }

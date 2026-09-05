@@ -109,7 +109,8 @@ export const listAdvocates = async ({
     isActive: true,
     phoneVerified: true,
     emailVerified: true,
-    status: 'ACTIVE'
+    status: 'ACTIVE',
+    approvalStatus: 'APPROVED'
   };
 
   // 1. Search (Matches Name, topCourtPractised, City, State case-insensitively, and practiceAreas exact match)
@@ -357,7 +358,7 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     }
   });
 
-  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE') {
+  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE' || advocate.approvalStatus !== 'APPROVED') {
     const error = new Error('Advocate not found.');
     error.statusCode = 404;
     throw error;

@@ -19,6 +19,12 @@ enum AdvocateStatus {
   BLOCKED
 }
 
+enum AdvocateApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum RequestStatus {
   PENDING
   CONNECTED
@@ -131,6 +137,13 @@ model Advocate {
   pincode                  String?
   isActive                 Boolean        @default(true)
   status                   AdvocateStatus @default(ACTIVE)
+  approvalStatus           AdvocateApprovalStatus @default(PENDING)
+  rejectionReason          String?
+  submittedForApprovalAt   DateTime?
+  approvedAt               DateTime?
+  approvedById             String?
+  rejectedAt               DateTime?
+  rejectedById             String?
   createdAt                DateTime       @default(now())
   updatedAt                DateTime @updatedAt
 

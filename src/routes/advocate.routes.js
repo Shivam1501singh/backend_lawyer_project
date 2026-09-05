@@ -6,7 +6,12 @@ import * as advocateTeamController from '../controllers/advocateTeam.controller.
 import { requireAuth, optionalAuth, requireRole } from '../middleware/auth.middleware.js';
 import { reviewLimiter, generalLimiter } from '../middleware/rate-limit.middleware.js';
 
+import * as advocateProfileController from '../controllers/advocate.profile.controller.js';
+
 const router = express.Router();
+
+// Profile submission route alias
+router.post('/profile/submit-for-approval', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateProfileController.submitForApproval);
 
 // 1. Advocate Team Mate Routes (Must be defined before /:id)
 router.get('/search', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.searchAdvocates);

@@ -15,8 +15,8 @@ export const likeAdvocate = async ({ userId, advocateId }) => {
     throw error;
   }
 
-  // 2. Verify advocate is ACTIVE
-  if (!advocate.isActive || advocate.status !== 'ACTIVE') {
+  // 2. Verify advocate is ACTIVE and APPROVED
+  if (!advocate.isActive || advocate.status !== 'ACTIVE' || advocate.approvalStatus !== 'APPROVED') {
     const error = new Error('This lawyer is currently unavailable.');
     error.statusCode = 400;
     throw error;
@@ -108,9 +108,9 @@ export const getUserLikedAdvocates = async (userId) => {
     }
   });
 
-  // Filter for active advocates and format response
+  // Filter for active and approved advocates and format response
   return likes
-    .filter(l => l.advocate && l.advocate.isActive && l.advocate.status === 'ACTIVE')
+    .filter(l => l.advocate && l.advocate.isActive && l.advocate.status === 'ACTIVE' && l.advocate.approvalStatus === 'APPROVED')
     .map(l => {
       const adv = l.advocate;
       return {

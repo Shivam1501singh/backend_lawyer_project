@@ -2358,6 +2358,246 @@ The system automatically seeds an idempotent Admin account:
 
 ---
 
+## 14. ADVOCATE PROFILE APPROVAL WORKFLOW
+
+This section documents the Advocate profile approval flow introduced between registration/profile completion and public visibility/booking.
+
+### 14.1 Status & Visibility Rules Matrix
+
+```text
+PENDING
+→ Profile submitted, waiting for Admin approval
+→ Not publicly visible
+→ Not available for booking/connection (GET /api/advocates & GET /api/advocates/:id return 404/hidden)
+
+APPROVED + ACTIVE
+→ Publicly visible
+→ Available for booking/connection
+→ Can appear in lawyer search, nearby lawyers, pincode search
+
+APPROVED + BLOCKED
+→ Not publicly visible
+→ Not available for booking/connection
+
+REJECTED
+→ Not publicly visible
+→ Not available for booking/connection
+→ Can be resubmitted after profile update/correction (returns status to PENDING)
+```
+
+**Critical Business Rule**:
+```text
+┌─────────────────────────────────────────┐
+│ approvalStatus = APPROVED               │
+│                 AND                     │
+│ accountStatus = ACTIVE                  │
+└─────────────────────────────────────────┘
+                    ↓
+          Visible + Available
+```
+
+---
+
+### 14.2 Approval Workflow Endpoints
+
+#### 1. Advocate Submit Profile for Approval
+* **Endpoint:** `POST /api/advocates/profile/submit-for-approval` (alias: `POST /api/advocate/profile/submit-for-approval`)
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Validation:** Advocate ID comes from authenticated token. Validates required profile fields (`fullName`, `phone`, `barCouncilId`, `profilePhotoUrl`, `practiceAreas`/`bestPracticeArea`, `experienceYears`, `about`, `city`, `state`, `pincode`, `emailVerified`, `phoneVerified`).
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Your profile has been submitted for admin approval"
+  }
+  ```
+* **Incomplete Profile Response (400 Bad Request):**
+  ```json
+  {
+    "success": false,
+    "message": "Please complete your Advocate profile before submitting it for approval"
+  }
+  ```
+
+#### 2. Admin View Pending Advocates Queue
+* **Endpoint:** `GET /api/admin/advocates/pending`
+* **Authentication:** `ADMIN` required (`requireAuth`, `requireRole('ADMIN')`)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "advocate-uuid",
+        "name": "Rahul Sharma",
+        "email": "rahul@example.com",
+        "barId": "BAR12345",
+        "profileImage": "https://example.com/photo.jpg",
+        "lawType": "Criminal Law",
+        "experience": 8,
+        "city": "Delhi",
+        "profileCompleted": true,
+        "approvalStatus": "PENDING"
+      }
+    ]
+  }
+  ```
+
+#### 3. Admin Review Advocate Profile
+* **Endpoint:** `GET /api/admin/advocates/:advocateId`
+* **Authentication:** `ADMIN` required
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "advocate-uuid",
+      "fullName": "Rahul Sharma",
+      "email": "rahul@example.com",
+      "phone": "9876543210",
+      "barCouncilId": "BAR12345",
+      "profilePhotoUrl": "https://example.com/photo.jpg",
+      "approvalStatus": "PENDING",
+      "status": "ACTIVE"
+    }
+  }
+  ```
+
+#### 4. Admin Approve Advocate
+* **Endpoint:** `PATCH /api/admin/advocates/:advocateId/approve`
+* **Authentication:** `ADMIN` required
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate profile approved successfully",
+    "data": {
+      "id": "advocate-uuid",
+      "approvalStatus": "APPROVED",
+      "status": "ACTIVE",
+      "accountStatus": "ACTIVE"
+    }
+  }
+  ```
+
+#### 5. Admin Reject Advocate
+* **Endpoint:** `PATCH /api/admin/advocates/:advocateId/reject`
+* **Authentication:** `ADMIN` required
+* **Request Body:**
+  ```json
+  {
+    "reason": "BAR ID verification information is incomplete"
+  }
+  ```
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate profile rejected",
+    "data": {
+      "id": "advocate-uuid",
+      "approvalStatus": "REJECTED",
+      "accountStatus": "ACTIVE",
+      "rejectionReason": "BAR ID verification information is incomplete"
+    }
+  }
+  ```
+
+---
+
+### 14.3 Complete Postman Step-by-Step Testing Guide
+
+#### Test 1 — Register Advocate
+1. Call registration API to register a new Advocate.
+2. Verify initial state in DB: `approvalStatus = PENDING`.
+
+#### Test 2 — Login Advocate
+1. Call `POST /api/auth/advocate/login/email-password` with advocate credentials.
+2. Store the returned `token`. Verify Advocate authenticates cleanly.
+
+#### Test 3 — Complete Profile
+1. Call `PATCH /api/advocate/profile` with `Authorization: Bearer <advocate_token>`.
+2. Fill all required profile fields (`experienceYears`, `practiceAreas`, `bestPracticeArea`, `about`, `courtPractice`, address).
+3. Upload profile photo via `POST /api/advocate/profile/photo`.
+
+#### Test 4 — Submit Profile for Approval
+1. Call `POST /api/advocates/profile/submit-for-approval` with `Authorization: Bearer <advocate_token>`.
+2. Verify response:
+   ```json
+   {
+     "success": true,
+     "message": "Your profile has been submitted for admin approval"
+   }
+   ```
+
+#### Test 5 — Normal User Searches Lawyers
+1. Login as Normal User.
+2. Call `GET /api/advocates?search=<Advocate_Name>`.
+3. Verify the pending Advocate does **NOT** appear in search results.
+
+#### Test 6 — Normal User Fetches Pending Advocate
+1. Call `GET /api/advocates/:advocateId` for the pending Advocate.
+2. Verify response is `404 Not Found`.
+
+#### Test 7 — Admin Views Pending Advocates
+1. Login as Admin (`POST /api/admin/login`). Store `admin_token`.
+2. Call `GET /api/admin/advocates/pending` with `Authorization: Bearer <admin_token>`.
+3. Verify the submitted Advocate appears in `data` list with `approvalStatus = "PENDING"`.
+
+#### Test 8 — Admin Reviews Profile
+1. Call `GET /api/admin/advocates/:advocateId` with `Authorization: Bearer <admin_token>`.
+2. Verify complete advocate profile details are returned for Admin review without exposing passwords/tokens.
+
+#### Test 9 — Admin Approves Advocate
+1. Call `PATCH /api/admin/advocates/:advocateId/approve` with `Authorization: Bearer <admin_token>`.
+2. Verify response: `approvalStatus = "APPROVED"` and `accountStatus = "ACTIVE"`.
+
+#### Test 10 — Normal User Searches Again
+1. As Normal User, call `GET /api/advocates?search=<Advocate_Name>`.
+2. Verify the approved Advocate now appears in the lawyer search results.
+
+#### Test 11 — Normal User Fetches Profile
+1. Call `GET /api/advocates/:advocateId`.
+2. Verify profile returns `200 OK` with `likeCount`, `isLiked`, and `team` fields included.
+
+#### Test 12 — Booking/Connection
+1. As Normal User, call `POST /api/case-requests` for the approved Advocate.
+2. Verify the booking/connection request succeeds.
+
+#### Test 13 — Admin Rejects Advocate
+1. Register another Advocate and submit their profile for approval.
+2. As Admin, call `PATCH /api/admin/advocates/:advocateId/reject` with body `{"reason": "BAR ID verification information is incomplete"}`.
+3. Verify response: `approvalStatus = "REJECTED"` and `rejectionReason` is populated.
+
+#### Test 14 — Rejected Advocate Hidden
+1. As Normal User, search lawyers (`GET /api/advocates`), fetch profile (`GET /api/advocates/:id`), and attempt booking.
+2. Verify rejected Advocate returns 404 / is hidden and unavailable.
+
+#### Test 15 — Re-submit Rejected Profile
+1. Login as the rejected Advocate.
+2. Update profile details and call `POST /api/advocates/profile/submit-for-approval`.
+3. Verify `approvalStatus = "PENDING"` and old rejection reason is cleared.
+4. Verify Advocate remains hidden from Normal Users until Admin approves again.
+
+#### Test 16 — Admin Blocks Approved Advocate
+1. As Admin, call `PATCH /api/admin/advocates/:advocateId/status` with `{"status": "BLOCKED"}` on an approved Advocate.
+2. Verify state: `approvalStatus = "APPROVED"`, `accountStatus = "BLOCKED"`.
+3. Verify Normal Users can no longer see, book, or connect with the Advocate.
+
+#### Test 17 — Admin Activates Advocate
+1. As Admin, call `PATCH /api/admin/advocates/:advocateId/status` with `{"status": "ACTIVE"}`.
+2. Verify state: `approvalStatus = "APPROVED"`, `accountStatus = "ACTIVE"`.
+3. Verify Advocate becomes publicly visible and bookable again.
+    "message": "Advocate status updated successfully",
+    "data": {
+      "id": "advocate-uuid",
+      "status": "ACTIVE"
+    }
+  }
+  ```
+
+---
+
 ### 13.5 Postman & Role Authorization Matrix
 
 | Endpoint | Unauthenticated | Normal User | Advocate | Content Creator | Admin |
@@ -3026,5 +3266,130 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
 | Remove Team Mate | ❌ | ✅ | ❌ | ❌ |
 
 
+---
 
+## 17. Demo Advocate Credentials & Testing Guide
 
+> [!WARNING]
+> **DEVELOPMENT / DEMO ONLY**
+> The following credentials and pre-seeded advocate accounts are intended strictly for local development and feature testing.
+
+### Demo Advocate Credentials
+
+| Advocate | Name | Email | Password | BAR ID | Phone | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Demo Advocate 1** | Arjun Sharma | `demoadvocate1@gmail.com` | `123456789` | `DEMO-BAR-1001` | `9999901001` | `ACTIVE` |
+| **Demo Advocate 2** | Priya Verma | `demoadvocate2@gmail.com` | `123456789` | `DEMO-BAR-1002` | `9999901002` | `ACTIVE` |
+
+---
+
+### Seeding the Demo Data
+
+To populate or reset these demo advocate accounts in your local database, run:
+
+```bash
+npm run seed
+# or
+npx prisma db seed
+```
+
+Seeding is **idempotent** and safe to run multiple times without creating duplicate records.
+
+---
+
+### Testing Workflows
+
+#### 1. Advocate Login Testing
+
+##### Login as Demo Advocate 1
+```http
+POST /api/auth/advocate/login
+Content-Type: application/json
+
+{
+  "email": "demoadvocate1@gmail.com",
+  "password": "123456789"
+}
+```
+
+##### Login as Demo Advocate 2
+```http
+POST /api/auth/advocate/login
+Content-Type: application/json
+
+{
+  "email": "demoadvocate2@gmail.com",
+  "password": "123456789"
+}
+```
+
+---
+
+#### 2. Advocate Search Testing (Advocate-Only)
+
+> **Note:** Requires an active `ADVOCATE` session token.
+
+##### Search by Name (Arjun / Priya)
+```http
+GET /api/advocates/search?query=Arjun
+Authorization: Bearer <advocate_jwt_token>
+```
+```http
+GET /api/advocates/search?query=Priya
+Authorization: Bearer <advocate_jwt_token>
+```
+
+##### Search by BAR ID
+```http
+GET /api/advocates/search?query=DEMO-BAR-1001
+Authorization: Bearer <advocate_jwt_token>
+```
+```http
+GET /api/advocates/search?query=DEMO-BAR-1002
+Authorization: Bearer <advocate_jwt_token>
+```
+
+---
+
+#### 3. Team Mate Feature Testing
+
+##### Pre-Seeded Team Relationship
+The seed script automatically establishes a confirmed team relationship (`Demo Advocate 1 ↔ Demo Advocate 2`). You can immediately test:
+```http
+GET /api/advocates/team-mates
+Authorization: Bearer <advocate1_jwt_token>
+```
+*Returns Demo Advocate 2 in Demo Advocate 1's team list.*
+
+##### Manual OTP Team Connection Flow
+```text
+Login as Demo Advocate 1
+        ↓
+Search for Demo Advocate 2 (by name or BAR ID)
+        ↓
+POST /api/advocates/:advocate2Id/team-request
+        ↓
+POST /api/advocates/team-request/:requestId/verify  (Body: { "otp": "<received_otp>" })
+        ↓
+GET /api/advocates/team-mates (Team relationship confirmed)
+```
+
+---
+
+#### 4. Normal User Profile & Like Testing
+
+##### Fetch Seeded Advocate Profile
+```http
+GET /api/advocates/:advocateId
+```
+*Returns full advocate profile details, `likeCount`, `isLiked` (user-specific), and confirmed `team` mates list.*
+
+##### Like / Unlike Advocate
+```http
+POST /api/advocates/:advocateId/like
+Authorization: Bearer <user_jwt_token>
+```
+```http
+DELETE /api/advocates/:advocateId/like
+Authorization: Bearer <user_jwt_token>
+```

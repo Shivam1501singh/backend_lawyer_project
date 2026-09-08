@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 // Standard fallback rate limiter for general routes
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Limit each IP to 100 requests per window
+  max: 1000, // Limit each IP to 1000 requests per window
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again after 15 minutes.'
@@ -71,4 +71,17 @@ export const reviewLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false
 });
+
+// Limiter for Advocate password reset requests (Max 3 requests per 15 minutes)
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Limit each IP to 3 requests per 15 minutes
+  message: {
+    success: false,
+    message: 'Too many password reset requests. Please try again after 15 minutes.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 

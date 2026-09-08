@@ -3393,3 +3393,457 @@ Authorization: Bearer <user_jwt_token>
 DELETE /api/advocates/:advocateId/like
 Authorization: Bearer <user_jwt_token>
 ```
+
+---
+
+## IPC & BNS Legal Content APIs
+
+The **Legal Content System** provides separate, dedicated database models and endpoints for **IPC** (Indian Penal Code) and **BNS** (Bharatiya Nyaya Sanhita). 
+
+The underlying architecture uses completely separate Prisma database models (`IPCSection` and `BNSSection`), separate Content Creator endpoints, and separate public discovery/search endpoints. No `actType` field is used.
+
+### Authorization Summary & Permission Matrix
+
+| API | Public | Normal User | Advocate | Content Creator |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET /api/ipc` | ✅ | ✅ | ✅ | ✅ |
+| `GET /api/ipc/:ipcId` | ✅ | ✅ | ✅ | ✅ |
+| `GET /api/ipc/search` | ✅ | ✅ | ✅ | ✅ |
+| `POST /api/content-creator/ipc` | ❌ | ❌ | ❌ | ✅ |
+| `PATCH /api/content-creator/ipc/:ipcId` | ❌ | ❌ | ❌ | ✅ |
+| `GET /api/bns` | ✅ | ✅ | ✅ | ✅ |
+| `GET /api/bns/:bnsId` | ✅ | ✅ | ✅ | ✅ |
+| `GET /api/bns/search` | ✅ | ✅ | ✅ | ✅ |
+| `POST /api/content-creator/bns` | ❌ | ❌ | ❌ | ✅ |
+| `PATCH /api/content-creator/bns/:bnsId` | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+### 1. Content Creator — Create IPC Section
+
+- **Endpoint:** `POST /api/content-creator/ipc`
+- **Headers:**
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <content_creator_jwt_token>` (or `auth_token` cookie)
+- **Keywords Representation:** Array of strings (e.g. `["IPC Section 302", "murder", "Indian Penal Code"]`)
+
+#### Postman Example Request
+```http
+POST /api/content-creator/ipc
+Content-Type: application/json
+Authorization: Bearer <content_creator_jwt_token>
+
+{
+  "sectionNo": "302",
+  "heading": "Punishment for murder",
+  "paragraph": "Whoever commits murder shall be punished with death, or imprisonment for life, and shall also be liable to fine.",
+  "explanation": "This section explains the punishment applicable to a person who commits murder under IPC.",
+  "content": "Additional detailed legal provisions and judicial precedents regarding murder.",
+  "metaTitle": "IPC Section 302 - Punishment for Murder",
+  "keywords": [
+    "IPC Section 302",
+    "murder",
+    "Indian Penal Code"
+  ],
+  "metaDescription": "Information about IPC Section 302 and punishment for murder."
+}
+```
+
+#### Successful Response (201 Created)
+```json
+{
+  "success": true,
+  "message": "IPC section created successfully",
+  "data": {
+    "id": "c1f7a2d8-5b4e-4e6f-8d9e-1a2b3c4d5e6f",
+    "sectionNo": "302",
+    "heading": "Punishment for murder",
+    "paragraph": "Whoever commits murder shall be punished with death, or imprisonment for life, and shall also be liable to fine.",
+    "explanation": "This section explains the punishment applicable to a person who commits murder under IPC.",
+    "content": "Additional detailed legal provisions and judicial precedents regarding murder.",
+    "metaTitle": "IPC Section 302 - Punishment for Murder",
+    "keywords": [
+      "IPC Section 302",
+      "murder",
+      "Indian Penal Code"
+    ],
+    "metaDescription": "Information about IPC Section 302 and punishment for murder."
+  }
+}
+```
+
+---
+
+### 2. Content Creator — Create BNS Section
+
+- **Endpoint:** `POST /api/content-creator/bns`
+- **Headers:**
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <content_creator_jwt_token>` (or `auth_token` cookie)
+
+#### Postman Example Request
+```http
+POST /api/content-creator/bns
+Content-Type: application/json
+Authorization: Bearer <content_creator_jwt_token>
+
+{
+  "sectionNo": "103",
+  "heading": "Punishment for murder under BNS",
+  "paragraph": "Whoever commits murder shall be punished with death or imprisonment for life, and shall also be liable to fine.",
+  "explanation": "Section 103 under Bharatiya Nyaya Sanhita corresponds to IPC Section 302.",
+  "content": "Comparative legal analysis between BNS 103 and legacy IPC 302.",
+  "metaTitle": "BNS Section 103 - Punishment for Murder",
+  "keywords": [
+    "BNS Section 103",
+    "murder",
+    "Bharatiya Nyaya Sanhita"
+  ],
+  "metaDescription": "Information about BNS Section 103."
+}
+```
+
+---
+
+### 3. Content Creator — Edit IPC / BNS Sections
+
+#### Edit IPC Section
+```http
+PATCH /api/content-creator/ipc/c1f7a2d8-5b4e-4e6f-8d9e-1a2b3c4d5e6f
+Content-Type: application/json
+Authorization: Bearer <content_creator_jwt_token>
+
+{
+  "heading": "Punishment for murder (Updated Definition)",
+  "metaTitle": "Updated IPC Section 302 SEO Title"
+}
+```
+
+#### Edit BNS Section
+```http
+PATCH /api/content-creator/bns/e2a1f9d3-6c5b-4a3d-9e8f-7a6b5c4d3e2f
+Content-Type: application/json
+Authorization: Bearer <content_creator_jwt_token>
+
+{
+  "explanation": "Updated explanation of BNS Section 103 provisions."
+}
+```
+
+---
+
+### 4. Public IPC Endpoints (No Auth Required)
+
+#### List IPC Sections
+```http
+GET /api/ipc?page=1&limit=15
+```
+
+#### Single IPC Section View
+```http
+GET /api/ipc/c1f7a2d8-5b4e-4e6f-8d9e-1a2b3c4d5e6f
+```
+
+#### Search IPC Sections
+```http
+GET /api/ipc/search?q=murder&page=1&limit=15
+```
+```http
+GET /api/ipc/search?q=302
+```
+*Note: Searches exclusively within the `IPCSection` database table.*
+
+---
+
+### 5. Public BNS Endpoints (No Auth Required)
+
+#### List BNS Sections
+```http
+GET /api/bns?page=1&limit=15
+```
+
+#### Single BNS Section View
+```http
+GET /api/bns/e2a1f9d3-6c5b-4a3d-9e8f-7a6b5c4d3e2f
+```
+
+#### Search BNS Sections
+```http
+GET /api/bns/search?q=murder&page=1&limit=15
+```
+```http
+GET /api/bns/search?q=103
+```
+*Note: Searches exclusively within the `BNSSection` database table.*
+
+---
+
+### Validation & Error Responses
+
+#### Missing Required Field
+```json
+{
+  "success": false,
+  "message": "Validation failed.",
+  "errors": [
+    {
+      "field": "heading",
+      "message": "Heading is required"
+    }
+  ]
+}
+```
+
+#### Forbidden Client Field (`actType` or `createdBy`)
+```json
+{
+  "success": false,
+  "message": "Field 'actType' cannot be provided by the client"
+}
+```
+
+#### Duplicate Section Number within Act
+```json
+{
+  "success": false,
+  "message": "This IPC section already exists"
+}
+```
+
+#### Unauthorized (401 Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Authentication required. Please login."
+}
+```
+
+#### Forbidden Role (403 Forbidden)
+```json
+{
+  "success": false,
+  "message": "Access forbidden. Insufficient permissions."
+}
+```
+
+---
+
+## Advocate Forgot Password / Password Reset
+
+The **Advocate Password Reset System** allows advocates to securely recover access to their account using their **registered email address** or **registered mobile number**. 
+
+The process uses cryptographically secure 6-digit OTP verification followed by a single-use password reset token.
+
+### Security Summary
+
+- **OTP Expiration:** 10 minutes
+- **Max OTP Attempts:** 5 attempts (after 5 failed tries, the OTP is invalidated)
+- **Reset Token Expiration:** 15 minutes (single-use token)
+- **Rate Limiting:** Maximum 3 password reset requests per 15 minutes per IP
+- **Account Enumeration Protection:** Generic success response returned to prevent discovering registered advocate accounts
+
+---
+
+### Step-by-Step API Flow
+
+```text
+              ADVOCATE
+                  │
+                  ▼
+          Forgot Password
+                  │
+          ┌───────┴────────┐
+          ▼                ▼
+       EMAIL             PHONE
+          │                │
+          └───────┬────────┘
+                  ▼
+   POST /api/advocate/forgot-password
+                  │
+                  ▼
+             Send OTP (10 min expiry)
+                  │
+                  ▼
+   POST /api/advocate/verify-reset-otp
+                  │
+                  ▼
+    Returns Reset Token (15 min expiry)
+                  │
+                  ▼
+   POST /api/advocate/reset-password
+                  │
+                  ▼
+      Password Updated & Saved
+                  │
+                  ▼
+   Existing Login: POST /api/auth/advocate/login
+```
+
+---
+
+### 1. Request Password Reset OTP
+
+- **Endpoint:** `POST /api/advocate/forgot-password`
+- **Rate Limiter:** 3 requests / 15 mins
+
+#### Postman Example Request — Email Flow
+```http
+POST /api/advocate/forgot-password
+Content-Type: application/json
+
+{
+  "email": "advocate@example.com"
+}
+```
+
+#### Postman Example Request — Phone Flow
+```http
+POST /api/advocate/forgot-password
+Content-Type: application/json
+
+{
+  "phone": "9876543210"
+}
+```
+
+#### Successful Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "If an advocate account exists with the provided details, an OTP has been sent."
+}
+```
+
+---
+
+### 2. Resend Password Reset OTP
+
+- **Endpoint:** `POST /api/advocate/resend-reset-otp`
+- **Behavior:** Invalidates previous active OTP and dispatches a fresh 6-digit OTP to the advocate's registered email or phone.
+
+```http
+POST /api/advocate/resend-reset-otp
+Content-Type: application/json
+
+{
+  "email": "advocate@example.com"
+}
+```
+
+---
+
+### 3. Verify Reset OTP
+
+- **Endpoint:** `POST /api/advocate/verify-reset-otp`
+- **Behavior:** Verifies OTP code, enforces 5-attempt limit, and returns a single-use `resetToken`.
+
+#### Postman Example Request — Email
+```http
+POST /api/advocate/verify-reset-otp
+Content-Type: application/json
+
+{
+  "email": "advocate@example.com",
+  "otp": "482913"
+}
+```
+
+#### Postman Example Request — Phone
+```http
+POST /api/advocate/verify-reset-otp
+Content-Type: application/json
+
+{
+  "phone": "9876543210",
+  "otp": "482913"
+}
+```
+
+#### Successful Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "OTP verified successfully",
+  "resetToken": "c7f91a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f"
+}
+```
+
+---
+
+### 4. Reset Password
+
+- **Endpoint:** `POST /api/advocate/reset-password`
+- **Behavior:** Validates single-use `resetToken`, checks matching `newPassword` and `confirmPassword`, hashes new password with bcrypt, updates Advocate account, and invalidates reset tokens.
+
+#### Postman Example Request
+```http
+POST /api/advocate/reset-password
+Content-Type: application/json
+
+{
+  "resetToken": "c7f91a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f",
+  "newPassword": "NewStrongPassword123!",
+  "confirmPassword": "NewStrongPassword123!"
+}
+```
+
+#### Successful Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "Password reset successfully. You can now login with your new password."
+}
+```
+
+---
+
+### 5. Login with New Password
+
+Use the existing Advocate login endpoint with your updated credentials:
+
+```http
+POST /api/auth/advocate/login
+Content-Type: application/json
+
+{
+  "email": "advocate@example.com",
+  "password": "NewStrongPassword123!"
+}
+```
+
+---
+
+### Error Responses
+
+#### Mismatched Passwords (400 Bad Request)
+```json
+{
+  "success": false,
+  "message": "Validation failed.",
+  "errors": [
+    {
+      "field": "confirmPassword",
+      "message": "New password and confirm password do not match"
+    }
+  ]
+}
+```
+
+#### Exceeded Attempt Limit (400 Bad Request)
+```json
+{
+  "success": false,
+  "message": "Maximum OTP verification attempts exceeded. Please request a new OTP."
+}
+```
+
+#### Invalid / Used Reset Token (400 Bad Request)
+```json
+{
+  "success": false,
+  "message": "Invalid or expired password reset token. Please restart the password reset process."
+}
+```
+
+
+

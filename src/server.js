@@ -16,6 +16,9 @@ import savedLawyerRoutes from './routes/savedLawyer.routes.js';
 import blogRoutes from './routes/blog.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import caseRequestRoutes from './routes/caseRequest.routes.js';
+import ipcRoutes from './routes/ipc.routes.js';
+import bnsRoutes from './routes/bns.routes.js';
+import advocateResetRoutes from './routes/advocateReset.routes.js';
 
 
 import { requireAuth, requireRole } from './middleware/auth.middleware.js';
@@ -65,6 +68,11 @@ app.use('/api/courts', courtRoutes);
 app.use('/api/saved-lawyers', savedLawyerRoutes);
 app.use('/', caseRequestRoutes);
 app.use('/', blogRoutes);
+app.use('/', ipcRoutes);
+app.use('/', bnsRoutes);
+app.use('/', advocateResetRoutes);
+
+
 
 // User Liked Advocates Endpoint
 app.get('/api/user/liked-advocates', requireAuth, requireRole('USER'), getUserLikedAdvocates);

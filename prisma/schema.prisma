@@ -14,6 +14,8 @@ enum AccountType {
   ADMIN
 }
 
+
+
 enum AdvocateStatus {
   ACTIVE
   BLOCKED
@@ -182,7 +184,32 @@ model Advocate {
   receivedTeamRequests AdvocateTeamRequest[] @relation("ReceivedTeamRequests")
   teamMatesPrimary     AdvocateTeamMate[]    @relation("TeamMatesPrimary")
   teamMatesSecondary   AdvocateTeamMate[]    @relation("TeamMatesSecondary")
+  passwordResets       AdvocatePasswordReset[]
 }
+
+model AdvocatePasswordReset {
+  id                  String    @id @default(uuid())
+  advocateId          String
+  target              String
+  otpHash             String?
+  otpExpiresAt        DateTime?
+  otpAttempts         Int       @default(0)
+  maxOtpAttempts      Int       @default(5)
+  otpVerified         Boolean   @default(false)
+  otpVerifiedAt       DateTime?
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+  usedAt              DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  advocate            Advocate  @relation(fields: [advocateId], references: [id], onDelete: Cascade)
+
+  @@index([advocateId])
+  @@index([target])
+  @@index([createdAt])
+}
+
 
 enum TeamRequestStatus {
   PENDING
@@ -304,17 +331,63 @@ model AdvocateTeamMate {
 
 
 model ContentCreator {
-  id           String   @id @default(uuid())
-  fullName     String   @default("Content Creator")
-  email        String   @unique
+  id           String       @id @default(uuid())
+  fullName     String       @default("Content Creator")
+  email        String       @unique
   passwordHash String
-  isActive     Boolean  @default(true)
+  isActive     Boolean      @default(true)
   image        String?
   bio          String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
   blogs        Blog[]
+  ipcSections  IPCSection[]
+  bnsSections  BNSSection[]
 }
+
+model IPCSection {
+  id              String         @id @default(uuid())
+  sectionNo       String         @unique
+  heading         String
+  paragraph       String         @db.Text
+  explanation     String?        @db.Text
+  content         String?        @db.Text
+  metaTitle       String?
+  keywords        String[]       @default([])
+  metaDescription String?
+  createdBy       String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  creator         ContentCreator @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([sectionNo])
+  @@index([createdBy])
+  @@index([createdAt])
+}
+
+model BNSSection {
+  id              String         @id @default(uuid())
+  sectionNo       String         @unique
+  heading         String
+  paragraph       String         @db.Text
+  explanation     String?        @db.Text
+  content         String?        @db.Text
+  metaTitle       String?
+  keywords        String[]       @default([])
+  metaDescription String?
+  createdBy       String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  creator         ContentCreator @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([sectionNo])
+  @@index([createdBy])
+  @@index([createdAt])
+}
+
+
 
 model Blog {
   id            String         @id @default(uuid())

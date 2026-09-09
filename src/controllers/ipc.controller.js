@@ -105,7 +105,7 @@ export const editIPCSection = async (req, res, next) => {
         message: 'IPC section not found'
       });
     }
-
+ 
     const validated = ipcValidator.updateIPCSectionSchema.parse(req.body);
 
     if (validated.sectionNo && validated.sectionNo !== existing.sectionNo) {

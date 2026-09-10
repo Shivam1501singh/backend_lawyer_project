@@ -3,7 +3,7 @@ import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import { signToken } from '../src/utils/jwt.js';
 
-const BASE_URL = process.env.PORT ? `http://localhost:${process.env.PORT}` : 'http://localhost:5001';
+const BASE_URL = process.env.PORT ? `http://localhost:${process.env.PORT}` : 'http://localhost:5000';
 
 async function runE2ETests() {
   console.log('--- Starting Advocate Team Mate E2E Tests ---');
@@ -98,8 +98,8 @@ async function runE2ETests() {
     // Test 1: Search Advocate B by BAR ID
     console.log('\n[Test 1] Advocate A searches Advocate B by BAR ID (DL/10002/2026)...');
     const searchRes = await clientA.get('/api/advocates/search?barId=DL/10002/2026');
-    console.log('Search Response:', searchRes.status, searchRes.data.advocate.fullName);
-    if (!searchRes.data.success || searchRes.data.advocate.id !== advocateB.id) {
+    console.log('Search Response:', searchRes.status, searchRes.data.data[0].fullName);
+    if (!searchRes.data.success || searchRes.data.data[0].id !== advocateB.id) {
       throw new Error('Test 1 Failed: BAR ID Search returned incorrect advocate.');
     }
 

@@ -1037,9 +1037,110 @@ async function main() {
     }
   });
 
-  console.log('Demo Advocates (demoadvocate1@gmail.com & demoadvocate2@gmail.com) and team relationships seeded successfully.');
+  console.log('Demo Advocates (demoadvocate1@gmail.com & demoadvocate2@gmail.com) seeded successfully.');
+
+  // 6. Seed Advocate Team Members for All Existing Advocates
+  await seedAdvocateTeamMembers();
 
   console.log('Database seeding successfully finished!');
+}
+
+async function seedAdvocateTeamMembers() {
+  console.log('\nAdvocate Team Seed Started...\n');
+
+  const advocates = await prisma.advocate.findMany({
+    select: { id: true, fullName: true },
+    orderBy: { createdAt: 'asc' }
+  });
+
+  const totalAdvocates = advocates.length;
+  console.log(`Total advocates found: ${totalAdvocates}\n`);
+
+  if (totalAdvocates < 4) {
+    console.error('At least 4 advocates are required to seed 3 teammates per advocate.');
+    return;
+  }
+
+  // Batch query all existing teammate relationships
+  const allExistingLinks = await prisma.advocateTeamMate.findMany({
+    select: { advocateId: true, teamMateId: true }
+  });
+
+  const existingPairSet = new Set(
+    allExistingLinks.map(l => {
+      const pair = [l.advocateId, l.teamMateId].sort();
+      return `${pair[0]}_${pair[1]}`;
+    })
+  );
+
+  const advocateTeammateMap = new Map();
+  for (const adv of advocates) {
+    advocateTeammateMap.set(adv.id, new Set());
+  }
+
+  for (const link of allExistingLinks) {
+    if (advocateTeammateMap.has(link.advocateId)) {
+      advocateTeammateMap.get(link.advocateId).add(link.teamMateId);
+    }
+    if (advocateTeammateMap.has(link.teamMateId)) {
+      advocateTeammateMap.get(link.teamMateId).add(link.advocateId);
+    }
+  }
+
+  const newRecordsToCreate = [];
+  let totalSkipped = 0;
+
+  for (let i = 0; i < advocates.length; i++) {
+    const advocate = advocates[i];
+    const currentTeammates = advocateTeammateMap.get(advocate.id);
+
+    const neededCount = Math.max(0, 3 - currentTeammates.size);
+
+    if (neededCount === 0) {
+      console.log(`Advocate ${i + 1} → ${currentTeammates.size} teammates`);
+      totalSkipped += 3;
+      continue;
+    }
+
+    const candidates = advocates.filter(
+      cand => cand.id !== advocate.id && !currentTeammates.has(cand.id)
+    );
+
+    const selectedCandidates = candidates.slice(0, neededCount);
+
+    for (const candidate of selectedCandidates) {
+      const pair = [advocate.id, candidate.id].sort();
+      const pairKey = `${pair[0]}_${pair[1]}`;
+
+      if (!existingPairSet.has(pairKey)) {
+        existingPairSet.add(pairKey);
+        newRecordsToCreate.push({
+          advocateId: pair[0],
+          teamMateId: pair[1]
+        });
+
+        currentTeammates.add(candidate.id);
+        if (advocateTeammateMap.has(candidate.id)) {
+          advocateTeammateMap.get(candidate.id).add(advocate.id);
+        }
+      } else {
+        totalSkipped++;
+      }
+    }
+
+    console.log(`Advocate ${i + 1} → ${currentTeammates.size} teammates`);
+  }
+
+  if (newRecordsToCreate.length > 0) {
+    await prisma.advocateTeamMate.createMany({
+      data: newRecordsToCreate,
+      skipDuplicates: true
+    });
+  }
+
+  console.log(`\nNew teammate relationships created: ${newRecordsToCreate.length}`);
+  console.log(`Existing relationships skipped: ${totalSkipped}`);
+  console.log('\nAdvocate team seed completed successfully.\n');
 }
 
 main()

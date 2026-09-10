@@ -29,7 +29,7 @@ import { logout as advocateLogout } from './controllers/advocate.auth.controller
 import { getUserLikedAdvocates } from './controllers/advocateLike.controller.js';
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 // CORS setup
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';

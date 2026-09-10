@@ -3845,5 +3845,28 @@ Content-Type: application/json
 }
 ```
 
+---
+
+## Seed Advocate Team Members
+
+### Purpose
+The Advocate Team Member seeding feature generates demo teammate relationships for existing advocates in the database, allowing frontend and API demonstrations to display active Advocate Teams out of the box.
+
+### Command
+Execute the project's standard seed command:
+
+```bash
+npm run seed
+```
+
+### Seed Behavior & Rules
+- **3 Unique Teammates**: Every advocate in the database receives at least 3 unique teammates.
+- **Self-referential Prohibition**: An advocate is never added as their own teammate (`advocateId != teammateId`).
+- **Idempotency & Duplicate Prevention**: Existing teammate relationships are checked prior to insertion; running the seed multiple times is safe and will not create duplicate records.
+- **Minimum Advocate Requirement**: A minimum of **4 advocates** must exist in the database to seed 3 unique teammates per advocate.
+- **Pre-verified State**: Seeded teammate relationships are stored directly in the `AdvocateTeamMate` model representing established/verified team members.
+- **No Real OTP Sent**: Demonstrations bypass the production SMS OTP verification workflow during seeding.
+
+
 
 

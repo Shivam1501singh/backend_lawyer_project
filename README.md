@@ -3087,8 +3087,8 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
 ### 16.2 Send Team Request / Initiate OTP
 * **Method:** `POST`
 * **Endpoint:** `/api/advocates/:advocateId/team-request`
-* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
-* **Path Parameters:** `advocateId` (ID of Advocate B)
+* **Authentication:** `ADVOCATE` required with **Admin Approved Profile** (`requireAuth`, `requireRole('ADVOCATE')`, `requireApprovedAdvocate`)
+* **Path Parameters:** `advocateId` (ID of Target Advocate B)
 * **Response (200 OK):**
   ```json
   {
@@ -3103,6 +3103,8 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
   }
   ```
 * **Error Responses:**
+  * **Pending Admin Approval (403 Forbidden):** `{"success": false, "message": "Your advocate profile must be approved by admin before you can send team requests."}`
+  * **Rejected Admin Approval (403 Forbidden):** `{"success": false, "message": "Your advocate profile has not been approved by admin. You cannot send team requests."}`
   * **Self-Add (400 Bad Request):** `{"success": false, "message": "You cannot add yourself as a team mate"}`
   * **Blocked Advocate (403 Forbidden):** `{"success": false, "message": "Target advocate is currently unavailable or blocked."}`
   * **Already Team Mates (409 Conflict):** `{"success": false, "message": "Advocate is already in your team."}`
@@ -3253,17 +3255,110 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
 
 ---
 
-### 16.7 Final Permission Matrix
+### 16.7 Permission Matrix
 
-| Feature | Normal User | Advocate | Content Creator | Admin |
-| :--- | :---: | :---: | :---: | :---: |
-| Search Advocate by Name for Team | ❌ | ✅ | ❌ | ❌ |
-| Search Advocate by BAR ID for Team | ❌ | ✅ | ❌ | ❌ |
-| View Selected Advocate Profile | According to existing rules | ✅ | According to existing rules | ✅ |
-| Send Team Request | ❌ | ✅ | ❌ | ❌ |
-| Verify Team OTP | ❌ | ✅ | ❌ | ❌ |
-| View Own Team Mates | ❌ | ✅ | ❌ | ❌ |
-| Remove Team Mate | ❌ | ✅ | ❌ | ❌ |
+| Action | Unauthenticated | Normal User | Unapproved Advocate (Pending/Rejected) | Approved Advocate | Admin |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Search Advocate by Name/BAR ID | ❌ | ❌ | ✅ | ✅ | ❌ |
+| View Advocate Profile | According to existing rules | According to existing rules | ✅ | ✅ | ✅ |
+| Send Team Request | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Verify Team OTP | ❌ | ❌ | ❌ (for new requests) | ✅ | ❌ |
+| View Own Team Mates | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Remove Team Mate | ❌ | ❌ | ✅ | ✅ | ❌ |
+
+---
+
+### 16.8 Advocate Team Request — Admin Approval Requirement
+
+#### Team Request Approval Rule
+An Advocate must have an **Admin-approved profile** (`approvalStatus = APPROVED`) before they can send a team request to another Advocate.
+
+Registration alone does not grant permission to send team requests.
+
+The following Advocates cannot send new team requests:
+* **Pending Approval** (`approvalStatus = PENDING`)
+* **Rejected** (`approvalStatus = REJECTED`)
+* **Blocked/Inactive** (`status = BLOCKED` or `isActive = false`)
+
+```text
+REGISTERED ADVOCATE
+        │
+        ▼
+COMPLETE PROFILE
+        │
+        ▼
+ADMIN REVIEW
+        │
+   ┌────┴────┐
+   │         │
+REJECTED   APPROVED
+   │         │
+   ▼         ▼
+Cannot     Can send
+send       team request
+team          │
+request       ▼
+           Existing
+           OTP flow
+```
+
+#### Postman Testing — Approval Requirement
+
+##### 1. Postman Test — Pending Advocate
+* **Pre-condition:** Login as a registered Advocate whose profile status is `approvalStatus = PENDING`.
+* **Call:** `POST /api/advocates/:advocateId/team-request`
+* **Expected Response (HTTP 403 Forbidden):**
+  ```json
+  {
+    "success": false,
+    "message": "Your advocate profile must be approved by admin before you can send team requests."
+  }
+  ```
+* **Verification:** OTP is **NOT** generated, SMS is **NOT** sent, and no pending team request record is created in the database.
+
+##### 2. Postman Test — Approved Advocate
+* **Pre-condition:** Login as an Advocate whose profile has been approved by Admin (`approvalStatus = APPROVED`).
+* **Call:** `POST /api/advocates/:advocateId/team-request`
+* **Expected Response (HTTP 200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Team request initiated successfully. OTP sent to Advocate's registered mobile number.",
+    "data": {
+      "requestId": "team-request-uuid",
+      "targetAdvocateId": "advocate-b-uuid",
+      "maskedPhone": "******2222",
+      "expiresInMinutes": 5
+    }
+  }
+  ```
+* **Verification:** Existing OTP flow continues normally.
+
+##### 3. Postman Test — Rejected Advocate
+* **Pre-condition:** Login as an Advocate whose profile has been rejected (`approvalStatus = REJECTED`).
+* **Call:** `POST /api/advocates/:advocateId/team-request`
+* **Expected Response (HTTP 403 Forbidden):**
+  ```json
+  {
+    "success": false,
+    "message": "Your advocate profile has not been approved by admin. You cannot send team requests."
+  }
+  ```
+
+##### 4. Postman Test — Unauthenticated Request
+* **Call:** `POST /api/advocates/:advocateId/team-request` without auth header/cookie.
+* **Expected Response (HTTP 401 Unauthorized):**
+  ```json
+  {
+    "success": false,
+    "message": "Authentication required. Please login."
+  }
+  ```
+
+##### 5. Postman Test — Direct API Bypass Attempt
+* **Scenario:** An unapproved advocate uses Postman / cURL to directly call `POST /api/advocates/:advocateId/team-request`, bypassing any frontend button restriction.
+* **Expected Result (HTTP 403 Forbidden):** Request is rejected server-side before any business logic executes.
+
 
 
 ---

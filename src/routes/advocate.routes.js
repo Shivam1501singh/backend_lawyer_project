@@ -3,7 +3,7 @@ import * as advocateController from '../controllers/advocate.controller.js';
 import * as reviewController from '../controllers/review.controller.js';
 import * as advocateLikeController from '../controllers/advocateLike.controller.js';
 import * as advocateTeamController from '../controllers/advocateTeam.controller.js';
-import { requireAuth, optionalAuth, requireRole } from '../middleware/auth.middleware.js';
+import { requireAuth, optionalAuth, requireRole, requireApprovedAdvocate } from '../middleware/auth.middleware.js';
 import { reviewLimiter, generalLimiter } from '../middleware/rate-limit.middleware.js';
 
 import * as advocateProfileController from '../controllers/advocate.profile.controller.js';
@@ -18,7 +18,7 @@ router.get('/search', requireAuth, requireRole('ADVOCATE'), generalLimiter, advo
 router.get('/team-mates', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.getTeamMates);
 router.delete('/team-mates/:advocateId', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.removeTeamMate);
 router.post('/team-request/:requestId/verify', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.verifyTeamRequest);
-router.post('/:advocateId/team-request', requireAuth, requireRole('ADVOCATE'), generalLimiter, advocateTeamController.createTeamRequest);
+router.post('/:advocateId/team-request', requireAuth, requireRole('ADVOCATE'), requireApprovedAdvocate, generalLimiter, advocateTeamController.createTeamRequest);
 
 // 2. Public / Optional Auth routes
 router.get('/', optionalAuth, advocateController.getAdvocatesDirectory);

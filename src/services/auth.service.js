@@ -624,7 +624,9 @@ export const getCurrentUserProfile = async (id, accountType) => {
       completeAddress: profile.completeAddress,
       videoCallChargePerMinute: profile.videoCallChargePerMinute !== null ? Number(profile.videoCallChargePerMinute) : null,
       voiceCallChargePerMinute: profile.voiceCallChargePerMinute !== null ? Number(profile.voiceCallChargePerMinute) : null,
-      offlineVisitingFee: profile.offlineVisitingFee !== null ? Number(profile.offlineVisitingFee) : null
+      offlineVisitingFee: profile.offlineVisitingFee !== null ? Number(profile.offlineVisitingFee) : null,
+      status: profile.status,
+      approvalStatus: profile.approvalStatus
     };
   }
 };

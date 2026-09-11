@@ -91,6 +91,35 @@ export const searchAdvocateByBarId = async (barId, currentAdvocateId) => {
  * Initiate Team Mate Request (Generates OTP and sends via SMS to target advocate)
  */
 export const createTeamRequest = async ({ requesterId, targetAdvocateId }) => {
+  // Rule 0: Requester advocate must exist and be APPROVED by admin
+  const requesterAdvocate = await prisma.advocate.findUnique({
+    where: { id: requesterId }
+  });
+
+  if (!requesterAdvocate) {
+    const error = new Error('Advocate profile not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!requesterAdvocate.isActive || requesterAdvocate.status === 'BLOCKED') {
+    const error = new Error('Your account is currently unavailable or blocked.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (requesterAdvocate.approvalStatus === 'REJECTED') {
+    const error = new Error('Your advocate profile has not been approved by admin. You cannot send team requests.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (requesterAdvocate.approvalStatus !== 'APPROVED') {
+    const error = new Error('Your advocate profile must be approved by admin before you can send team requests.');
+    error.statusCode = 403;
+    throw error;
+  }
+
   // Rule 1: Cannot add self
   if (requesterId === targetAdvocateId) {
     const error = new Error('You cannot add yourself as a team mate');

@@ -92,3 +92,44 @@ export const requireRole = (...roles) => {
     next();
   };
 };
+
+export const requireApprovedAdvocate = async (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required. Please login.'
+    });
+  }
+
+  const rawRole = req.user.role || req.user.type || '';
+  if (rawRole.toUpperCase() !== 'ADVOCATE') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access forbidden. Only advocates can send team requests.'
+    });
+  }
+
+  if (req.user.status === 'BLOCKED' || req.user.isActive === false) {
+    return res.status(403).json({
+      success: false,
+      message: 'Your account is currently unavailable or blocked.'
+    });
+  }
+
+  if (req.user.approvalStatus === 'REJECTED') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your advocate profile has not been approved by admin. You cannot send team requests.'
+    });
+  }
+
+  if (req.user.approvalStatus !== 'APPROVED') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your advocate profile must be approved by admin before you can send team requests.'
+    });
+  }
+
+  next();
+};
+

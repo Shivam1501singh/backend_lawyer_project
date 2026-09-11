@@ -671,7 +671,7 @@ The `advocateProfileUpdateSchema` enforces the following backend validations:
 2. **Cases Won (`casesWon`):** Integer >= 0 and <= 100,000.
 3. **Practice Areas (`practiceAreas`):** Array of non-empty strings (maximum 20 areas).
 4. **Best Practice Area & Top Court Practised:** Strings, max length 100 characters.
-5. **Biography (`about`):** String, must not exceed 50 words (custom split-word refinement validation).
+5. **Biography (`about`):** String, must not exceed 150 words and minimum of 50 words (custom split-word refinement validation).
 6. **Court Practice (`courtPractice`):** Array of valid text strings representing courts.
 7. **Complete Address (`completeAddress`):** String, max length 500 characters.
 8. **Charges (`videoCallChargePerMinute` / `videoChargePerMinute`, `voiceCallChargePerMinute` / `voiceChargePerMinute`, `offlineVisitingFee`):** Numbers >= 0. Raw numbers are stored in the database.

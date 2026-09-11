@@ -118,9 +118,9 @@ export const advocateProfileUpdateSchema = z.object({
   bestPracticeArea: z.string().trim().max(100, { message: 'Best Practice Area cannot exceed 100 characters.' }).optional().nullable(),
   about: z.string().trim().optional().nullable().refine(val => {
     if (!val) return true;
-    const words = val.trim().split(/\s+/).filter(w => w.length > 50);
-    return words.length <= 150;
-  }, { message: 'About section cannot exceed 150 words.' }),
+    const wordCount = val.trim().split(/\s+/).filter(w => w.length > 0).length;
+    return wordCount >= 50 && wordCount <= 150;
+  }, { message: 'About section must be between 50 and 150 words.' }),
   courtPractice: z.array(z.string().trim()).optional().nullable(),
   completeAddress: z.string().trim().max(500, { message: 'Address cannot exceed 500 characters.' }).optional().nullable(),
   videoCallChargePerMinute: z.number().min(0, { message: 'Video call charge must be a non-negative number.' }).max(100000, { message: 'Video call charge cannot exceed 100,000.' }).optional().nullable(),

@@ -114,7 +114,6 @@ export const advocateProfileUpdateSchema = z.object({
   experienceYears: z.number().int().min(0, { message: 'Experience must be a non-negative number.' }).max(80, { message: 'Experience cannot exceed 80 years.' }).optional().nullable(),
   casesWon: z.number().int().min(0, { message: 'Cases won must be a non-negative number.' }).max(100000, { message: 'Cases won cannot exceed 100,000.' }).optional().nullable(),
   practiceAreaIds: z.array(z.string()).min(1, { message: 'Select at least one practice area.' }).optional().nullable(),
-  topCourtPractisedId: z.string().min(1, { message: 'Select a top court.' }).optional().nullable(),
   bestPracticeArea: z.string().trim().max(100, { message: 'Best Practice Area cannot exceed 100 characters.' }).optional().nullable(),
   about: z.string().trim().optional().nullable().refine(val => {
     if (!val) return true;

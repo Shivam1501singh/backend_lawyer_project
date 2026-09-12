@@ -297,3 +297,113 @@ export const uploadProfilePhoto = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Get Advocate Profile Verification Status.
+ * GET /api/advocate/profile/verification-status
+ */
+export const getVerificationStatus = async (req, res, next) => {
+  try {
+    if (!req.user || (req.user.type !== 'advocate' && req.user.role !== 'ADVOCATE')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access forbidden. Advocate role required.'
+      });
+    }
+
+    const advocate = await prisma.advocate.findUnique({
+      where: { id: req.user.id }
+    });
+
+    if (!advocate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Advocate profile not found.'
+      });
+    }
+
+    // 1. APPROVED State
+    if (advocate.approvalStatus === 'APPROVED') {
+      const profilePreview = {
+        id: advocate.id,
+        fullName: advocate.fullName,
+        name: advocate.fullName,
+        email: advocate.email,
+        phone: advocate.phone,
+        gender: advocate.gender,
+        barCouncilId: advocate.barCouncilId,
+        barId: advocate.barCouncilId,
+        profilePhotoUrl: advocate.profilePhotoUrl,
+        profileImage: advocate.profilePhotoUrl,
+        experienceYears: advocate.experienceYears,
+        experience: advocate.experienceYears,
+        casesWon: advocate.casesWon,
+        practiceAreas: advocate.practiceAreas || [],
+        bestPracticeArea: advocate.bestPracticeArea,
+        lawType: advocate.bestPracticeArea || (advocate.practiceAreas && advocate.practiceAreas.length > 0 ? advocate.practiceAreas[0] : null),
+        topCourtPractised: advocate.topCourtPractised,
+        courtPractice: advocate.courtPractice || [],
+        languagesSpoken: advocate.languagesSpoken || [],
+        state: advocate.state,
+        city: advocate.city,
+        pincode: advocate.pincode,
+        completeAddress: advocate.completeAddress,
+        about: advocate.about,
+        bio: advocate.about,
+        videoCallChargePerMinute: advocate.videoCallChargePerMinute,
+        voiceCallChargePerMinute: advocate.voiceCallChargePerMinute,
+        offlineVisitingFee: advocate.offlineVisitingFee,
+        averageRating: advocate.averageRating,
+        totalReviews: advocate.totalReviews,
+        status: advocate.status,
+        accountStatus: advocate.status,
+        approvalStatus: advocate.approvalStatus
+      };
+
+      return res.status(200).json({
+        success: true,
+        status: 'APPROVED',
+        message: 'Your profile has been approved.',
+        profile: profilePreview
+      });
+    }
+
+    // 2. REJECTED State
+    if (advocate.approvalStatus === 'REJECTED') {
+      const response = {
+        success: true,
+        status: 'REJECTED',
+        message: 'Your profile has been rejected.'
+      };
+      if (advocate.rejectionReason) {
+        response.rejectionReason = advocate.rejectionReason;
+      }
+      return res.status(200).json(response);
+    }
+
+    // 3. PENDING State vs NOT_SUBMITTED State
+    // If profile has never been submitted for approval (submittedForApprovalAt is null), return NOT_SUBMITTED
+    if (!advocate.submittedForApprovalAt) {
+      return res.status(200).json({
+        success: true,
+        status: 'NOT_SUBMITTED',
+        message: 'Your profile has not been submitted for admin approval.'
+      });
+    }
+
+    // Otherwise, profile is submitted and currently under admin review
+    const pendingResponse = {
+      success: true,
+      status: 'PENDING',
+      message: 'Your profile is pending admin approval.'
+    };
+    if (advocate.submittedForApprovalAt) {
+      pendingResponse.submittedAt = advocate.submittedForApprovalAt;
+    }
+
+    return res.status(200).json(pendingResponse);
+  } catch (error) {
+    next(error);
+  }
+};
+

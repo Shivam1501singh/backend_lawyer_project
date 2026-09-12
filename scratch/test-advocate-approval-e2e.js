@@ -83,7 +83,7 @@ async function runApprovalWorkflowTests() {
       experienceYears: 8,
       practiceAreas: ['Criminal Law', 'Civil Law'],
       bestPracticeArea: 'Criminal Law',
-      about: 'Experienced criminal defense advocate with 8 years of practice.',
+      about: 'Experienced criminal defense advocate with 8 years of practice. Specialized in high-profile criminal litigation, constitutional law, trial advocacy, bail applications, white-collar crime defense, appeals, criminal writs, and corporate investigations. Committed to providing top-quality legal representation, thorough legal research, diligent case preparation, strategic client advisory, and relentless defense across high courts and district courts in India.',
       completeAddress: 'Office 101, Delhi High Court Chamber',
       courtPractice: ['Delhi High Court', 'Supreme Court of India']
     })

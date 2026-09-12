@@ -3962,6 +3962,146 @@ npm run seed
 - **Pre-verified State**: Seeded teammate relationships are stored directly in the `AdvocateTeamMate` model representing established/verified team members.
 - **No Real OTP Sent**: Demonstrations bypass the production SMS OTP verification workflow during seeding.
 
+---
+
+## Advocate Profile Verification Status
+
+### Overview
+Authenticated Advocates can retrieve their current profile verification status from the backend at any point in their account lifecycle (`NOT_SUBMITTED`, `PENDING`, `APPROVED`, or `REJECTED`).
+
+### Endpoint
+```http
+GET /api/advocate/profile/verification-status
+```
+
+### Authentication
+- **Required**: Advocate Authentication
+- Identity is determined strictly from the authenticated JWT session / cookie (`req.user.id`).
+- Accepts `Authorization: Bearer <advocateToken>` header or `auth_token` HTTP-only cookie.
+- Does NOT accept `advocateId` query parameters or body attributes.
+
+---
+
+### Permission Matrix
+
+| Action | Unauthenticated | Normal User | Advocate | Admin |
+| :--- | :---: | :---: | :---: | :---: |
+| Check own verification status | ❌ | ❌ | ✅ | — |
+| View approved own profile preview | ❌ | ❌ | ✅ | — |
+| Approve Advocate | ❌ | ❌ | ❌ | ✅ |
+| Reject Advocate | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+### Response Specifications by Approval State
+
+#### 1. Profile Not Submitted (`NOT_SUBMITTED`)
+Returned when an Advocate has registered but has not yet submitted their completed profile for Admin verification (`submittedForApprovalAt` is null).
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "status": "NOT_SUBMITTED",
+  "message": "Your profile has not been submitted for admin approval."
+}
+```
+
+#### 2. Pending Admin Review (`PENDING`)
+Returned when an Advocate has submitted their profile and it is awaiting Admin verification.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "status": "PENDING",
+  "message": "Your profile is pending admin approval.",
+  "submittedAt": "2026-09-12T10:30:00.000Z"
+}
+```
+*Note: Full profile preview is NOT returned in this state.*
+
+#### 3. Approved (`APPROVED`)
+Returned when the Admin has verified and approved the Advocate profile. Returns the complete sanitized Advocate profile preview.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "status": "APPROVED",
+  "message": "Your profile has been approved.",
+  "profile": {
+    "id": "679ddd27-aa0f-49cc-9c9d-e73c4e03ee48",
+    "fullName": "Demo Advocate",
+    "name": "Demo Advocate",
+    "email": "advocate@example.com",
+    "phone": "9888812345",
+    "gender": "Male",
+    "barCouncilId": "BAR12345",
+    "barId": "BAR12345",
+    "profilePhotoUrl": "https://example.com/photo.jpg",
+    "profileImage": "https://example.com/photo.jpg",
+    "experienceYears": 8,
+    "experience": 8,
+    "casesWon": 45,
+    "practiceAreas": ["Criminal Law", "Civil Law"],
+    "bestPracticeArea": "Criminal Law",
+    "lawType": "Criminal Law",
+    "topCourtPractised": "Delhi High Court",
+    "courtPractice": ["Delhi High Court", "Supreme Court of India"],
+    "languagesSpoken": ["English", "Hindi"],
+    "state": "Delhi",
+    "city": "New Delhi",
+    "pincode": "110001",
+    "completeAddress": "Office 101, Delhi High Court Chamber",
+    "about": "Experienced criminal defense advocate with 8 years of practice.",
+    "bio": "Experienced criminal defense advocate with 8 years of practice.",
+    "videoCallChargePerMinute": 50,
+    "voiceCallChargePerMinute": 30,
+    "offlineVisitingFee": 1000,
+    "averageRating": null,
+    "totalReviews": 0,
+    "status": "ACTIVE",
+    "accountStatus": "ACTIVE",
+    "approvalStatus": "APPROVED"
+  }
+}
+```
+
+#### 4. Rejected (`REJECTED`)
+Returned when the Admin has rejected the Advocate profile. Includes the rejection reason when provided by the Admin.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "status": "REJECTED",
+  "message": "Your profile has been rejected.",
+  "rejectionReason": "Please provide valid Bar Council information."
+}
+```
+
+---
+
+### Error Responses
+
+#### Missing / Invalid Authentication (401 Unauthorized)
+```json
+{
+  "success": false,
+  "message": "Authentication required. Please login."
+}
+```
+
+#### Forbidden Access — Non-Advocate Role (403 Forbidden)
+```json
+{
+  "success": false,
+  "message": "Access forbidden. Advocate role required."
+}
+```
+
+
 
 
 

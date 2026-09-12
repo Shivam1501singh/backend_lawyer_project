@@ -42,6 +42,30 @@ export const checkDuplicateBarCouncilId = async (barCouncilId) => {
   }
 };
 
+export const checkDuplicateAadhaarNumber = async (aadhaarNumber) => {
+  if (!aadhaarNumber) return;
+  const cleanAadhaar = aadhaarNumber.replace(/\s/g, '');
+  if (!cleanAadhaar) return;
+
+  const existingAdv = await prisma.advocate.findFirst({
+    where: { aadhaarNumber: cleanAadhaar }
+  });
+  if (existingAdv) {
+    throw new Error('An account with this Aadhaar number already exists.');
+  }
+
+  // Handle legacy encrypted records
+  const legacyRecords = await prisma.advocate.findMany({
+    where: { aadhaarNumber: { contains: ':' } },
+    select: { id: true, aadhaarNumber: true }
+  });
+  for (const rec of legacyRecords) {
+    if (rec.aadhaarNumber && decrypt(rec.aadhaarNumber) === cleanAadhaar) {
+      throw new Error('An account with this Aadhaar number already exists.');
+    }
+  }
+};
+
 // 1. Start Registration Session
 export const startRegistration = async ({ fullName, email, emailVerified, accountType, profilePhotoUrl, profilePhotoPublicId, gender, registrationId }) => {
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
@@ -113,7 +137,7 @@ export const getCurrentRegistrationSession = async (registrationId) => {
     aadhaarBlockedUntil: session.aadhaarBlockedUntil,
     aadhaarVerificationId: session.aadhaarVerificationId,
     aadhaarVerifiedAt: session.aadhaarVerifiedAt,
-    aadhaarNumber: session.aadhaarNumber ? decrypt(session.aadhaarNumber) : null
+    aadhaarNumber: session.aadhaarNumber ? (session.aadhaarNumber.includes(':') ? (decrypt(session.aadhaarNumber) || session.aadhaarNumber) : session.aadhaarNumber) : null
   };
 };
 
@@ -326,14 +350,14 @@ export const completeAdvocateRegistration = async ({
 
   // Check unique constraints
   await checkDuplicateBarCouncilId(cleanBarCouncilId);
+  await checkDuplicateAadhaarNumber(cleanAadhaar);
   const normalizedEmail = session.email.toLowerCase().trim();
   const cleanPhone = session.phone.trim();
   await checkDuplicateEmail(normalizedEmail);
   await checkDuplicatePhone(cleanPhone);
 
-  // Hash password & encrypt Aadhaar
+  // Hash password
   const passwordHash = await bcrypt.hash(password, 10);
-  const encryptedAadhaar = encrypt(cleanAadhaar);
 
   // Create Advocate and delete session in transaction
   return await prisma.$transaction(async (tx) => {
@@ -364,7 +388,7 @@ export const completeAdvocateRegistration = async ({
         profilePhotoPublicId: session.profilePhotoPublicId,
         gender: session.gender,
         barCouncilId: cleanBarCouncilId,
-        aadhaarNumber: encryptedAadhaar,
+        aadhaarNumber: cleanAadhaar,
         passwordHash,
         languagesSpoken,
         state: state.trim(),
@@ -712,7 +736,7 @@ export const initiateAadhaarVerificationService = async ({ registrationId, aadha
     await prisma.registrationSession.update({
       where: { id: registrationId },
       data: {
-        aadhaarNumber: encrypt(cleanAadhaar),
+        aadhaarNumber: cleanAadhaar,
         aadhaarVerificationId: response.data.client_id,
         aadhaarVerificationMethod: 'DIGILOCKER'
       }
@@ -858,11 +882,11 @@ export const generateAadhaarOtpService = async ({ registrationId, aadhaarNumber 
   const isSuccess = response && response.code === 200 && response.data && response.data.reference_id;
 
   if (isSuccess) {
-    // Encrypt Aadhaar & save details to session
+    // Save details to session
     await prisma.registrationSession.update({
       where: { id: registrationId },
       data: {
-        aadhaarNumber: encrypt(cleanAadhaar),
+        aadhaarNumber: cleanAadhaar,
         aadhaarVerificationId: String(response.data.reference_id),
         aadhaarVerificationMethod: 'OTP'
       }

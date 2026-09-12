@@ -1762,6 +1762,14 @@ This is a direct 2-step verification method:
 
 ---
 
+### Aadhaar Storage
+
+The application stores the Aadhaar number in its original form (`123456789012`) after successful verification.
+
+Aadhaar must not be exposed in public APIs or application logs unless explicitly authorized by the existing business requirements.
+
+---
+
 ### 11.3 Postman Testing Workflow
 
 Use these instructions to test the direct Aadhaar OTP verification via Postman.

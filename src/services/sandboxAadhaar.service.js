@@ -8,9 +8,9 @@ import { getSandboxToken } from './sandboxAuth.service.js';
  * @returns {Promise<object>} The API response from Sandbox
  */
 export const generateAadhaarOtpSandbox = async (aadhaarNumber) => {
-  // Mock bypass rules for testing
+  const maskedAadhaar = aadhaarNumber ? aadhaarNumber.replace(/^(\d{4})\d{4}(\d{4})$/, '$1-XXXX-$2') : 'XXXX';
   if (aadhaarNumber === '123456789012' || aadhaarNumber === '123456789011') {
-    console.log(`[MOCK SANDBOX] Generating mock Aadhaar OTP for: ${aadhaarNumber}`);
+    console.log(`[MOCK SANDBOX] Generating mock Aadhaar OTP for: ${maskedAadhaar}`);
     return {
       code: 200,
       data: {
@@ -21,7 +21,7 @@ export const generateAadhaarOtpSandbox = async (aadhaarNumber) => {
   }
 
   if (aadhaarNumber === '123456789000') {
-    console.log(`[MOCK SANDBOX] Simulating Aadhaar OTP generation failure for: ${aadhaarNumber}`);
+    console.log(`[MOCK SANDBOX] Simulating Aadhaar OTP generation failure for: ${maskedAadhaar}`);
     return {
       code: 400,
       message: 'Invalid Aadhaar Number or Aadhaar not registered.'

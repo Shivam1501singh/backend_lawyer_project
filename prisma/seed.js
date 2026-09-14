@@ -31,7 +31,7 @@ async function main() {
   ];
 
   console.log('Cleaning up existing mock data...');
-  
+
   await prisma.review.deleteMany({
     where: {
       OR: [
@@ -458,7 +458,7 @@ async function main() {
   for (let i = 1; i <= 40; i++) {
     const isMale = Math.random() > 0.5;
     const gender = isMale ? 'Male' : 'Female';
-    const firstName = isMale 
+    const firstName = isMale
       ? maleFirstNames[Math.floor(Math.random() * maleFirstNames.length)]
       : femaleFirstNames[Math.floor(Math.random() * femaleFirstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -471,7 +471,7 @@ async function main() {
     const loc = locations[Math.floor(Math.random() * locations.length)];
     const exp = 5 + Math.floor(Math.random() * 20); // 5 to 25 years exp
     const won = Math.floor(exp * (10 + Math.random() * 15)); // case won proportion
-    
+
     // Pick 2-3 random practice areas
     const shuffedAreas = [...practiceAreasList].sort(() => 0.5 - Math.random());
     const practiceAreas = shuffedAreas.slice(0, 2 + Math.floor(Math.random() * 2));
@@ -546,18 +546,18 @@ async function main() {
     { userId: users[0].id, advocateId: advocates[0].id, rating: 5, reviewText: 'Advocate Rajesh is extremely knowledgeable and professional. He handled our family bail application with utmost diligence and secured the bail in record time. Highly recommended!' },
     { userId: users[1].id, advocateId: advocates[0].id, rating: 4, reviewText: 'Very experienced lawyer. Answered all my criminal litigation queries clearly. The fees are high but worth the professional expertise.' },
     { userId: users[2].id, advocateId: advocates[0].id, rating: 4, reviewText: 'Knowledgeable and helpful.' },
-    
+
     // Priya Patel: 5, 5, 4, 4 -> 4.5
     { userId: users[0].id, advocateId: advocates[1].id, rating: 5, reviewText: 'Excellent corporate legal consultant. She reviewed our term sheets and shareholder agreements thoroughly. Great for tech startups.' },
     { userId: users[1].id, advocateId: advocates[1].id, rating: 5, reviewText: 'Priya helped us register our trademark and patent files. Her advice was prompt and clear.' },
     { userId: users[2].id, advocateId: advocates[1].id, rating: 4, reviewText: 'Detailed contract review.' },
     { userId: users[3].id, advocateId: advocates[1].id, rating: 4, reviewText: 'Very professional interaction.' },
-    
+
     // Amit Verma: 4, 4, 4 -> 4.0
     { userId: users[0].id, advocateId: advocates[2].id, rating: 4, reviewText: 'Amit helped resolving a property dispute with our tenant. Good knowledge of local RERA rules.' },
     { userId: users[1].id, advocateId: advocates[2].id, rating: 4, reviewText: 'Good legal consultation.' },
     { userId: users[2].id, advocateId: advocates[2].id, rating: 4, reviewText: 'Helped resolve our real estate issues.' },
-    
+
     // Sneha Iyer: 5, 4, 5 -> 4.666... -> 4.7
     { userId: users[0].id, advocateId: advocates[3].id, rating: 5, reviewText: 'Sneha was incredibly compassionate and logical during a stressful child custody dispute. Excellent family court advocacy.' },
     { userId: users[1].id, advocateId: advocates[3].id, rating: 4, reviewText: 'Highly supportive lawyer. Handled my mutual divorce proceedings smoothly.' },
@@ -1040,7 +1040,7 @@ async function main() {
   console.log('Demo Advocates (demoadvocate1@gmail.com & demoadvocate2@gmail.com) seeded successfully.');
 
   // 6. Seed Advocate Team Members for All Existing Advocates
-  await seedAdvocateTeamMembers();
+  //await seedAdvocateTeamMembers();
 
   console.log('Database seeding successfully finished!');
 }

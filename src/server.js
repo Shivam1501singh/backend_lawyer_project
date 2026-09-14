@@ -34,9 +34,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS setup
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+// const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+// app.use(cors({
+//   origin: clientUrl,
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+// }));
 app.use(cors({
-  origin: clientUrl,
+  origin: [
+    'http://localhost:5173',
+    process.env.CLIENT_URL
+  ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 }));

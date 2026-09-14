@@ -321,7 +321,8 @@ export const completeAdvocateRegistration = async ({
   city,
   pincode,
   latitude,
-  longitude
+  longitude,
+  about = null
 }) => {
   const session = await getValidSession(registrationId);
 
@@ -399,6 +400,7 @@ export const completeAdvocateRegistration = async ({
         isActive: true,
         latitude: latitude !== undefined && latitude !== null ? parseFloat(latitude) : null,
         longitude: longitude !== undefined && longitude !== null ? parseFloat(longitude) : null,
+        about: about ? about.trim() : null,
         aadhaarVerified: session.aadhaarVerified,
         aadhaarVerificationId: session.aadhaarVerificationId,
         aadhaarVerifiedAt: session.aadhaarVerifiedAt,
@@ -639,7 +641,7 @@ export const getCurrentUserProfile = async (id, accountType) => {
       type: 'advocate',
       role: 'ADVOCATE',
       experienceYears: profile.experienceYears,
-      casesWon: profile.casesWon,
+      casesHandled: profile.casesHandled,
       practiceAreas: profile.practiceAreas,
       topCourtPractised: profile.topCourtPractised,
       bestPracticeArea: profile.bestPracticeArea,

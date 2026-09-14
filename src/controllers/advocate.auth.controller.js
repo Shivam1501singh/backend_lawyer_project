@@ -154,7 +154,8 @@ export const completeProfile = async (req, res, next) => {
       city: validated.city,
       pincode: validated.pincode,
       latitude: validated.latitude,
-      longitude: validated.longitude
+      longitude: validated.longitude,
+      about: validated.about || validated.bio || null
     });
 
     return res.status(200).json({

@@ -160,7 +160,7 @@ export const listAdvocates = async ({
   const allowedSortKeys = {
     rating: { averageRating: 'desc' },
     experience: { experienceYears: 'desc' },
-    casesWon: { casesWon: 'desc' }
+    casesHandled: { casesHandled: 'desc' }
   };
 
   if (sort && allowedSortKeys[sort]) {
@@ -172,7 +172,7 @@ export const listAdvocates = async ({
     fullName: true,
     profilePhotoUrl: true,
     experienceYears: true,
-    casesWon: true,
+    casesHandled: true,
     practiceAreas: true,
     topCourtPractised: true,
     bestPracticeArea: true,
@@ -403,7 +403,7 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     gender: advocate.gender,
     experienceYears: advocate.experienceYears,
     experience: advocate.experienceYears,
-    casesWon: advocate.casesWon,
+    casesHandled: advocate.casesHandled,
     practiceAreas: advocate.practiceAreas,
     topCourtPractised: advocate.topCourtPractised,
     bestPracticeArea: advocate.bestPracticeArea,

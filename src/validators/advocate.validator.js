@@ -77,6 +77,30 @@ export const verifyAdvocatePhoneSchema = z.object({
   otp: otpSchema
 });
 
+export const validateBioWords = (val, ctx) => {
+  if (val === undefined || val === null || val === '') {
+    return;
+  }
+  const trimmed = typeof val === 'string' ? val.trim() : '';
+  if (!trimmed) {
+    return;
+  }
+  const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
+  if (wordCount < 50) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Bio must contain at least 50 words.'
+    });
+  } else if (wordCount > 500) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Bio must not exceed 500 words.'
+    });
+  }
+};
+
+export const bioSchema = z.string().trim().optional().nullable().superRefine(validateBioWords);
+
 export const completeAdvocateRegistrationSchema = z.object({
   registrationId: z.string().uuid({ message: 'Invalid registration session ID.' }),
   barCouncilId: barCouncilIdSchema,
@@ -87,7 +111,9 @@ export const completeAdvocateRegistrationSchema = z.object({
   city: z.string().trim().min(2, { message: 'City must be at least 2 characters.' }).max(100),
   pincode: pincodeSchema,
   latitude: z.union([z.number(), z.string().transform(v => parseFloat(v))]).optional().nullable(),
-  longitude: z.union([z.number(), z.string().transform(v => parseFloat(v))]).optional().nullable()
+  longitude: z.union([z.number(), z.string().transform(v => parseFloat(v))]).optional().nullable(),
+  about: bioSchema,
+  bio: bioSchema
 });
 
 // Login schemas
@@ -112,14 +138,11 @@ export const advocateLoginEmailPasswordSchema = z.object({
 // Profile update validation schema
 export const advocateProfileUpdateSchema = z.object({
   experienceYears: z.number().int().min(0, { message: 'Experience must be a non-negative number.' }).max(80, { message: 'Experience cannot exceed 80 years.' }).optional().nullable(),
-  casesWon: z.number().int().min(0, { message: 'Cases won must be a non-negative number.' }).max(100000, { message: 'Cases won cannot exceed 100,000.' }).optional().nullable(),
+  casesHandled: z.number().int().min(0, { message: 'Cases handled must be a non-negative number.' }).max(100000, { message: 'Cases handled cannot exceed 100,000.' }).optional().nullable(),
   practiceAreaIds: z.array(z.string()).min(1, { message: 'Select at least one practice area.' }).optional().nullable(),
   bestPracticeArea: z.string().trim().max(100, { message: 'Best Practice Area cannot exceed 100 characters.' }).optional().nullable(),
-  about: z.string().trim().optional().nullable().refine(val => {
-    if (!val) return true;
-    const wordCount = val.trim().split(/\s+/).filter(w => w.length > 0).length;
-    return wordCount >= 50 && wordCount <= 150;
-  }, { message: 'About section must be between 50 and 150 words.' }),
+  about: bioSchema,
+  bio: bioSchema,
   courtPractice: z.array(z.string().trim()).optional().nullable(),
   completeAddress: z.string().trim().max(500, { message: 'Address cannot exceed 500 characters.' }).optional().nullable(),
   videoCallChargePerMinute: z.number().min(0, { message: 'Video call charge must be a non-negative number.' }).max(100000, { message: 'Video call charge cannot exceed 100,000.' }).optional().nullable(),

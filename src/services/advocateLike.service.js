@@ -120,7 +120,7 @@ export const getUserLikedAdvocates = async (userId) => {
         profilePhotoUrl: adv.profilePhotoUrl,
         gender: adv.gender,
         experienceYears: adv.experienceYears,
-        casesWon: adv.casesWon,
+        casesHandled: adv.casesHandled,
         practiceAreas: adv.practiceAreas,
         topCourtPractised: adv.topCourtPractised,
         bestPracticeArea: adv.bestPracticeArea,

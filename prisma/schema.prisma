@@ -151,7 +151,7 @@ model Advocate {
 
   // Professional profile fields
   experienceYears          Int?
-  casesWon                 Int?
+  casesHandled             Int?
   bestPracticeArea         String?
   about                    String?
   courtPractice            String[]

@@ -561,7 +561,7 @@ This feature enables authenticated Advocates to retrieve, complete, and update t
       "state": "Uttar Pradesh",
       "city": "Ghaziabad",
       "experienceYears": 5,
-      "casesWon": 120,
+      "casesHandled": 120,
       "practiceAreas": ["Civil Law", "Family Law"],
       "bestPracticeArea": "Property Disputes",
       "about": "Experienced advocate specializing in civil and property disputes with a focus on practical solutions.",
@@ -585,7 +585,7 @@ This feature enables authenticated Advocates to retrieve, complete, and update t
   ```json
   {
     "experienceYears": 5,
-    "casesWon": 120,
+    "casesHandled": 120,
     "practiceAreas": ["Civil Law", "Family Law"],
     "bestPracticeArea": "Property Disputes",
     "topCourtPractised": "Delhi High Court",
@@ -604,7 +604,7 @@ This feature enables authenticated Advocates to retrieve, complete, and update t
   ```json
   {
     "experience": 5,
-    "casesWon": 120,
+    "casesHandled": 120,
     "practiceAreas": ["Civil Law", "Family Law"],
     "bestPracticeArea": "Property Disputes",
     "topCourtPractised": "Delhi High Court",
@@ -627,7 +627,7 @@ This feature enables authenticated Advocates to retrieve, complete, and update t
       "email": "advocate@example.com",
       "gender": "Male",
       "experienceYears": 5,
-      "casesWon": 120,
+      "casesHandled": 120,
       "practiceAreas": ["Civil Law", "Family Law"],
       "bestPracticeArea": "Property Disputes",
       "topCourtPractised": "Delhi High Court",
@@ -668,10 +668,10 @@ This feature enables authenticated Advocates to retrieve, complete, and update t
 
 The `advocateProfileUpdateSchema` enforces the following backend validations:
 1. **Experience (`experience` or `experienceYears`):** Integer >= 0 and <= 80 (Years).
-2. **Cases Won (`casesWon`):** Integer >= 0 and <= 100,000.
+2. **Cases Handled (`casesHandled`):** Integer >= 0 and <= 100,000.
 3. **Practice Areas (`practiceAreas`):** Array of non-empty strings (maximum 20 areas).
 4. **Best Practice Area & Top Court Practised:** Strings, max length 100 characters.
-5. **Biography (`about`):** String, must not exceed 150 words and minimum of 50 words (custom split-word refinement validation).
+5. **Biography (`about` / `bio`):** String, must contain between 50 and 500 words (word count, not character count, custom split-word refinement validation).
 6. **Court Practice (`courtPractice`):** Array of valid text strings representing courts.
 7. **Complete Address (`completeAddress`):** String, max length 500 characters.
 8. **Charges (`videoCallChargePerMinute` / `videoChargePerMinute`, `voiceCallChargePerMinute` / `voiceChargePerMinute`, `offlineVisitingFee`):** Numbers >= 0. Raw numbers are stored in the database.
@@ -712,6 +712,75 @@ Prisma Update
 Updated Profile
       ↓
 React Refreshes Profile
+```
+
+---
+
+## Advocate Bio Validation
+
+Bio must contain between 50 and 500 words.
+
+Minimum: 50 words
+Maximum: 500 words
+
+The validation is performed on the backend.
+
+The restriction is strictly based on **word count**, not character count. Word counting trims leading and trailing whitespace and splits text by whitespace tokens (`\s+`), ensuring multiple spaces, tabs, or newlines do not incorrectly inflate the word count.
+
+### Postman Testing Guide
+
+#### Test 1 — 49 words (Below minimum)
+**Request:** `PATCH /api/advocate/profile`
+```json
+{
+  "bio": "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49"
+}
+```
+**Expected Response:** `400 Bad Request`
+```json
+{
+  "success": false,
+  "message": "Bio must contain at least 50 words."
+}
+```
+
+#### Test 2 — 50 words (Exact minimum boundary)
+**Request:** `PATCH /api/advocate/profile`
+```json
+{
+  "bio": "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12 word13 word14 word15 word16 word17 word18 word19 word20 word21 word22 word23 word24 word25 word26 word27 word28 word29 word30 word31 word32 word33 word34 word35 word36 word37 word38 word39 word40 word41 word42 word43 word44 word45 word46 word47 word48 word49 word50"
+}
+```
+**Expected Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully"
+}
+```
+
+#### Test 3 — 500 words (Exact maximum boundary)
+**Request:** `PATCH /api/advocate/profile`
+*(Payload containing exactly 500 whitespace-separated words)*
+
+**Expected Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully"
+}
+```
+
+#### Test 4 — 501 words (Exceeds maximum)
+**Request:** `PATCH /api/advocate/profile`
+*(Payload containing 501 whitespace-separated words)*
+
+**Expected Response:** `400 Bad Request`
+```json
+{
+  "success": false,
+  "message": "Bio must not exceed 500 words."
+}
 ```
 
 ---
@@ -961,7 +1030,7 @@ This feature provides a public support ticketing system that does NOT require lo
   - `page`: Page number (default: `1`)
   - `limit`: Number of advocates per page (default: `12`)
   - `search`: Case-insensitive search on Name, Top Court Practised, City, State, and exact match on Practice Areas.
-  - `sort`: `rating` (sort by rating descending), `experience` (sort by experience descending), `casesWon` (sort by cases won descending). Ignored for proximity sorting when `pincode` is supplied or when an authenticated user location is available and the default sort option is selected.
+  - `sort`: `rating` (sort by rating descending), `experience` (sort by experience descending), `casesHandled` (sort by cases handled descending). Ignored for proximity sorting when `pincode` is supplied or when an authenticated user location is available and the default sort option is selected.
   - `practiceArea`: Filter by practice area name string.
   - `practiceAreaId`: Filter by practice area ID.
   - `topCourtPractised`: Filter by top court practised name string.
@@ -1040,7 +1109,7 @@ This feature provides a public support ticketing system that does NOT require lo
         "fullName": "Advocate Name",
         "profilePhotoUrl": "...",
         "experienceYears": 8,
-        "casesWon": 145,
+        "casesHandled": 145,
         "practiceAreas": ["Criminal Law", "Civil Law"],
         "bestPracticeArea": "Criminal Litigation",
         "courtPractice": ["High Court"],
@@ -1079,7 +1148,7 @@ This feature provides a public support ticketing system that does NOT require lo
       "profilePhotoUrl": "...",
       "gender": "MALE",
       "experienceYears": 8,
-      "casesWon": 145,
+      "casesHandled": 145,
       "practiceAreas": ["Criminal Law", "Civil Law"],
       "bestPracticeArea": "Criminal Litigation",
       "courtPractice": ["High Court"],
@@ -1470,7 +1539,7 @@ Retrieves all advocates saved by the currently authenticated user.
         "profilePhotoUrl": "...",
         "gender": "Male",
         "experienceYears": 14,
-        "casesWon": 245,
+        "casesHandled": 245,
         "practiceAreas": ["Criminal Law", "Civil Law"],
         "bestPracticeArea": "Criminal Law",
         "courtPractice": ["Delhi High Court"],
@@ -2945,7 +3014,7 @@ A logged-in Normal User can like an Advocate once and can later unlike the Advoc
         "profilePhotoUrl": "https://res.cloudinary.com/...",
         "gender": "Male",
         "experienceYears": 12,
-        "casesWon": 150,
+        "casesHandled": 150,
         "practiceAreas": ["Criminal Law", "Civil Law"],
         "topCourtPractised": "Delhi High Court",
         "bestPracticeArea": "Criminal Law",
@@ -4051,7 +4120,7 @@ Returned when the Admin has verified and approved the Advocate profile. Returns 
     "profileImage": "https://example.com/photo.jpg",
     "experienceYears": 8,
     "experience": 8,
-    "casesWon": 45,
+    "casesHandled": 45,
     "practiceAreas": ["Criminal Law", "Civil Law"],
     "bestPracticeArea": "Criminal Law",
     "lawType": "Criminal Law",

@@ -32,6 +32,7 @@ export const getProfile = async (req, res, next) => {
       success: true,
       advocate: {
         ...safeAdvocate,
+        bio: advocate.about,
         accountStatus: advocate.status,
         approvalStatus: advocate.approvalStatus,
         rejectionReason: advocate.rejectionReason,
@@ -149,7 +150,7 @@ export const updateProfile = async (req, res, next) => {
 
     const allowedScalars = [
       'fullName', 'gender', 'barCouncilId', 'aadhaarNumber', 'email', 'about',
-      'completeAddress', 'offlineVisitingFee', 'state', 'city', 'pincode', 'casesWon',
+      'completeAddress', 'offlineVisitingFee', 'state', 'city', 'pincode', 'casesHandled',
       'bestPracticeArea', 'topCourtPractised', 'practiceAreas'
     ];
 
@@ -160,6 +161,12 @@ export const updateProfile = async (req, res, next) => {
     }
 
     // Map aliases
+    if (validated.bio !== undefined) {
+      updateData.about = validated.bio;
+    } else if (validated.about !== undefined) {
+      updateData.about = validated.about;
+    }
+
     if (validated.experience !== undefined) {
       updateData.experienceYears = validated.experience;
     } else if (validated.experienceYears !== undefined) {
@@ -337,7 +344,7 @@ export const getVerificationStatus = async (req, res, next) => {
         profileImage: advocate.profilePhotoUrl,
         experienceYears: advocate.experienceYears,
         experience: advocate.experienceYears,
-        casesWon: advocate.casesWon,
+        casesHandled: advocate.casesHandled,
         practiceAreas: advocate.practiceAreas || [],
         bestPracticeArea: advocate.bestPracticeArea,
         lawType: advocate.bestPracticeArea || (advocate.practiceAreas && advocate.practiceAreas.length > 0 ? advocate.practiceAreas[0] : null),

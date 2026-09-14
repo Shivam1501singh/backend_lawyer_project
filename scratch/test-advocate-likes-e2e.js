@@ -36,7 +36,7 @@ async function runE2ETests() {
 
   const advocate = await prisma.advocate.upsert({
     where: { email: 'like_test_advocate@example.com' },
-    update: { status: 'ACTIVE', isActive: true },
+    update: { status: 'ACTIVE', isActive: true, approvalStatus: 'APPROVED' },
     create: {
       fullName: 'Like Test Advocate',
       email: 'like_test_advocate@example.com',
@@ -46,9 +46,10 @@ async function runE2ETests() {
       state: 'Delhi',
       city: 'Delhi',
       status: 'ACTIVE',
+      approvalStatus: 'APPROVED',
       isActive: true,
       experienceYears: 10,
-      casesWon: 50,
+      casesHandled: 50,
       practiceAreas: ['Criminal Law']
     }
   });

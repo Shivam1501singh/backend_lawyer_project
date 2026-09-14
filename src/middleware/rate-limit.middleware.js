@@ -16,6 +16,7 @@ export const generalLimiter = rateLimit({
 export const sendOtpLimiter = rateLimit({
   windowMs: 2 * 60 * 1000, // 2 minutes
   max: 3, // Limit each IP to 3 OTP send requests per 2 minutes
+  skip: () => process.env.NODE_ENV === 'test',
   message: {
     success: false,
     message: 'Too many OTP requests. Please wait 2 minutes before requesting a new OTP.'
@@ -28,6 +29,7 @@ export const sendOtpLimiter = rateLimit({
 export const verifyOtpLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 10, // Limit each IP to 10 verify attempts per 5 minutes
+  skip: () => process.env.NODE_ENV === 'test',
   message: {
     success: false,
     message: 'Too many verification attempts. Please wait 5 minutes before trying again.'

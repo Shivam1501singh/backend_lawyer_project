@@ -4284,6 +4284,229 @@ Run the automated e2e test suite covering 500 errors, 404 routes, 400 validation
 node scratch/test-centralized-error-logging-e2e.js
 ```
 
+---
+
+## Normal User Account Deletion With OTP + 30-Day Grace Period
+
+### Overview
+Logged-in Normal Users can request account deletion. Upon OTP verification, the account enters a **30-day soft-delete grace period** (`status = DELETION_PENDING`). The account is **not permanently deleted immediately**.
+
+### System Architecture & Workflow
+
+```text
+                    NORMAL USER
+                         │
+                         ▼
+                 Request Deletion (`POST /api/user/delete-account/request-otp`)
+                         │
+                         ▼
+                  OTP to Phone (Registered Phone)
+                         │
+                         ▼
+                   Verify OTP (`POST /api/user/delete-account/verify-otp`)
+                         │
+                         ▼
+                `DELETION_PENDING` (30-Day Grace Period)
+                         │
+             ┌───────────┴───────────┐
+             │                       │
+          Login                  No Login
+       within 30 days          for 30 days
+             │                       │
+             ▼                       ▼
+          `ACTIVE`               Move Data
+   (Deletion Cancelled)              │
+             │                       ▼
+             │                  `DeletedUser`
+             │                       │
+             │                       ▼
+             │               Delete Active Account
+             │
+             ▼
+       Continue Normally
+```
+
+---
+
+### Database Models
+
+#### 1. `User` Schema Additions
+```prisma
+enum UserStatus {
+  ACTIVE
+  DELETION_PENDING
+}
+
+model User {
+  // Existing User fields...
+  status              UserStatus  @default(ACTIVE)
+  deletionRequestedAt DateTime?
+  scheduledDeletionAt DateTime?
+}
+```
+
+#### 2. `DeletedUser` Schema
+```prisma
+model DeletedUser {
+  id                  String   @id @default(uuid())
+  originalUserId      String   @unique
+  fullName            String
+  email               String
+  phone               String
+  city                String?
+  state               String?
+  pincode             String?
+  latitude            Float?
+  longitude           Float?
+  profileData         Json?
+  reason              String?
+  deletionRequestedAt DateTime
+  deletedAt           DateTime @default(now())
+  createdAt           DateTime @default(now())
+
+  @@index([originalUserId])
+  @@index([email])
+  @@index([phone])
+}
+```
+
+---
+
+### API Endpoints
+
+#### 1. Request Account Deletion OTP
+* **Endpoint:** `POST /api/user/delete-account/request-otp`
+* **Authentication:** `USER` required (`requireAuth`, `requireRole('USER')`)
+* **Headers:** `Authorization: Bearer <user_jwt_token>` (or `auth_token` cookie)
+* **Pre-conditions:**
+  - User ID must come from the authenticated token session.
+  - Returns `400 Bad Request` if user is already `DELETION_PENDING`.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "OTP has been sent to your registered phone number."
+  }
+  ```
+
+#### 2. Verify Deletion OTP & Schedule Deletion
+* **Endpoint:** `POST /api/user/delete-account/verify-otp`
+* **Authentication:** `USER` required (`requireAuth`, `requireRole('USER')`)
+* **Request Body:**
+  ```json
+  {
+    "otp": "123456"
+  }
+  ```
+* **Post-conditions:**
+  - Sets `status = DELETION_PENDING`.
+  - Sets `deletionRequestedAt = current timestamp`.
+  - Sets `scheduledDeletionAt = current timestamp + 30 days`.
+  - Clears `auth_token` cookie and invalidates current session access.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Your account is scheduled for deletion after 30 days.",
+    "scheduledDeletionAt": "2026-10-14T10:30:00.000Z"
+  }
+  ```
+
+---
+
+### Grace Period & Login Cancellation Mechanics
+
+1. **Login Within 30 Days (Cancellation)**:
+   - If the user authenticates via login (`POST /api/auth/user/login/verify-otp` or `/verify-email-otp`) while `status = DELETION_PENDING` and `scheduledDeletionAt > now`:
+   - Deletion request is automatically cancelled.
+   - Status returns to `ACTIVE`, and timestamps are cleared (`deletionRequestedAt = null`, `scheduledDeletionAt = null`).
+   - **Response (200 OK):**
+     ```json
+     {
+       "success": true,
+       "message": "Login successful. Your account deletion request has been cancelled.",
+       "token": "eyJhbGci..."
+     }
+     ```
+
+2. **Login After 30 Days (Finalized Deletion)**:
+   - If 30 days have passed (`scheduledDeletionAt <= now`), login is rejected.
+   - Account data is moved to `DeletedUser`, and original `User` record is removed.
+   - **Response (400 Bad Request):**
+     ```json
+     {
+       "success": false,
+       "message": "This account has been deleted."
+     }
+     ```
+
+3. **Automatic Scheduled Cleanup**:
+   - An automated background worker runs periodically to process accounts where `scheduledDeletionAt <= now`.
+   - Data transfer to `DeletedUser` and removal of original `User` row occur in an atomic database transaction (`$transaction`).
+
+4. **Re-registration Policy**:
+   - Once an account is permanently deleted, unique constraints on `User.email` and `User.phone` are freed up.
+   - The user is allowed to register a new account in the future using the same email or phone number.
+
+---
+
+### Step-by-Step Postman Testing Guide
+
+#### Step 1 — Login as Normal User
+1. `POST /api/auth/user/login/send-otp` with `{ "phone": "9876543210" }`.
+2. `POST /api/auth/user/login/verify-otp` with `{ "phone": "9876543210", "otp": "123456" }`.
+3. Save returned `token`.
+
+#### Step 2 — Request Account Deletion OTP
+1. Send `POST /api/user/delete-account/request-otp` with header `Authorization: Bearer <user_token>`.
+2. Expected response:
+   ```json
+   {
+     "success": true,
+     "message": "OTP has been sent to your registered phone number."
+   }
+   ```
+
+#### Step 3 — Verify OTP & Enter Grace Period
+1. Send `POST /api/user/delete-account/verify-otp` with body `{ "otp": "123456" }` and header `Authorization: Bearer <user_token>`.
+2. Expected response:
+   ```json
+   {
+     "success": true,
+     "message": "Your account is scheduled for deletion after 30 days.",
+     "scheduledDeletionAt": "2026-10-14T10:30:00.000Z"
+   }
+   ```
+3. Check PostgreSQL database: `status = DELETION_PENDING`, `scheduledDeletionAt` is set 30 days in future.
+
+#### Step 4 — Login During Grace Period (Cancel Deletion)
+1. Send `POST /api/auth/user/login/send-otp` for the same phone number.
+2. Send `POST /api/auth/user/login/verify-otp` with `{ "otp": "123456" }`.
+3. Expected response:
+   ```json
+   {
+     "success": true,
+     "message": "Login successful. Your account deletion request has been cancelled.",
+     "token": "..."
+   }
+   ```
+4. Verify database: `status = ACTIVE`, `scheduledDeletionAt = null`.
+
+#### Step 5 — Test Expired Deletion & Re-registration
+1. Re-verify deletion OTP to enter `DELETION_PENDING`.
+2. In PostgreSQL / Prisma, update `scheduledDeletionAt` to 31 days in past.
+3. Attempt login or wait for background job process.
+4. Verify original `User` row is removed, archive created in `DeletedUser`, and new registration with same phone/email succeeds.
+
+---
+
+### Automated E2E Test Suite
+Run the 13-stage automated end-to-end test suite:
+```bash
+node scratch/test-user-account-deletion-e2e.js
+```
+
+
 
 
 

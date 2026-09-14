@@ -1,7 +1,8 @@
 import express from 'express';
 import * as userController from '../controllers/user.auth.controller.js';
+import * as userDeletionController from '../controllers/user.deletion.controller.js';
 import { sendOtpLimiter, verifyOtpLimiter, generalLimiter } from '../middleware/rate-limit.middleware.js';
-import { requireAuth } from '../middleware/auth.middleware.js';
+import { requireAuth, requireRole } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -21,7 +22,12 @@ router.post('/login/verify-otp', verifyOtpLimiter, userController.loginVerifyOtp
 router.post('/login/send-email-otp', sendOtpLimiter, userController.loginSendEmailOtp);
 router.post('/login/verify-email-otp', verifyOtpLimiter, userController.loginVerifyEmailOtp);
 
+// Account Deletion Flow
+router.post('/delete-account/request-otp', requireAuth, requireRole('USER'), sendOtpLimiter, userDeletionController.requestDeleteAccountOtp);
+router.post('/delete-account/verify-otp', requireAuth, requireRole('USER'), verifyOtpLimiter, userDeletionController.verifyDeleteAccountOtp);
+
 // Logout Flow
 router.post('/logout', requireAuth, userController.logout);
 
 export default router;
+

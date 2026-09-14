@@ -182,9 +182,13 @@ export const loginVerifyOtp = async (req, res, next) => {
     const token = signToken({ id: user.id, type: 'user' });
     sendTokenCookie(res, token);
 
+    const message = user.deletionCancelled
+      ? 'Login successful. Your account deletion request has been cancelled.'
+      : 'Login successful';
+
     return res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message,
       token
     });
   } catch (error) {
@@ -223,9 +227,13 @@ export const loginVerifyEmailOtp = async (req, res, next) => {
     const token = signToken({ id: user.id, type: 'user' });
     sendTokenCookie(res, token);
 
+    const message = user.deletionCancelled
+      ? 'Login successful. Your account deletion request has been cancelled.'
+      : 'Login successful';
+
     return res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message,
       token
     });
   } catch (error) {

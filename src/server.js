@@ -19,6 +19,8 @@ import caseRequestRoutes from './routes/caseRequest.routes.js';
 import ipcRoutes from './routes/ipc.routes.js';
 import bnsRoutes from './routes/bns.routes.js';
 import advocateResetRoutes from './routes/advocateReset.routes.js';
+import userRoutes from './routes/user.routes.js';
+import { startAccountDeletionJob } from './services/accountDeletionJob.service.js';
 
 
 import { requireAuth, requireRole } from './middleware/auth.middleware.js';
@@ -71,6 +73,7 @@ app.use('/', blogRoutes);
 app.use('/', ipcRoutes);
 app.use('/', bnsRoutes);
 app.use('/', advocateResetRoutes);
+app.use('/api/user', userRoutes);
 
 
 
@@ -96,4 +99,5 @@ app.use(errorHandler);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  startAccountDeletionJob();
 });

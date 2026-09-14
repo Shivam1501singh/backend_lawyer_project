@@ -33,10 +33,16 @@ enum RequestStatus {
   REJECTED
 }
 
+enum UserStatus {
+  ACTIVE
+  DELETION_PENDING
+}
+
 enum OtpPurpose {
   EMAIL_VERIFICATION
   PHONE_VERIFICATION
   LOGIN
+  ACCOUNT_DELETION
 }
 
 model RegistrationSession {
@@ -97,26 +103,51 @@ model OtpVerification {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  fullName      String
-  email         String   @unique
-  phone         String   @unique
-  city          String
-  state         String
-  pincode       String
-  emailVerified Boolean  @default(true)
-  phoneVerified Boolean  @default(true)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  latitude      Float?
-  longitude     Float?
+  id                  String      @id @default(uuid())
+  fullName            String
+  email               String      @unique
+  phone               String      @unique
+  city                String
+  state               String
+  pincode             String
+  emailVerified       Boolean     @default(true)
+  phoneVerified       Boolean     @default(true)
+  isActive            Boolean     @default(true)
+  status              UserStatus  @default(ACTIVE)
+  deletionRequestedAt DateTime?
+  scheduledDeletionAt DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  latitude            Float?
+  longitude           Float?
 
   reviews         Review[]
   savedLawyers    SavedLawyer[]
   likedAdvocates  AdvocateLike[]
   caseRequests    CaseConnectionRequest[]
   caseConnections CaseConnection[]
+}
+
+model DeletedUser {
+  id                  String   @id @default(uuid())
+  originalUserId      String   @unique
+  fullName            String
+  email               String
+  phone               String
+  city                String?
+  state               String?
+  pincode             String?
+  latitude            Float?
+  longitude           Float?
+  profileData         Json?
+  reason              String?
+  deletionRequestedAt DateTime
+  deletedAt           DateTime @default(now())
+  createdAt           DateTime @default(now())
+
+  @@index([originalUserId])
+  @@index([email])
+  @@index([phone])
 }
 
 model Advocate {

@@ -30,6 +30,15 @@ export const requireAuth = async (req, res, next) => {
       return next(err);
     }
 
+    if (userProfile.role === 'USER' && userProfile.status === 'DELETION_PENDING') {
+      const isDeletionEndpoint = req.originalUrl && req.originalUrl.includes('/delete-account');
+      if (!isDeletionEndpoint) {
+        const err = new Error('Your account is scheduled for deletion. Please log in to restore your account.');
+        err.statusCode = 401;
+        return next(err);
+      }
+    }
+
     req.user = userProfile;
     next();
   } catch (error) {

@@ -68,3 +68,8 @@ export const loginVerifyEmailOtpSchema = z.object({
     .toLowerCase(),
   otp: otpSchema
 });
+
+export const verifyDeleteAccountOtpSchema = z.object({
+  otp: otpSchema
+});
+

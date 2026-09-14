@@ -2,6 +2,7 @@ import prisma from '../lib/prisma.js';
 import { createOtp, verifyOtp } from './otp.service.js';
 import { sendEmailOtp } from './email.service.js';
 import { sendOtpSms } from './sms.service.js';
+import { finalizeUserDeletion } from './accountDeletion.service.js';
 import bcrypt from 'bcryptjs';
 import { encrypt, decrypt } from '../utils/crypto.js';
 import { initiateAadhaarDigiLocker, fetchAadhaarDetails } from './idspay.service.js';
@@ -471,6 +472,15 @@ export const verifyLoginOtpService = async ({ phone, accountType, otp }) => {
     throw new Error('Account not found.');
   }
 
+  if (accountType === 'USER' && account.status === 'DELETION_PENDING') {
+    if (account.scheduledDeletionAt && new Date(account.scheduledDeletionAt) <= new Date()) {
+      await finalizeUserDeletion(account.id);
+      const err = new Error('This account has been deleted.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
   if (!account.isActive) {
     throw new Error('Account is deactivated.');
   }
@@ -481,6 +491,18 @@ export const verifyLoginOtpService = async ({ phone, accountType, otp }) => {
     purpose: 'LOGIN',
     otp
   });
+
+  if (accountType === 'USER' && account.status === 'DELETION_PENDING') {
+    account = await prisma.user.update({
+      where: { id: account.id },
+      data: {
+        status: 'ACTIVE',
+        deletionRequestedAt: null,
+        scheduledDeletionAt: null
+      }
+    });
+    account.deletionCancelled = true;
+  }
 
   return account;
 };
@@ -535,6 +557,15 @@ export const verifyLoginEmailOtpService = async ({ email, accountType, otp }) =>
     throw new Error('Account not found.');
   }
 
+  if (accountType === 'USER' && account.status === 'DELETION_PENDING') {
+    if (account.scheduledDeletionAt && new Date(account.scheduledDeletionAt) <= new Date()) {
+      await finalizeUserDeletion(account.id);
+      const err = new Error('This account has been deleted.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
   if (!account.isActive) {
     throw new Error('Account is deactivated.');
   }
@@ -545,6 +576,18 @@ export const verifyLoginEmailOtpService = async ({ email, accountType, otp }) =>
     purpose: 'LOGIN',
     otp
   });
+
+  if (accountType === 'USER' && account.status === 'DELETION_PENDING') {
+    account = await prisma.user.update({
+      where: { id: account.id },
+      data: {
+        status: 'ACTIVE',
+        deletionRequestedAt: null,
+        scheduledDeletionAt: null
+      }
+    });
+    account.deletionCancelled = true;
+  }
 
   return account;
 };
@@ -606,6 +649,7 @@ export const getCurrentUserProfile = async (id, accountType) => {
       city: profile.city,
       state: profile.state,
       pincode: profile.pincode,
+      status: profile.status,
       type: 'user',
       role: 'USER'
     };

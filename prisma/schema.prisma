@@ -474,3 +474,26 @@ model CaseConnection {
   @@index([userId])
   @@index([advocateId])
 }
+
+model ErrorLog {
+  id           String   @id @default(uuid())
+  ipAddress    String?
+  method       String
+  url          String
+  path         String?
+  statusCode   Int      @default(500)
+  errorName    String?
+  errorMessage String   @db.Text
+  errorStack   String?  @db.Text
+  date         String
+  time         String
+  userId       String?
+  userType     String?
+  requestId    String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([statusCode])
+  @@index([method])
+}
+

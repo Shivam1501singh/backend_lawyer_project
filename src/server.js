@@ -83,8 +83,16 @@ app.post('/api/auth/logout', requireAuth, userLogout);
 app.post('/api/user/logout', requireAuth, userLogout);
 app.post('/api/advocate/logout', requireAuth, advocateLogout);
 
+// 404 Handler for unmatched routes
+app.use((req, res, next) => {
+  const error = new Error(`Route not found - ${req.originalUrl}`);
+  error.statusCode = 404;
+  next(error);
+});
+
 // Global Error Handler Middleware
 app.use(errorHandler);
+
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);

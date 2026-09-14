@@ -11,36 +11,30 @@ export const requireAuth = async (req, res, next) => {
     }
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required. Please login.'
-      });
+      const err = new Error('Authentication required. Please login.');
+      err.statusCode = 401;
+      return next(err);
     }
 
     const decoded = verifyToken(token);
     if (!decoded || !decoded.id || !decoded.type) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid session or session expired. Please login again.'
-      });
+      const err = new Error('Invalid session or session expired. Please login again.');
+      err.statusCode = 401;
+      return next(err);
     }
 
     const userProfile = await getCurrentUserProfile(decoded.id, decoded.type);
     if (!userProfile) {
-      return res.status(401).json({
-        success: false,
-        message: 'User account not found or has been deactivated.'
-      });
+      const err = new Error('User account not found or has been deactivated.');
+      err.statusCode = 401;
+      return next(err);
     }
 
     req.user = userProfile;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server authorization error.'
-    });
+    next(error);
   }
 };
 
@@ -73,25 +67,24 @@ export const requireRole = (...roles) => {
 
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required. Please login.'
-      });
+      const err = new Error('Authentication required. Please login.');
+      err.statusCode = 401;
+      return next(err);
     }
 
     const rawRole = req.user.role || req.user.type || '';
     const userRole = rawRole.toUpperCase();
 
     if (!allowedRoles.includes(userRole)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access forbidden. Insufficient permissions.'
-      });
+      const err = new Error('Access forbidden. Insufficient permissions.');
+      err.statusCode = 403;
+      return next(err);
     }
 
     next();
   };
 };
+
 
 export const requireApprovedAdvocate = async (req, res, next) => {
   if (!req.user) {

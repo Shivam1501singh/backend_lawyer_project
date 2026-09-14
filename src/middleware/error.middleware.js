@@ -1,4 +1,5 @@
 import { ZodError } from 'zod';
+import { logApiError } from '../services/errorLogger.service.js';
 
 export const errorHandler = (err, req, res, next) => {
   try {
@@ -7,7 +8,11 @@ export const errorHandler = (err, req, res, next) => {
     console.error('[Error middleware caught error (inspect failed)]:', err.message || String(err));
   }
 
+  // Centrally log error to database (fail-safe)
+  logApiError(err, req);
+
   // Zod Validation Errors
+
   if (err instanceof ZodError) {
     const errors = err.errors.map(e => ({
       field: e.path.join('.'),
@@ -20,7 +25,17 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // Explicit HTTP Status Errors (e.g. 404 Not Found, 401 Unauthorized, 403 Forbidden)
+  if (err.statusCode || err.status) {
+    const code = err.statusCode || err.status;
+    return res.status(code).json({
+      success: false,
+      message: err.message
+    });
+  }
+
   // Common controlled application errors (e.g., duplicate checks, verification issues)
+
   const isControlledError = [
     'session',
     'not found',

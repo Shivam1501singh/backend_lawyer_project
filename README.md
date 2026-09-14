@@ -4178,6 +4178,113 @@ Returned when the Admin has rejected the Advocate profile. Includes the rejectio
 }
 ```
 
+---
+
+## Centralized Error Logging
+
+### Overview
+The backend includes a centralized, fail-safe error-logging system that automatically captures API and server-side errors into the database without requiring custom `try/catch` or manual logging code inside every API controller or service.
+
+### Database Model (`ErrorLog`)
+Error logs are stored in the PostgreSQL database in the `ErrorLog` table via Prisma ORM.
+
+#### Fields
+| Field Name | Type | Description |
+|---|---|---|
+| `id` | String (UUID) | Unique record identifier |
+| `ipAddress` | String? | Originating request IP address (supports `x-forwarded-for` reverse proxies) |
+| `method` | String | HTTP method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) |
+| `url` | String | Requested API URL (e.g. `/api/advocate/profile`) |
+| `path` | String? | Request path without query parameters |
+| `statusCode` | Int | HTTP status code (e.g. `400`, `401`, `403`, `404`, `500`, `502`) |
+| `errorName` | String? | Error class/type name (e.g. `ZodError`, `DatabaseError`, `Error`) |
+| `errorMessage` | String (Text) | Detailed error message |
+| `errorStack` | String? (Text) | Complete server-side stack trace for debugging |
+| `date` | String | Canonical date string (`YYYY-MM-DD`) |
+| `time` | String | Canonical time string (`HH:mm:ss`) |
+| `userId` | String? | Authenticated user ID (if request is authenticated) |
+| `userType` | String? | Authenticated user type (`USER`, `ADVOCATE`, `ADMIN`, `CONTENT_CREATOR`) |
+| `requestId` | String? | Correlation/Request ID (if present in headers) |
+| `createdAt` | DateTime | Timestamp of record creation (`@default(now())`) |
+
+### Error Flow
+```text
+               Incoming Request
+                      │
+                      ▼
+               Express Router
+                      │
+                      ▼
+            Controller / Service
+                      │
+                Error Occurs
+                      │
+                      ▼
+            Global Error Handler
+                      │
+                      ▼
+          Sanitize Sensitive Data
+           (Aadhaar, JWT, Passwords)
+                      │
+                      ▼
+         Save ErrorLog to Database
+             (Fail-Safe Isolated)
+                      │
+                      ▼
+        Return Original API Error Response
+```
+
+### Sensitive Data Protection Rules
+- **Aadhaar Protection**: 12-digit Aadhaar numbers are automatically redacted before database insertion (e.g., `XXXX-XXXX-9012`).
+- **Token & Credentials Protection**: Bearer tokens, raw JWTs, passwords, password hashes, and OTPs are redacted (`[REDACTED_TOKEN]`, `[REDACTED_JWT]`, `[REDACTED]`).
+- **Fail-Safe Mechanism**: If saving the error log to the database fails, the error logger catches the exception gracefully without disrupting or altering the client API error response.
+
+### Sample Database Record
+```json
+{
+  "id": "ae15af46-3205-4156-9306-77ff8b2184b0",
+  "ipAddress": "127.0.0.1",
+  "method": "POST",
+  "url": "/api/advocate/profile",
+  "path": "/api/advocate/profile",
+  "statusCode": 500,
+  "errorName": "DatabaseError",
+  "errorMessage": "Unable to update advocate profile",
+  "errorStack": "Error: Unable to update advocate profile\n    at AdvocateService.updateProfile (...)\n    at AdvocateController.update (...)",
+  "date": "2026-09-14",
+  "time": "12:30:00",
+  "userId": "316a5ead-ddfb-4384-b166-180463c8f32e",
+  "userType": "ADVOCATE",
+  "requestId": null,
+  "createdAt": "2026-09-14T12:30:00.000Z"
+}
+```
+
+### Postman & Manual Testing Guide
+1. Start the backend server (`npm run dev` or `npm start`).
+2. Send an API request in Postman that intentionally produces an error (e.g. `GET /api/nonexistent-route` for `404`, or `POST /api/auth/user/login/send-otp` with `{}` for `400`).
+3. Observe the API response format (remains clean and unchanged).
+4. Query the `ErrorLog` table in PostgreSQL or via Prisma:
+   ```bash
+   npx prisma studio
+   ```
+5. Verify the newly generated `ErrorLog` record contains all mandatory fields:
+   - `ipAddress` → Present (e.g., `127.0.0.1` or client IP)
+   - `date` → Present (`YYYY-MM-DD`)
+   - `time` → Present (`HH:mm:ss`)
+   - `url` → Correct API endpoint
+   - `method` → Correct HTTP method (`GET`, `POST`, etc.)
+   - `statusCode` → Correct HTTP status (`404`, `400`, `500`, etc.)
+   - `errorMessage` → Detailed message (sanitized)
+   - `errorStack` → Detailed stack trace (when available)
+
+### Automated Test Suite
+Run the automated e2e test suite covering 500 errors, 404 routes, 400 validation, authenticated user logs, unauthenticated logs, fail-safe isolation, and Aadhaar redaction:
+```bash
+node scratch/test-centralized-error-logging-e2e.js
+```
+
+
 
 
 

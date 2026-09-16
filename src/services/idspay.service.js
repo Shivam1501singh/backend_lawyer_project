@@ -59,7 +59,7 @@ export const initiateAadhaarDigiLocker = async (aadhaarNumber, registrationId) =
   }
 
   try {
-    const redirectBase = process.env.CLIENT_URL || 'http://localhost:5173';
+    const redirectBase = process.env.WEB_CLIENT_URL || process.env.CLIENT_URL || 'http://localhost:5173';
     const redirectUrl = registrationId 
       ? `${redirectBase}/register/advocate` 
       : redirectBase;

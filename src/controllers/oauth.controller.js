@@ -16,16 +16,38 @@ setInterval(() => {
 }, 5 * 60 * 1000).unref();
 
 /**
+ * Resolves base redirect URLs for Web and Mobile clients.
+ * - Web client: Configured via WEB_CLIENT_URL or CLIENT_URL (default: 'http://localhost:5173')
+ * - Mobile client: Configured via MOBILE_CLIENT_URL or MOBILE_APP_SCHEME (default: 'advocateconnect://')
+ */
+export const getClientRedirectUrls = (scheme) => {
+  const rawWeb = process.env.WEB_CLIENT_URL || process.env.CLIENT_URL || 'http://localhost:5173';
+  const webBase = rawWeb.replace(/\/+$/, '');
+
+  const fallbackScheme = scheme || process.env.MOBILE_APP_SCHEME || 'advocateconnect';
+  let rawMobile = process.env.MOBILE_CLIENT_URL || `${fallbackScheme}://`;
+  rawMobile = rawMobile.trim();
+  if (!rawMobile.includes('://')) {
+    rawMobile = `${rawMobile}://`;
+  }
+  const mobileBase = rawMobile.endsWith('://') ? rawMobile : `${rawMobile.replace(/\/+$/, '')}/`;
+
+  return { webBase, mobileBase };
+};
+
+/**
  * Parses state string passed via OAuth flow.
  * Supports:
- * - base64url JSON string e.g. Buffer.from(JSON.stringify({ registrationId, platform, scheme })).toString('base64url')
+ * - base64url JSON string e.g. Buffer.from(JSON.stringify({ client, platform, registrationId, scheme })).toString('base64url')
  * - raw JSON string
- * - plain registrationId string (legacy web client)
+ * - plain string fallback ('web', 'mobile', or registrationId)
+ *
+ * Security: Only permits client to be 'web' or 'mobile'. Defaults safely to 'web' to prevent open redirect vulnerabilities.
  */
 export const parseOAuthState = (stateParam) => {
   const defaultScheme = process.env.MOBILE_APP_SCHEME || 'advocateconnect';
   if (!stateParam || stateParam === 'undefined' || stateParam === 'null') {
-    return { registrationId: null, platform: 'mobile', scheme: defaultScheme };
+    return { registrationId: null, client: 'web', platform: 'web', scheme: defaultScheme };
   }
 
   // 1. Try base64url JSON
@@ -33,9 +55,12 @@ export const parseOAuthState = (stateParam) => {
     const jsonStr = Buffer.from(stateParam, 'base64url').toString('utf8');
     const parsed = JSON.parse(jsonStr);
     if (parsed && typeof parsed === 'object') {
+      const rawClient = (parsed.client || parsed.platform || 'web').toLowerCase().trim();
+      const client = rawClient === 'mobile' ? 'mobile' : 'web';
       return {
         registrationId: parsed.registrationId || null,
-        platform: parsed.platform || 'mobile',
+        client,
+        platform: client,
         scheme: parsed.scheme || defaultScheme
       };
     }
@@ -45,41 +70,53 @@ export const parseOAuthState = (stateParam) => {
   try {
     const parsed = JSON.parse(stateParam);
     if (parsed && typeof parsed === 'object') {
+      const rawClient = (parsed.client || parsed.platform || 'web').toLowerCase().trim();
+      const client = rawClient === 'mobile' ? 'mobile' : 'web';
       return {
         registrationId: parsed.registrationId || null,
-        platform: parsed.platform || 'mobile',
+        client,
+        platform: client,
         scheme: parsed.scheme || defaultScheme
       };
     }
   } catch (e) {}
 
-  // 3. Fallback: if it's a plain string, check if it's 'web' or registrationId
+  // 3. Fallback: if it's a plain string
+  const str = String(stateParam).toLowerCase().trim();
+  if (str === 'mobile') {
+    return { registrationId: null, client: 'mobile', platform: 'mobile', scheme: defaultScheme };
+  }
+  if (str === 'web') {
+    return { registrationId: null, client: 'web', platform: 'web', scheme: defaultScheme };
+  }
+
+  // Fallback for plain registrationId string (default client is web)
   return {
-    registrationId: stateParam === 'web' ? null : stateParam,
-    platform: stateParam === 'web' ? 'web' : 'mobile',
+    registrationId: stateParam,
+    client: 'web',
+    platform: 'web',
     scheme: defaultScheme
   };
 };
 
 /**
  * Google Registration Callback Handler
- * Supports Mobile App (Deep Link redirect by default) and Web (Cookie + CLIENT_URL redirect when platform is web)
+ * Supports Mobile App (Deep Link redirect to MOBILE_CLIENT_URL) and Web (Cookie + WEB_CLIENT_URL redirect)
  */
 export const googleCallbackHandler = (accountType) => {
   return async (req, res, next) => {
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
     const redirectType = accountType.toLowerCase();
-    const { registrationId, platform, scheme } = parseOAuthState(req.query.state);
-    const isMobile = platform !== 'web';
-    const appScheme = scheme || process.env.MOBILE_APP_SCHEME || 'advocateconnect';
+    const { registrationId, client, scheme } = parseOAuthState(req.query.state);
+    const isMobile = client === 'mobile';
+    const { webBase, mobileBase } = getClientRedirectUrls(scheme);
 
     try {
       // If user profile is not supplied by Passport
       if (!req.user) {
         if (isMobile) {
-          return res.redirect(`${appScheme}://register-callback?error=google_auth_failed&type=${redirectType}`);
+          return res.redirect(`${mobileBase}register-callback?error=google_auth_failed&type=${redirectType}`);
         }
-        return res.redirect(`${clientUrl}/login/${redirectType}?error=google_auth_failed`);
+        return res.redirect(`${webBase}/login/${redirectType}?error=google_auth_failed`);
       }
 
       const { fullName, email } = req.user;
@@ -92,9 +129,9 @@ export const googleCallbackHandler = (accountType) => {
       if (existingUser || existingAdvocate) {
         const errType = accountType === 'ADVOCATE' ? 'advocate_exists' : 'account_exists';
         if (isMobile) {
-          return res.redirect(`${appScheme}://register-callback?error=${errType}&type=${redirectType}`);
+          return res.redirect(`${mobileBase}register-callback?error=${errType}&type=${redirectType}`);
         }
-        return res.redirect(`${clientUrl}/login/${redirectType}?error=${errType}`);
+        return res.redirect(`${webBase}/login/${redirectType}?error=${errType}`);
       }
 
       // Recover registration session ID from state
@@ -108,17 +145,17 @@ export const googleCallbackHandler = (accountType) => {
         // If the registration session expired or is invalid
         if (!sessionExists) {
           if (isMobile) {
-            return res.redirect(`${appScheme}://register-callback?error=session_expired&type=${redirectType}`);
+            return res.redirect(`${mobileBase}register-callback?error=session_expired&type=${redirectType}`);
           }
-          return res.redirect(`${clientUrl}/register/${redirectType}?error=session_expired`);
+          return res.redirect(`${webBase}/register/${redirectType}?error=session_expired`);
         }
 
         // Verify accountType matches the registration session
         if (sessionExists.accountType !== accountType) {
           if (isMobile) {
-            return res.redirect(`${appScheme}://register-callback?error=invalid_registration_state&type=${redirectType}`);
+            return res.redirect(`${mobileBase}register-callback?error=invalid_registration_state&type=${redirectType}`);
           }
-          return res.redirect(`${clientUrl}/register/${redirectType}?error=invalid_registration_state`);
+          return res.redirect(`${webBase}/register/${redirectType}?error=invalid_registration_state`);
         }
 
         // Update existing registration session
@@ -160,38 +197,37 @@ export const googleCallbackHandler = (accountType) => {
       if (isMobile) {
         const nameEnc = encodeURIComponent(session.fullName || '');
         const emailEnc = encodeURIComponent(session.email || '');
-        return res.redirect(`${appScheme}://register-callback?step=${targetStep}&registrationId=${session.id}&type=${redirectType}&fullName=${nameEnc}&email=${emailEnc}`);
+        return res.redirect(`${mobileBase}register-callback?step=${targetStep}&registrationId=${session.id}&type=${redirectType}&fullName=${nameEnc}&email=${emailEnc}`);
       }
 
-      return res.redirect(`${clientUrl}/register/${redirectType}?step=${targetStep}&registrationId=${session.id}`);
+      return res.redirect(`${webBase}/register/${redirectType}?step=${targetStep}&registrationId=${session.id}`);
     } catch (error) {
       console.error('OAuth Callback Controller Error:', error);
       if (isMobile) {
-        return res.redirect(`${appScheme}://register-callback?error=server_error&type=${redirectType}`);
+        return res.redirect(`${mobileBase}register-callback?error=server_error&type=${redirectType}`);
       }
-      return res.redirect(`${clientUrl}/login/${redirectType}?error=server_error`);
+      return res.redirect(`${webBase}/login/${redirectType}?error=server_error`);
     }
   };
 };
 
 /**
  * Google Login Callback Handler
- * Supports both Web (Sets HTTP-Only Cookie + CLIENT_URL redirect) and Mobile App (Deep Link with 60s single-use exchange code)
+ * Supports both Web (Sets HTTP-Only Cookie + WEB_CLIENT_URL redirect) and Mobile App (Deep Link to MOBILE_CLIENT_URL with 60s single-use exchange code)
  */
 export const googleLoginCallbackHandler = (accountType) => {
   return async (req, res, next) => {
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
     const redirectType = accountType.toLowerCase();
-    const { platform, scheme } = parseOAuthState(req.query.state);
-    const isMobile = platform !== 'web';
-    const appScheme = scheme || process.env.MOBILE_APP_SCHEME || 'advocateconnect';
+    const { client, scheme } = parseOAuthState(req.query.state);
+    const isMobile = client === 'mobile';
+    const { webBase, mobileBase } = getClientRedirectUrls(scheme);
 
     try {
       if (!req.user) {
         if (isMobile) {
-          return res.redirect(`${appScheme}://auth-callback?error=google_auth_failed&type=${redirectType}`);
+          return res.redirect(`${mobileBase}auth-callback?error=google_auth_failed&type=${redirectType}`);
         }
-        return res.redirect(`${clientUrl}/login/${redirectType}?error=google_auth_failed`);
+        return res.redirect(`${webBase}/login/${redirectType}?error=google_auth_failed`);
       }
 
       const { email } = req.user;
@@ -206,16 +242,16 @@ export const googleLoginCallbackHandler = (accountType) => {
 
       if (!account) {
         if (isMobile) {
-          return res.redirect(`${appScheme}://auth-callback?error=account_not_found&type=${redirectType}`);
+          return res.redirect(`${mobileBase}auth-callback?error=account_not_found&type=${redirectType}`);
         }
-        return res.redirect(`${clientUrl}/login/${redirectType}?error=account_not_found`);
+        return res.redirect(`${webBase}/login/${redirectType}?error=account_not_found`);
       }
 
       if (!account.isActive) {
         if (isMobile) {
-          return res.redirect(`${appScheme}://auth-callback?error=account_inactive&type=${redirectType}`);
+          return res.redirect(`${mobileBase}auth-callback?error=account_inactive&type=${redirectType}`);
         }
-        return res.redirect(`${clientUrl}/login/${redirectType}?error=account_inactive`);
+        return res.redirect(`${webBase}/login/${redirectType}?error=account_inactive`);
       }
 
       // Sign JWT Token
@@ -235,18 +271,18 @@ export const googleLoginCallbackHandler = (accountType) => {
           expiresAt: Date.now() + 60 * 1000 // 60s expiry
         });
 
-        return res.redirect(`${appScheme}://auth-callback?code=${code}&type=${redirectType}`);
+        return res.redirect(`${mobileBase}auth-callback?code=${code}&type=${redirectType}`);
       }
 
       // Web flow: Set HTTP-only cookie & redirect to web client dashboard
       sendTokenCookie(res, token);
-      return res.redirect(`${clientUrl}/dashboard`);
+      return res.redirect(`${webBase}/dashboard`);
     } catch (error) {
       console.error('OAuth Login Callback Controller Error:', error);
       if (isMobile) {
-        return res.redirect(`${appScheme}://auth-callback?error=server_error&type=${redirectType}`);
+        return res.redirect(`${mobileBase}auth-callback?error=server_error&type=${redirectType}`);
       }
-      return res.redirect(`${clientUrl}/login/${redirectType}?error=server_error`);
+      return res.redirect(`${webBase}/login/${redirectType}?error=server_error`);
     }
   };
 };

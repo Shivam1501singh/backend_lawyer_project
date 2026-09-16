@@ -123,6 +123,25 @@ Step 1: Name + Email Start ──> Email OTP / Google ──> Step 2: Phone Veri
   }
   ```
 
+#### Step 1 (Alternative): "Continue with Google / Gmail" Auth Link
+Instead of manually typing an email and waiting for an OTP, users can tap **"Continue with Google"** / **"Continue with Gmail"**.
+
+- **Mobile App Link:**
+  ```text
+  GET http://localhost:5000/api/auth/user/google/register
+  ```
+  *(Optional: pass `?registrationId=<uuid>` if name was already entered)*
+  - **Redirect Received in Mobile App:**
+    `advocateconnect://register-callback?step=2&registrationId=<session_id>&type=user&fullName=<name>&email=<email>`
+  - The mobile app automatically extracts `registrationId` and advances the UI directly to **Step 2 (Phone Verification)** with email already verified.
+
+- **Web Browser Link:**
+  ```text
+  GET http://localhost:5000/api/auth/user/google/register?platform=web
+  ```
+  - **Redirect Received in Web Client:**
+    `http://localhost:5173/register/user?step=2&registrationId=<session_id>`
+
 #### Query Registration Session Details (Helpful for Google OAuth Callback resume)
 - **Endpoint:** `GET /api/auth/user/register/session/:registrationId`
 - **Response:**
@@ -279,6 +298,25 @@ Step 7: Review & Finalize Account Creation
   }
   ```
 
+#### Step 1 (Alternative): "Continue with Google / Gmail" Auth Link
+Advocates can also tap **"Continue with Google"** / **"Continue with Gmail"** during registration.
+
+- **Mobile App Link:**
+  ```text
+  GET http://localhost:5000/api/auth/advocate/google/register
+  ```
+  *(Optional: pass `?registrationId=<uuid>` if name was already entered)*
+  - **Redirect Received in Mobile App:**
+    `advocateconnect://register-callback?step=2&registrationId=<session_id>&type=advocate&fullName=<name>&email=<email>`
+  - The mobile app extracts `registrationId` and advances the UI directly to **Step 2 (Photo & Gender Selection)** with email pre-verified.
+
+- **Web Browser Link:**
+  ```text
+  GET http://localhost:5000/api/auth/advocate/google/register?platform=web
+  ```
+  - **Redirect Received in Web Client:**
+    `http://localhost:5173/register/advocate?step=2&registrationId=<session_id>`
+
 #### Query Registration Session Details (Helpful for Google OAuth Callback resume)
 - **Endpoint:** `GET /api/auth/advocate/register/session/:registrationId`
 - **Response:**
@@ -395,29 +433,119 @@ Step 7: Review & Finalize Account Creation
 
 ---
 
-## 5. Google OAuth Callback Integration (Mobile App & Web Client)
+## 5. Google OAuth — Web and Mobile
 
-### Overview & Problem Resolution
-Google OAuth supports both **Mobile App clients** (via custom deep-link scheme `advocateconnect://`) and **Web clients** (via HTTP-only cookies and `CLIENT_URL` redirect).
+### Overview & Architecture
+The backend provides a unified Google OAuth implementation supporting both the **Web Application** (Single Page App / Next.js / Vite) and the **React Native Mobile Application** (`WebBrowser.openAuthSessionAsync()`).
 
-> [!NOTE]
-> **Mobile Redirection Resolution**:
-> Previously, OAuth callbacks defaulted to web URLs (`http://localhost:5173`), causing mobile app authentication flows to break on localhost.
-> The OAuth controller (`src/controllers/oauth.controller.js`) and routes (`src/routes/oauth.routes.js`) have been upgraded so that:
-> 1. Mobile app deep linking (`advocateconnect://`) is the default behavior.
-> 2. Web clients explicitly supply `?platform=web` to redirect to web dashboard/registration pages.
-> 3. Mobile clients exchange temporary single-use 60s codes for full JWT tokens via `POST /auth/oauth/exchange` or `POST /api/auth/oauth/exchange`.
+```text
+                                  GOOGLE OAUTH INITIATION
+                        ┌────────────────────────────────────────┐
+                        │   GET /api/auth/google?client=web      │
+                        │   GET /api/auth/google?client=mobile   │
+                        └───────────────────┬────────────────────┘
+                                            │
+                                  Validate Client Param
+                                ('web' | 'mobile' allowed)
+                                            │
+                                Encode Secure OAuth State
+                             { client, registrationId, ... }
+                                            │
+                                            ▼
+                                  Google Authentication
+                                            │
+                                            ▼
+                                  Backend OAuth Callback
+                                            │
+                               Validate State & Identify Client
+                                            │
+                             ┌──────────────┴──────────────┐
+                             │                             │
+                      client === 'web'              client === 'mobile'
+                             │                             │
+                             ▼                             ▼
+                      WEB_CLIENT_URL               MOBILE_CLIENT_URL
+                 (http://localhost:5173)         (advocateconnect://)
+                             │                             │
+               • Set HTTP-only auth_token cookie • Redirect with 60s exchange code
+               • Redirect to /dashboard          • Client exchanges code for JWT
+```
 
 ---
 
-### Dual Platform Flow Matrix
+### Environment Variables
 
-| Platform | Initiation URL Example | Callback Behavior | Authentication Result |
-| :--- | :--- | :--- | :--- |
-| **Mobile App (Default)** | `/api/auth/user/google/login` | Redirects to `advocateconnect://auth-callback?code=<single_use_code>&type=user` | Client exchanges code via `POST /auth/oauth/exchange` to receive Bearer JWT token |
-| **Mobile App (Register)** | `/api/auth/user/google/register` | Redirects to `advocateconnect://register-callback?step=2&registrationId=...&type=user&fullName=...&email=...` | Client resumes registration wizard at target step |
-| **Web Client (Login)** | `/api/auth/user/google/login?platform=web` | Sets HTTP-only `auth_token` cookie & redirects to `${CLIENT_URL}/dashboard` | Session cookie set in browser |
-| **Web Client (Register)** | `/api/auth/user/google/register?platform=web` | Redirects to `${CLIENT_URL}/register/user?step=2&registrationId=...` | Browser resumes registration wizard |
+Configure distinct client URLs in `.env` for both local development and production deployments:
+
+```env
+# Web Client Configuration
+WEB_CLIENT_URL="http://localhost:5173"
+CLIENT_URL="http://localhost:5173" # Backward-compatible fallback
+
+# Mobile Client Configuration
+MOBILE_CLIENT_URL="advocateconnect://"
+MOBILE_APP_SCHEME="advocateconnect"
+
+# Google OAuth Credentials & Backend Callbacks
+GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GOOGLE_USER_LOGIN_CALLBACK_URL="https://your-backend-domain.com/api/auth/user/google/login/callback"
+GOOGLE_USER_REGISTER_CALLBACK_URL="https://your-backend-domain.com/api/auth/user/google/register/callback"
+GOOGLE_ADVOCATE_LOGIN_CALLBACK_URL="https://your-backend-domain.com/api/auth/advocate/google/login/callback"
+GOOGLE_ADVOCATE_REGISTER_CALLBACK_URL="https://your-backend-domain.com/api/auth/advocate/google/register/callback"
+```
+
+#### Production Configuration Example
+```env
+WEB_CLIENT_URL="https://lawyer-web-app.com"
+MOBILE_CLIENT_URL="advocateconnect://"
+```
+
+---
+
+### OAuth Initiation Endpoints
+
+Initiate OAuth by providing `client=web` or `client=mobile`. If the parameter is omitted, it safely defaults to `web` for backward compatibility.
+
+| Flow | Role | Method & Endpoint | Query Params | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Generic Login** | User | `GET /api/auth/google` | `?client=web` or `?client=mobile` | Default Google sign-in |
+| **User Login** | User | `GET /api/auth/user/google/login` | `?client=web` or `?client=mobile` | User Google sign-in |
+| **User Register** | User | `GET /api/auth/user/google/register` | `?client=web` or `?client=mobile` | User Google registration |
+| **Advocate Login** | Advocate | `GET /api/auth/advocate/google/login` | `?client=web` or `?client=mobile` | Advocate Google sign-in |
+| **Advocate Register** | Advocate | `GET /api/auth/advocate/google/register` | `?client=web` or `?client=mobile`&`registrationId=...` | Advocate Google registration |
+
+> [!IMPORTANT]
+> **Client Validation**:
+> Arbitrary client values (e.g. `?client=xyz` or `?client=malicious-url`) are strictly rejected with `400 Bad Request` to prevent open-redirect vulnerabilities.
+
+---
+
+### Web OAuth Flow
+1. **Initiation**: Web browser hits `GET /api/auth/google?client=web` (or `GET /api/auth/user/google/login?client=web`).
+2. **Google Sign-In**: User logs in with Google.
+3. **Backend Callback**: Google redirects back to backend callback (`/api/auth/user/google/login/callback`).
+4. **Validation & State**: Backend validates OAuth `state`, recognizes `client === 'web'`.
+5. **Success**: Backend signs JWT token, sets secure HTTP-Only `auth_token` cookie, and redirects to `${WEB_CLIENT_URL}/dashboard`.
+6. **Error**: If an error occurs (e.g., account not found), backend redirects to `${WEB_CLIENT_URL}/login/user?error=<error_code>`.
+
+---
+
+### React Native Mobile OAuth Flow
+1. **Initiation**: Mobile app triggers `WebBrowser.openAuthSessionAsync('https://your-backend-domain.com/api/auth/google?client=mobile', 'advocateconnect://')`.
+2. **Google Sign-In**: User authenticates in the in-app browser sheet.
+3. **Backend Callback**: Google redirects back to backend callback.
+4. **Validation & State**: Backend validates OAuth `state`, recognizes `client === 'mobile'`.
+5. **Success**: Backend generates a single-use 60-second exchange code and redirects the browser to:
+   ```text
+   advocateconnect://auth-callback?code=<single_use_code>&type=user
+   ```
+6. **Deep Link Capture**: React Native `WebBrowser` captures the `advocateconnect://` deep link callback.
+7. **Token Exchange**: Mobile app calls `POST /api/auth/oauth/exchange` with `{ "code": "<single_use_code>" }` to receive the final JWT access token and user profile.
+8. **Error**: If authentication fails, backend redirects to:
+   ```text
+   advocateconnect://auth-callback?error=<error_code>&type=user
+   ```
 
 ---
 
@@ -437,10 +565,10 @@ Google OAuth supports both **Mobile App clients** (via custom deep-link scheme `
 
 ### Mobile OAuth Code Exchange API
 
-After receiving the deep link callback `advocateconnect://auth-callback?code=...`, the mobile app must immediately exchange the temporary 60-second code for the final JWT access token.
+After receiving `advocateconnect://auth-callback?code=...`, exchange the temporary 60-second code for JWT access tokens.
 
-* **Endpoint:** `POST /auth/oauth/exchange` OR `POST /api/auth/oauth/exchange`
-* **Rate Limiting:** OAuth limiter applied
+* **Endpoint:** `POST /api/auth/oauth/exchange` OR `POST /auth/oauth/exchange`
+* **Rate Limiting:** OAuth limiter applied (10 requests / 10 minutes)
 * **Request Headers:** `Content-Type: application/json`
 * **Request Body:**
   ```json
@@ -472,12 +600,97 @@ After receiving the deep link callback `advocateconnect://auth-callback?code=...
 
 ---
 
-### Advocate Google Registration Flow (Preserving Wizard State)
-To register an Advocate using Google OAuth without losing earlier registration inputs (e.g. photo, gender, or state):
-1. **Pass Registration ID:** Redirect to `GET /api/auth/advocate/google/register?registrationId=<session_id>`.
-2. **Passport State Mapping:** The server packs `registrationId`, `platform`, and `scheme` into an encoded base64url state parameter.
-3. **Google Callback & Auto-Verification:** Upon authentication, the backend marks `emailVerified = true` in the existing `RegistrationSession` and calculates the next incomplete step.
-4. **Resuming Wizard:** The server redirects back to `advocateconnect://register-callback?step=3&registrationId=<session_id>&type=advocate...` (or web URL if `platform=web`), seamlessly resuming the wizard.
+### Testing Instructions (Postman & Browser)
+
+#### 1. Test Web Client OAuth
+- Open in browser: `http://localhost:5000/api/auth/google?client=web` (or `/api/auth/user/google/login?client=web`)
+- Authenticate with Google.
+- **Expected Result**: Redirects to `http://localhost:5173/dashboard` with HTTP-Only cookie `auth_token` set.
+
+#### 2. Test Mobile Client OAuth
+- Open in browser / Postman: `http://localhost:5000/api/auth/google?client=mobile` (or `/api/auth/user/google/login?client=mobile`)
+- Authenticate with Google.
+- **Expected Result**: Redirects to `advocateconnect://auth-callback?code=<code_hex>&type=user`.
+- Copy `<code_hex>` and send `POST /api/auth/oauth/exchange` with `{ "code": "<code_hex>" }` to receive JWT.
+
+#### 3. Test Invalid Client Rejection
+- Send request: `GET /api/auth/google?client=invalid_client`
+- **Expected Result**: `400 Bad Request`
+  ```json
+  {
+    "success": false,
+    "message": "Invalid client. Must be \"web\" or \"mobile\""
+  }
+  ```
+
+---
+
+### Advocate Google Registration Wizard (Preserving State)
+To register an Advocate using Google OAuth without losing multi-step wizard state:
+1. **Pass Registration ID:** Call `GET /api/auth/advocate/google/register?client=mobile&registrationId=<session_id>`.
+2. **Passport State Mapping:** Encodes `registrationId`, `client: "mobile"`, and `scheme` into base64url state parameter.
+3. **Google Callback & Auto-Verification:** Upon authentication, backend sets `emailVerified = true` in the `RegistrationSession` and computes the next step.
+4. **Resuming Wizard:** Backend redirects to `advocateconnect://register-callback?step=3&registrationId=<session_id>&type=advocate...` (or web URL if `client=web`), seamlessly resuming registration wizard.
+
+---
+
+## 6. Login APIs
+
+### User Phone OTP Login
+- **Send OTP:** `POST /api/auth/user/login/send-otp` (Body: `{ "phone": "9876543210" }`)
+- **Verify OTP:** `POST /api/auth/user/login/verify-otp` (Body: `{ "phone": "9876543210", "otp": "123456" }`)
+
+### User Email OTP Login
+- **Send OTP:** `POST /api/auth/user/login/send-email-otp` (Body: `{ "email": "user@gmail.com" }`)
+- **Verify OTP:** `POST /api/auth/user/login/verify-email-otp` (Body: `{ "email": "user@gmail.com", "otp": "123456" }`)
+
+### User "Continue with Google / Gmail" Login
+- **Mobile App Link:**
+  ```text
+  GET http://localhost:5000/api/auth/user/google/login
+  ```
+  - **Redirect Received in Mobile App:** `advocateconnect://auth-callback?code=<single_use_code>&type=user`
+  - **Exchange Token:** Mobile app calls `POST /auth/oauth/exchange` (or `POST /api/auth/oauth/exchange`) with `{ "code": "<single_use_code>" }` to receive JWT access token.
+- **Web Browser Link:**
+  ```text
+  GET http://localhost:5000/api/auth/user/google/login?platform=web
+  ```
+  - Sets HTTP-only `auth_token` cookie and redirects to `/dashboard`.
+
+### Advocate Phone OTP Login
+- **Send OTP:** `POST /api/auth/advocate/login/send-otp` (Body: `{ "phone": "9876543210" }`)
+- **Verify OTP:** `POST /api/auth/advocate/login/verify-otp` (Body: `{ "phone": "9876543210", "otp": "123456" }`)
+
+### Advocate Email & Password Login
+- **Endpoint:** `POST /api/auth/advocate/login`
+- **Request Body:**
+  ```json
+  {
+    "email": "advocate@gmail.com",
+    "password": "SecurePassword123"
+  }
+  ```
+- **Response Example (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Login successful",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+
+### Advocate "Continue with Google / Gmail" Login
+- **Mobile App Link:**
+  ```text
+  GET http://localhost:5000/api/auth/advocate/google/login
+  ```
+  - **Redirect Received in Mobile App:** `advocateconnect://auth-callback?code=<single_use_code>&type=advocate`
+  - **Exchange Token:** Mobile app calls `POST /auth/oauth/exchange` (or `POST /api/auth/oauth/exchange`) with `{ "code": "<single_use_code>" }` to receive JWT access token.
+- **Web Browser Link:**
+  ```text
+  GET http://localhost:5000/api/auth/advocate/google/login?platform=web
+  ```
+  - Sets HTTP-only `auth_token` cookie and redirects to `/dashboard`.
 
 ---
 

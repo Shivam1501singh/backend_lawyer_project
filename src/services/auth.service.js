@@ -3,6 +3,7 @@ import { createOtp, verifyOtp } from './otp.service.js';
 import { sendEmailOtp } from './email.service.js';
 import { sendOtpSms } from './sms.service.js';
 import { finalizeUserDeletion } from './accountDeletion.service.js';
+import { finalizeAdvocateDeletion } from './advocateDeletion.service.js';
 import bcrypt from 'bcryptjs';
 import { encrypt, decrypt } from '../utils/crypto.js';
 import { initiateAadhaarDigiLocker, fetchAadhaarDetails } from './idspay.service.js';
@@ -481,6 +482,15 @@ export const verifyLoginOtpService = async ({ phone, accountType, otp }) => {
     }
   }
 
+  if (accountType === 'ADVOCATE' && account.deletionStatus === 'PENDING') {
+    if (account.scheduledDeletionAt && new Date(account.scheduledDeletionAt) <= new Date()) {
+      await finalizeAdvocateDeletion(account.id);
+      const err = new Error('This Advocate account has been deleted.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
   if (!account.isActive) {
     throw new Error('Account is deactivated.');
   }
@@ -497,6 +507,18 @@ export const verifyLoginOtpService = async ({ phone, accountType, otp }) => {
       where: { id: account.id },
       data: {
         status: 'ACTIVE',
+        deletionRequestedAt: null,
+        scheduledDeletionAt: null
+      }
+    });
+    account.deletionCancelled = true;
+  }
+
+  if (accountType === 'ADVOCATE' && account.deletionStatus === 'PENDING') {
+    account = await prisma.advocate.update({
+      where: { id: account.id },
+      data: {
+        deletionStatus: 'NONE',
         deletionRequestedAt: null,
         scheduledDeletionAt: null
       }
@@ -566,6 +588,15 @@ export const verifyLoginEmailOtpService = async ({ email, accountType, otp }) =>
     }
   }
 
+  if (accountType === 'ADVOCATE' && account.deletionStatus === 'PENDING') {
+    if (account.scheduledDeletionAt && new Date(account.scheduledDeletionAt) <= new Date()) {
+      await finalizeAdvocateDeletion(account.id);
+      const err = new Error('This Advocate account has been deleted.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
   if (!account.isActive) {
     throw new Error('Account is deactivated.');
   }
@@ -589,18 +620,39 @@ export const verifyLoginEmailOtpService = async ({ email, accountType, otp }) =>
     account.deletionCancelled = true;
   }
 
+  if (accountType === 'ADVOCATE' && account.deletionStatus === 'PENDING') {
+    account = await prisma.advocate.update({
+      where: { id: account.id },
+      data: {
+        deletionStatus: 'NONE',
+        deletionRequestedAt: null,
+        scheduledDeletionAt: null
+      }
+    });
+    account.deletionCancelled = true;
+  }
+
   return account;
 };
 
 // 8d. Login: Verify Advocate Email & Password
 export const verifyEmailPasswordLoginService = async ({ email, password }) => {
   const normalizedEmail = email.toLowerCase().trim();
-  const advocate = await prisma.advocate.findUnique({
+  let advocate = await prisma.advocate.findUnique({
     where: { email: normalizedEmail }
   });
 
   if (!advocate) {
     throw new Error('Invalid email or password');
+  }
+
+  if (advocate.deletionStatus === 'PENDING') {
+    if (advocate.scheduledDeletionAt && new Date(advocate.scheduledDeletionAt) <= new Date()) {
+      await finalizeAdvocateDeletion(advocate.id);
+      const err = new Error('This Advocate account has been deleted.');
+      err.statusCode = 400;
+      throw err;
+    }
   }
 
   if (!advocate.isActive) {
@@ -610,6 +662,18 @@ export const verifyEmailPasswordLoginService = async ({ email, password }) => {
   const isMatch = await bcrypt.compare(password, advocate.passwordHash);
   if (!isMatch) {
     throw new Error('Invalid email or password');
+  }
+
+  if (advocate.deletionStatus === 'PENDING') {
+    advocate = await prisma.advocate.update({
+      where: { id: advocate.id },
+      data: {
+        deletionStatus: 'NONE',
+        deletionRequestedAt: null,
+        scheduledDeletionAt: null
+      }
+    });
+    advocate.deletionCancelled = true;
   }
 
   return advocate;
@@ -696,7 +760,10 @@ export const getCurrentUserProfile = async (id, accountType) => {
       voiceCallChargePerMinute: profile.voiceCallChargePerMinute !== null ? Number(profile.voiceCallChargePerMinute) : null,
       offlineVisitingFee: profile.offlineVisitingFee !== null ? Number(profile.offlineVisitingFee) : null,
       status: profile.status,
-      approvalStatus: profile.approvalStatus
+      approvalStatus: profile.approvalStatus,
+      deletionStatus: profile.deletionStatus,
+      deletionRequestedAt: profile.deletionRequestedAt,
+      scheduledDeletionAt: profile.scheduledDeletionAt
     };
   }
 };

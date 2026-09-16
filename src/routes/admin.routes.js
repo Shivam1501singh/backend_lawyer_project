@@ -13,11 +13,14 @@ router.post('/content-creators', requireAuth, requireRole('ADMIN'), generalLimit
 router.get('/content-creators', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.listContentCreators);
 
 // Admin-only Advocate Management
+router.get('/advocates/deletion-requests', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.listPendingAdvocateDeletionRequests);
 router.get('/advocates/pending', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.listPendingAdvocates);
 router.get('/advocates', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.listAdvocates);
 router.get('/advocates/:advocateId', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.getAdvocateReviewProfile);
 router.patch('/advocates/:advocateId/approve', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.approveAdvocate);
 router.patch('/advocates/:advocateId/reject', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.rejectAdvocate);
 router.patch('/advocates/:advocateId/status', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.updateAdvocateStatus);
+router.patch('/advocates/:advocateId/cancel-deletion', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.cancelAdvocateDeletion);
+router.delete('/advocates/:advocateId/permanent', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.permanentDeleteAdvocate);
 
 export default router;

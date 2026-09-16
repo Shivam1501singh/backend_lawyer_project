@@ -27,6 +27,7 @@ export const searchAdvocates = async ({ query, barId, currentAdvocateId, page = 
   const whereClause = {
     status: 'ACTIVE',
     isActive: true,
+    deletionStatus: { not: 'PENDING' },
     ...(currentAdvocateId ? { id: { not: currentAdvocateId } } : {}),
     OR: [
       { barCouncilId: { equals: cleanQuery, mode: 'insensitive' } },
@@ -108,6 +109,12 @@ export const createTeamRequest = async ({ requesterId, targetAdvocateId }) => {
     throw error;
   }
 
+  if (requesterAdvocate.deletionStatus === 'PENDING') {
+    const error = new Error('Your account deletion request is pending. You cannot perform this action.');
+    error.statusCode = 403;
+    throw error;
+  }
+
   if (requesterAdvocate.approvalStatus === 'REJECTED') {
     const error = new Error('Your advocate profile has not been approved by admin. You cannot send team requests.');
     error.statusCode = 403;
@@ -138,8 +145,8 @@ export const createTeamRequest = async ({ requesterId, targetAdvocateId }) => {
     throw error;
   }
 
-  // Rule 3: Target advocate must be ACTIVE
-  if (!targetAdvocate.isActive || targetAdvocate.status !== 'ACTIVE') {
+  // Rule 3: Target advocate must be ACTIVE and not PENDING_DELETION
+  if (!targetAdvocate.isActive || targetAdvocate.status !== 'ACTIVE' || targetAdvocate.deletionStatus === 'PENDING') {
     const error = new Error('Target advocate is currently unavailable or blocked.');
     error.statusCode = 403;
     throw error;
@@ -353,7 +360,7 @@ export const getTeamMates = async (advocateId) => {
 
   return relationships
     .map(r => (r.advocateId === advocateId ? r.teamMate : r.advocate))
-    .filter(target => target && target.isActive && target.status === 'ACTIVE')
+    .filter(target => target && target.isActive && target.status === 'ACTIVE' && target.deletionStatus !== 'PENDING')
     .map(target => ({
       id: target.id,
       name: target.fullName,

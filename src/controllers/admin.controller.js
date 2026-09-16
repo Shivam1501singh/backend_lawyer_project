@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import { signToken, sendTokenCookie } from '../utils/jwt.js';
+import { finalizeAdvocateDeletion } from '../services/advocateDeletion.service.js';
 
 /**
  * Admin Login
@@ -428,3 +429,132 @@ export const updateAdvocateStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * List Pending Advocate Deletion Requests (ADMIN only)
+ * GET /api/admin/advocates/deletion-requests
+ */
+export const listPendingAdvocateDeletionRequests = async (req, res, next) => {
+  try {
+    const advocates = await prisma.advocate.findMany({
+      where: { deletionStatus: 'PENDING' },
+      orderBy: { deletionRequestedAt: 'desc' }
+    });
+
+    const data = advocates.map(adv => ({
+      id: adv.id,
+      advocateId: adv.id,
+      name: adv.fullName,
+      fullName: adv.fullName,
+      email: adv.email,
+      phone: adv.phone,
+      barId: adv.barCouncilId,
+      barCouncilId: adv.barCouncilId,
+      profileImage: adv.profilePhotoUrl,
+      profilePhotoUrl: adv.profilePhotoUrl,
+      approvalStatus: adv.approvalStatus,
+      status: adv.status,
+      accountStatus: adv.status,
+      deletionStatus: adv.deletionStatus,
+      deletionRequestedAt: adv.deletionRequestedAt,
+      scheduledDeletionAt: adv.scheduledDeletionAt,
+      createdAt: adv.createdAt
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data,
+      deletionRequests: data
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Admin Cancel Advocate Deletion Request
+ * PATCH /api/admin/advocates/:advocateId/cancel-deletion
+ */
+export const cancelAdvocateDeletion = async (req, res, next) => {
+  try {
+    const { advocateId } = req.params;
+
+    const advocate = await prisma.advocate.findUnique({
+      where: { id: advocateId }
+    });
+
+    if (!advocate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Advocate not found'
+      });
+    }
+
+    if (advocate.deletionStatus !== 'PENDING') {
+      return res.status(400).json({
+        success: false,
+        message: 'Advocate account deletion request is not pending.'
+      });
+    }
+
+    const updated = await prisma.advocate.update({
+      where: { id: advocateId },
+      data: {
+        deletionStatus: 'NONE',
+        deletionRequestedAt: null,
+        scheduledDeletionAt: null
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Advocate account deletion has been cancelled successfully.',
+      data: {
+        id: updated.id,
+        deletionStatus: updated.deletionStatus,
+        status: updated.status,
+        approvalStatus: updated.approvalStatus
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Admin Permanent Delete Advocate Account
+ * DELETE /api/admin/advocates/:advocateId/permanent
+ */
+export const permanentDeleteAdvocate = async (req, res, next) => {
+  try {
+    const { advocateId } = req.params;
+
+    const advocate = await prisma.advocate.findUnique({
+      where: { id: advocateId }
+    });
+
+    if (!advocate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Advocate not found'
+      });
+    }
+
+    if (advocate.deletionStatus !== 'PENDING') {
+      return res.status(400).json({
+        success: false,
+        message: 'Advocate account deletion request is not pending.'
+      });
+    }
+
+    await finalizeAdvocateDeletion(advocateId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Advocate account permanently deleted.'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

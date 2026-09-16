@@ -395,65 +395,89 @@ Step 7: Review & Finalize Account Creation
 
 ---
 
-## 5. Google OAuth Callback Integration
+## 5. Google OAuth Callback Integration (Mobile App & Web Client)
 
-### Registration callbacks
-Frontend redirects browser to:
-- **User:** `http://localhost:5000/api/auth/user/google/register`
-- **Advocate:** `http://localhost:5000/api/auth/advocate/google/register`
+### Overview & Problem Resolution
+Google OAuth supports both **Mobile App clients** (via custom deep-link scheme `advocateconnect://`) and **Web clients** (via HTTP-only cookies and `CLIENT_URL` redirect).
 
-Upon successful authentication, Google returns session tokens back to the server, which redirects the client browser back to:
-- **User callback:** `/register/user?step=4&registrationId=uuid-string`
-- **Advocate callback:** `/register/advocate?step=1&registrationId=uuid-string` (email is verified; they fill photo and gender and resume).
-
-### Login callbacks
-Frontend redirects browser to:
-- **User:** `http://localhost:5000/api/auth/user/google/login`
-- **Advocate:** `http://localhost:5000/api/auth/advocate/google/login`
-
-Callback will set the JWT cookie and automatically redirect back to `/dashboard`.
+> [!NOTE]
+> **Mobile Redirection Resolution**:
+> Previously, OAuth callbacks defaulted to web URLs (`http://localhost:5173`), causing mobile app authentication flows to break on localhost.
+> The OAuth controller (`src/controllers/oauth.controller.js`) and routes (`src/routes/oauth.routes.js`) have been upgraded so that:
+> 1. Mobile app deep linking (`advocateconnect://`) is the default behavior.
+> 2. Web clients explicitly supply `?platform=web` to redirect to web dashboard/registration pages.
+> 3. Mobile clients exchange temporary single-use 60s codes for full JWT tokens via `POST /auth/oauth/exchange` or `POST /api/auth/oauth/exchange`.
 
 ---
 
-## 6. Login APIs
+### Dual Platform Flow Matrix
 
-### User Phone OTP Login
-- **Send OTP:** `POST /api/auth/user/login/send-otp` (Body: `{ "phone": "9876543210" }`)
-- **Verify OTP:** `POST /api/auth/user/login/verify-otp` (Body: `{ "phone": "9876543210", "otp": "123456" }`)
+| Platform | Initiation URL Example | Callback Behavior | Authentication Result |
+| :--- | :--- | :--- | :--- |
+| **Mobile App (Default)** | `/api/auth/user/google/login` | Redirects to `advocateconnect://auth-callback?code=<single_use_code>&type=user` | Client exchanges code via `POST /auth/oauth/exchange` to receive Bearer JWT token |
+| **Mobile App (Register)** | `/api/auth/user/google/register` | Redirects to `advocateconnect://register-callback?step=2&registrationId=...&type=user&fullName=...&email=...` | Client resumes registration wizard at target step |
+| **Web Client (Login)** | `/api/auth/user/google/login?platform=web` | Sets HTTP-only `auth_token` cookie & redirects to `${CLIENT_URL}/dashboard` | Session cookie set in browser |
+| **Web Client (Register)** | `/api/auth/user/google/register?platform=web` | Redirects to `${CLIENT_URL}/register/user?step=2&registrationId=...` | Browser resumes registration wizard |
 
-### User Email OTP Login
-- **Send OTP:** `POST /api/auth/user/login/send-email-otp` (Body: `{ "email": "user@gmail.com" }`)
-- **Verify OTP:** `POST /api/auth/user/login/verify-email-otp` (Body: `{ "email": "user@gmail.com", "otp": "123456" }`)
+---
 
-### Advocate Phone OTP Login
-- **Send OTP:** `POST /api/auth/advocate/login/send-otp` (Body: `{ "phone": "9876543210" }`)
-- **Verify OTP:** `POST /api/auth/advocate/login/verify-otp` (Body: `{ "phone": "9876543210", "otp": "123456" }`)
+### Mobile Deep-Link Specifications
 
-### Advocate Email & Password Login
-- **Endpoint:** `POST /api/auth/advocate/login`
-- **Request Body:**
+#### 1. Mobile Login Callback Deep Link
+- **Success Format:** `advocateconnect://auth-callback?code=<single_use_exchange_code>&type=<user|advocate>`
+- **Error Format:** `advocateconnect://auth-callback?error=<error_code>&type=<user|advocate>`
+  - Error codes: `google_auth_failed`, `account_not_found`, `account_inactive`, `server_error`
+
+#### 2. Mobile Registration Callback Deep Link
+- **Success Format:** `advocateconnect://register-callback?step=<next_step>&registrationId=<session_id>&type=<user|advocate>&fullName=<name>&email=<email>`
+- **Error Format:** `advocateconnect://register-callback?error=<error_code>&type=<user|advocate>`
+  - Error codes: `account_exists`, `advocate_exists`, `session_expired`, `invalid_registration_state`, `google_auth_failed`, `server_error`
+
+---
+
+### Mobile OAuth Code Exchange API
+
+After receiving the deep link callback `advocateconnect://auth-callback?code=...`, the mobile app must immediately exchange the temporary 60-second code for the final JWT access token.
+
+* **Endpoint:** `POST /auth/oauth/exchange` OR `POST /api/auth/oauth/exchange`
+* **Rate Limiting:** OAuth limiter applied
+* **Request Headers:** `Content-Type: application/json`
+* **Request Body:**
   ```json
   {
-    "email": "advocate@gmail.com",
-    "password": "SecurePassword123"
+    "code": "a1b2c3d4e5f67890..."
   }
   ```
-- **Response Example (200 OK):**
+* **Success Response (200 OK):**
   ```json
   {
     "success": true,
     "message": "Login successful",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "uuid-string",
+      "email": "user@example.com",
+      "fullName": "Jane Doe",
+      "accountType": "user"
+    }
+  }
+  ```
+* **Error Response (400 Bad Request):**
+  ```json
+  {
+    "success": false,
+    "message": "Invalid or expired OAuth authorization code"
   }
   ```
 
-### Advocate Google Registration Flow
-To register using Google OAuth without losing existing registration wizard inputs (like Name, Gender, or Avatar):
-1. **Pass Registration ID:** When redirecting to `GET /api/auth/advocate/google/register`, append the query parameter `?registrationId=ABC123`.
-2. **Passport State Mapping:** The backend will map this ID into Passport's OAuth `state` parameter dynamically.
-3. **Google Authentication & Callback:** After successful authentication, Google returns the state parameters as `req.query.state` in the callback URL.
-4. **Session Retrieval & Email Verification:** The backend callback checks the session, marks the Google email as verified, updates `emailVerified = true`, and dynamically calculates the next incomplete wizard step.
-5. **Wizard Step Routing:** It redirects back to the client: `/register/advocate?step=3&registrationId=ABC123` (routing the Advocate directly to Step 3 for phone verification, preserving the same `registrationId`).
+---
+
+### Advocate Google Registration Flow (Preserving Wizard State)
+To register an Advocate using Google OAuth without losing earlier registration inputs (e.g. photo, gender, or state):
+1. **Pass Registration ID:** Redirect to `GET /api/auth/advocate/google/register?registrationId=<session_id>`.
+2. **Passport State Mapping:** The server packs `registrationId`, `platform`, and `scheme` into an encoded base64url state parameter.
+3. **Google Callback & Auto-Verification:** Upon authentication, the backend marks `emailVerified = true` in the existing `RegistrationSession` and calculates the next incomplete step.
+4. **Resuming Wizard:** The server redirects back to `advocateconnect://register-callback?step=3&registrationId=<session_id>&type=advocate...` (or web URL if `platform=web`), seamlessly resuming the wizard.
 
 ---
 
@@ -4505,6 +4529,313 @@ Run the 13-stage automated end-to-end test suite:
 ```bash
 node scratch/test-user-account-deletion-e2e.js
 ```
+
+---
+
+## Advocate Account Deletion With OTP, Admin Review, and 30-Day Reactivation
+
+### Overview
+Logged-in Advocates can initiate an account deletion request. Upon 2-step OTP verification, the account enters a **30-day pending deletion period** (`deletionStatus = PENDING`). The account is **not permanently deleted immediately**.
+
+During this 30-day grace period:
+- The Advocate is **immediately hidden from all Normal User search, profile listing, discovery, and booking availability APIs**.
+- The Advocate cannot send new team requests.
+- The request appears in the Admin Panel for review (`GET /api/admin/advocates/deletion-requests`).
+- **If the Advocate logs in within 30 days**, the deletion request is **automatically cancelled**, and the account is restored to normal active operation without resetting Admin approval or block status.
+- **If Admin cancels the deletion**, the request is cancelled (`deletionStatus = NONE`) and account is restored.
+- **If 30 days expire or Admin permanently deletes**, Advocate data is transactionally archived into `DeletedAdvocate`, foreign keys are cleaned up, and the original account is removed/disabled. Future logins are rejected.
+
+---
+
+### Business Flow Architecture
+
+```text
+                    ADVOCATE
+                       │
+                       ▼
+               Request Deletion (`POST /api/advocate/delete-account/request-otp`)
+                       │
+                       ▼
+                OTP → Registered Phone
+                       │
+                       ▼
+                 Verify OTP (`POST /api/advocate/delete-account/verify-otp`)
+                       │
+                       ▼
+              `PENDING_DELETION`
+                       │
+                       ▼
+            Hidden From Normal Users & Bookings
+                       │
+                  30-Day Period
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+   Advocate Login               No Login
+   Within 30 Days              for 30 Days
+          │                         │
+          ▼                         ▼
+ Cancel Deletion              Admin Review /
+          │                   Automatic Expiry
+          ▼                         │
+       ACTIVE                 ┌─────┴─────┐
+          │                   │           │
+          ▼                CANCEL      PERMANENT
+   Normal Operation       DELETION      DELETE
+                              │           │
+                              ▼           ▼
+                           ACTIVE    DeletedAdvocate
+                                          │
+                                          ▼
+                                  Original Account
+                                  Removed/Disabled
+```
+
+---
+
+### Database Schema Models
+
+#### 1. `AdvocateDeletionStatus` Enum & `Advocate` Model Additions
+```prisma
+enum AdvocateDeletionStatus {
+  NONE
+  PENDING
+}
+
+model Advocate {
+  // Existing fields...
+  deletionStatus      AdvocateDeletionStatus @default(NONE)
+  deletionRequestedAt DateTime?
+  scheduledDeletionAt DateTime?
+}
+```
+
+#### 2. `DeletedAdvocate` Archive Model
+```prisma
+model DeletedAdvocate {
+  id                       String                 @id @default(uuid())
+  originalAdvocateId       String                 @unique
+  fullName                 String
+  email                    String
+  phone                    String
+  barCouncilId             String
+  gender                   String?
+  aadhaarNumber            String?
+  state                    String
+  city                     String
+  pincode                  String?
+  experienceYears         Int?
+  casesHandled             Int?
+  bestPracticeArea         String?
+  about                    String?
+  courtPractice            String[]
+  languagesSpoken          String[]
+  completeAddress          String?
+  videoCallChargePerMinute Decimal?
+  voiceCallChargePerMinute Decimal?
+  offlineVisitingFee       Decimal?
+  averageRating            Decimal?
+  totalReviews            Int                    @default(0)
+  profileData             Json?
+  approvalStatus           AdvocateApprovalStatus
+  deletionRequestedAt      DateTime
+  deletedAt                DateTime               @default(now())
+  createdAt                DateTime               @default(now())
+
+  @@index([originalAdvocateId])
+  @@index([email])
+  @@index([phone])
+  @@index([barCouncilId])
+}
+```
+
+---
+
+### Advocate API Endpoints
+
+#### 1. Request Deletion OTP
+* **Endpoint:** `POST /api/advocate/delete-account/request-otp`
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Headers:** `Authorization: Bearer <advocate_jwt_token>` (or `auth_token` cookie)
+* **Pre-conditions:**
+  - Advocate ID is obtained strictly from authenticated session token.
+  - Returns `400 Bad Request` if deletion request is already `PENDING`.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "OTP has been sent to your registered phone number."
+  }
+  ```
+
+#### 2. Verify Deletion OTP & Enter Pending Deletion
+* **Endpoint:** `POST /api/advocate/delete-account/verify-otp`
+* **Authentication:** `ADVOCATE` required (`requireAuth`, `requireRole('ADVOCATE')`)
+* **Request Body:**
+  ```json
+  {
+    "otp": "123456"
+  }
+  ```
+* **Post-conditions:**
+  - Sets `deletionStatus = PENDING`.
+  - Sets `deletionRequestedAt = current timestamp`.
+  - Sets `scheduledDeletionAt = current timestamp + 30 days`.
+  - Clears `auth_token` cookie session.
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Your account deletion request has been submitted for admin review.",
+    "scheduledDeletionAt": "2026-10-16T14:00:00.000Z"
+  }
+  ```
+
+---
+
+### Admin API Endpoints
+
+#### 1. Fetch Pending Advocate Deletion Requests
+* **Endpoint:** `GET /api/admin/advocates/deletion-requests`
+* **Authentication:** `ADMIN` required (`requireAuth`, `requireRole('ADMIN')`)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "advocate-uuid",
+        "name": "Jane Doe",
+        "email": "jane@example.com",
+        "phone": "9876543210",
+        "barCouncilId": "BAR/123/2020",
+        "approvalStatus": "APPROVED",
+        "status": "ACTIVE",
+        "deletionStatus": "PENDING",
+        "deletionRequestedAt": "2026-09-16T14:00:00.000Z",
+        "scheduledDeletionAt": "2026-10-16T14:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+#### 2. Admin Cancel Deletion Request
+* **Endpoint:** `PATCH /api/admin/advocates/:advocateId/cancel-deletion`
+* **Authentication:** `ADMIN` required (`requireAuth`, `requireRole('ADMIN')`)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate account deletion has been cancelled successfully."
+  }
+  ```
+
+#### 3. Admin Permanent Delete Advocate Account
+* **Endpoint:** `DELETE /api/admin/advocates/:advocateId/permanent`
+* **Authentication:** `ADMIN` required (`requireAuth`, `requireRole('ADMIN')`)
+* **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate account permanently deleted."
+  }
+  ```
+
+---
+
+### Postman Testing Guide (10 Test Cases)
+
+#### Test 1 — Request Deletion OTP
+1. Authenticate as Advocate using `POST /api/auth/advocate/login` or OTP login.
+2. Send `POST /api/advocate/delete-account/request-otp` with `Authorization: Bearer <advocate_token>`.
+3. Verify response:
+   ```json
+   {
+     "success": true,
+     "message": "OTP has been sent to your registered phone number."
+   }
+   ```
+
+#### Test 2 — Verify OTP & Submit Request
+1. Send `POST /api/advocate/delete-account/verify-otp` with body `{ "otp": "123456" }`.
+2. Verify response:
+   ```json
+   {
+     "success": true,
+     "message": "Your account deletion request has been submitted for admin review."
+   }
+   ```
+3. Check DB: `deletionStatus = PENDING`, `scheduledDeletionAt` set 30 days ahead.
+
+#### Test 3 — Verify Hidden Profile & Availability
+1. Call public Advocate APIs:
+   - `GET /api/advocates` (Directory)
+   - `GET /api/advocates/:id` (Public Profile)
+   - `GET /api/advocates/search` (Team Search)
+   - `POST /api/case-requests` (New Booking)
+2. Verify pending Advocate is completely hidden (404 / excluded) and unavailable for new bookings.
+
+#### Test 4 — Admin View Deletion Requests
+1. Authenticate as Admin (`POST /api/admin/login`).
+2. Send `GET /api/admin/advocates/deletion-requests`.
+3. Verify pending Advocate appears in list with deletion timestamps.
+
+#### Test 5 — Advocate Login Within 30 Days (Auto-Reactivation)
+1. Perform Advocate login (`POST /api/auth/advocate/login` or OTP login) before `scheduledDeletionAt`.
+2. Verify response:
+   ```json
+   {
+     "success": true,
+     "message": "Login successful. Your account deletion request has been cancelled and your account is active again.",
+     "token": "..."
+   }
+   ```
+3. Check DB: `deletionStatus = NONE`, `deletionRequestedAt = null`, `scheduledDeletionAt = null`.
+4. Verify Advocate is visible in public directory again.
+
+#### Test 6 — Admin Cancel Deletion
+1. Request deletion again for Advocate.
+2. Send Admin request `PATCH /api/admin/advocates/:advocateId/cancel-deletion`.
+3. Verify response:
+   ```json
+   {
+     "success": true,
+     "message": "Advocate account deletion has been cancelled successfully."
+   }
+   ```
+
+#### Test 7 — Admin Permanent Delete
+1. Request deletion for Advocate.
+2. Send Admin request `DELETE /api/admin/advocates/:advocateId/permanent`.
+3. Verify response:
+   ```json
+   {
+     "success": true,
+     "message": "Advocate account permanently deleted."
+   }
+   ```
+4. Verify `DeletedAdvocate` record created and original `Advocate` row removed.
+
+#### Test 8 — Login After 30 Days (Deletion Finalized & Rejected)
+1. Set `scheduledDeletionAt` 31 days in past.
+2. Attempt Advocate login (`POST /api/auth/advocate/login`).
+3. Verify response:
+   ```json
+   {
+     "success": false,
+     "message": "This Advocate account has been deleted."
+   }
+   ```
+4. Verify no token is issued and `DeletedAdvocate` archive exists.
+
+#### Test 9 — Invalid OTP Handling
+1. Send `POST /api/advocate/delete-account/verify-otp` with incorrect OTP (`000000`).
+2. Verify deletion request is NOT created and Advocate status remains unchanged.
+
+#### Test 10 — Unauthorized Access to Admin APIs
+1. Call `GET /api/admin/advocates/deletion-requests` using a Normal User or Advocate token.
+2. Verify response: `403 Forbidden` (`Access forbidden. Insufficient permissions.`).
+
 
 
 

@@ -235,9 +235,13 @@ export const loginVerifyOtp = async (req, res, next) => {
     const token = signToken({ id: advocate.id, type: 'advocate' });
     sendTokenCookie(res, token);
 
+    const message = advocate.deletionCancelled
+      ? 'Login successful. Your account deletion request has been cancelled and your account is active again.'
+      : 'Login successful';
+
     return res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message,
       token
     });
   } catch (error) {
@@ -257,9 +261,13 @@ export const loginEmailPassword = async (req, res, next) => {
     const token = signToken({ id: advocate.id, type: 'advocate' });
     sendTokenCookie(res, token);
 
+    const message = advocate.deletionCancelled
+      ? 'Login successful. Your account deletion request has been cancelled and your account is active again.'
+      : 'Login successful';
+
     return res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message,
       token
     });
   } catch (error) {
@@ -270,7 +278,7 @@ export const loginEmailPassword = async (req, res, next) => {
     // Return generic message for any authentication failures
     return res.status(401).json({
       success: false,
-      message: 'Invalid email or password'
+      message: error.message === 'This Advocate account has been deleted.' ? error.message : 'Invalid email or password'
     });
   }
 };

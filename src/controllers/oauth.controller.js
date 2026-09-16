@@ -25,7 +25,7 @@ setInterval(() => {
 export const parseOAuthState = (stateParam) => {
   const defaultScheme = process.env.MOBILE_APP_SCHEME || 'advocateconnect';
   if (!stateParam || stateParam === 'undefined' || stateParam === 'null') {
-    return { registrationId: null, platform: 'web', scheme: defaultScheme };
+    return { registrationId: null, platform: 'mobile', scheme: defaultScheme };
   }
 
   // 1. Try base64url JSON
@@ -35,7 +35,7 @@ export const parseOAuthState = (stateParam) => {
     if (parsed && typeof parsed === 'object') {
       return {
         registrationId: parsed.registrationId || null,
-        platform: parsed.platform || 'web',
+        platform: parsed.platform || 'mobile',
         scheme: parsed.scheme || defaultScheme
       };
     }
@@ -47,30 +47,30 @@ export const parseOAuthState = (stateParam) => {
     if (parsed && typeof parsed === 'object') {
       return {
         registrationId: parsed.registrationId || null,
-        platform: parsed.platform || 'web',
+        platform: parsed.platform || 'mobile',
         scheme: parsed.scheme || defaultScheme
       };
     }
   } catch (e) {}
 
-  // 3. Fallback: treat as plain registrationId string (legacy web)
+  // 3. Fallback: if it's a plain string, check if it's 'web' or registrationId
   return {
-    registrationId: stateParam,
-    platform: 'web',
+    registrationId: stateParam === 'web' ? null : stateParam,
+    platform: stateParam === 'web' ? 'web' : 'mobile',
     scheme: defaultScheme
   };
 };
 
 /**
  * Google Registration Callback Handler
- * Supports both Web (Cookie + CLIENT_URL redirect) and Mobile App (Deep Link redirect)
+ * Supports Mobile App (Deep Link redirect by default) and Web (Cookie + CLIENT_URL redirect when platform is web)
  */
 export const googleCallbackHandler = (accountType) => {
   return async (req, res, next) => {
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
     const redirectType = accountType.toLowerCase();
     const { registrationId, platform, scheme } = parseOAuthState(req.query.state);
-    const isMobile = platform === 'mobile' || platform === 'app';
+    const isMobile = platform !== 'web';
     const appScheme = scheme || process.env.MOBILE_APP_SCHEME || 'advocateconnect';
 
     try {
@@ -183,7 +183,7 @@ export const googleLoginCallbackHandler = (accountType) => {
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
     const redirectType = accountType.toLowerCase();
     const { platform, scheme } = parseOAuthState(req.query.state);
-    const isMobile = platform === 'mobile' || platform === 'app';
+    const isMobile = platform !== 'web';
     const appScheme = scheme || process.env.MOBILE_APP_SCHEME || 'advocateconnect';
 
     try {

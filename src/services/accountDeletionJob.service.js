@@ -1,4 +1,5 @@
 import { processExpiredAccountDeletions } from './accountDeletion.service.js';
+import { processExpiredAdvocateAccountDeletions } from './advocateDeletion.service.js';
 
 let jobInterval = null;
 
@@ -7,14 +8,19 @@ export const startAccountDeletionJob = (intervalMs = 60 * 60 * 1000) => {
     clearInterval(jobInterval);
   }
 
+  const runAllDeletions = async () => {
+    await processExpiredAccountDeletions();
+    await processExpiredAdvocateAccountDeletions();
+  };
+
   // Initial check on startup
-  processExpiredAccountDeletions().catch(err => {
+  runAllDeletions().catch(err => {
     console.error('Error running initial account deletion job:', err);
   });
 
   // Scheduled periodic check
   jobInterval = setInterval(() => {
-    processExpiredAccountDeletions().catch(err => {
+    runAllDeletions().catch(err => {
       console.error('Error running periodic account deletion job:', err);
     });
   }, intervalMs);

@@ -10,7 +10,7 @@ export const createCaseRequest = async ({ userId, advocateId, note, description,
     where: { id: advocateId }
   });
 
-  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE' || advocate.approvalStatus !== 'APPROVED') {
+  if (!advocate || !advocate.isActive || advocate.status !== 'ACTIVE' || advocate.approvalStatus !== 'APPROVED' || advocate.deletionStatus === 'PENDING') {
     const error = new Error('This lawyer is currently unavailable.');
     error.statusCode = 400;
     throw error;

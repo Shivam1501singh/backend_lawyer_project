@@ -20,6 +20,7 @@ import ipcRoutes from './routes/ipc.routes.js';
 import bnsRoutes from './routes/bns.routes.js';
 import advocateResetRoutes from './routes/advocateReset.routes.js';
 import userRoutes from './routes/user.routes.js';
+import advocateDeletionRoutes from './routes/advocate.deletion.routes.js';
 import { startAccountDeletionJob } from './services/accountDeletionJob.service.js';
 
 
@@ -69,6 +70,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auth/user', userAuthRoutes);
 app.use('/api/auth/advocate', advocateAuthRoutes);
 app.use('/api/auth', oauthRoutes); // mounts google auth callback routes
+app.use('/auth', oauthRoutes); // supports non-prefixed /auth routes for mobile clients
 app.use('/api/advocate/profile', advocateProfileRoutes);
 app.use('/api/help', helpRouter);
 app.use('/api/admin/help', adminHelpRouter);
@@ -82,6 +84,7 @@ app.use('/', ipcRoutes);
 app.use('/', bnsRoutes);
 app.use('/', advocateResetRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/advocate', advocateDeletionRoutes);
 
 
 

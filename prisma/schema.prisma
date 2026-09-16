@@ -150,6 +150,47 @@ model DeletedUser {
   @@index([phone])
 }
 
+enum AdvocateDeletionStatus {
+  NONE
+  PENDING
+}
+
+model DeletedAdvocate {
+  id                       String                 @id @default(uuid())
+  originalAdvocateId       String                 @unique
+  fullName                 String
+  email                    String
+  phone                    String
+  barCouncilId             String
+  gender                   String?
+  aadhaarNumber            String?
+  state                    String
+  city                     String
+  pincode                  String?
+  experienceYears          Int?
+  casesHandled             Int?
+  bestPracticeArea         String?
+  about                    String?
+  courtPractice            String[]
+  languagesSpoken          String[]
+  completeAddress          String?
+  videoCallChargePerMinute Decimal?
+  voiceCallChargePerMinute Decimal?
+  offlineVisitingFee       Decimal?
+  averageRating            Decimal?
+  totalReviews             Int                    @default(0)
+  profileData              Json?
+  approvalStatus           AdvocateApprovalStatus
+  deletionRequestedAt      DateTime
+  deletedAt                DateTime               @default(now())
+  createdAt                DateTime               @default(now())
+
+  @@index([originalAdvocateId])
+  @@index([email])
+  @@index([phone])
+  @@index([barCouncilId])
+}
+
 model Advocate {
   id                       String   @id @default(uuid())
   profilePhotoUrl          String?
@@ -177,6 +218,9 @@ model Advocate {
   approvedById             String?
   rejectedAt               DateTime?
   rejectedById             String?
+  deletionStatus           AdvocateDeletionStatus @default(NONE)
+  deletionRequestedAt      DateTime?
+  scheduledDeletionAt      DateTime?
   createdAt                DateTime       @default(now())
   updatedAt                DateTime @updatedAt
 

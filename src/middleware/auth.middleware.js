@@ -118,6 +118,13 @@ export const requireApprovedAdvocate = async (req, res, next) => {
     });
   }
 
+  if (req.user.deletionStatus === 'PENDING') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your account deletion request is pending. You cannot perform this action.'
+    });
+  }
+
   if (req.user.approvalStatus === 'REJECTED') {
     return res.status(403).json({
       success: false,

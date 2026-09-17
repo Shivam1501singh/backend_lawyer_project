@@ -2,12 +2,17 @@ import crypto from 'crypto';
 import prisma from '../lib/prisma.js';
 import { signToken, sendTokenCookie } from '../utils/jwt.js';
 
-// In-memory store for single-use OAuth exchange codes (60s TTL)
+/* ============================================================
+   OAUTH EXCHANGE CODE STORE (mobile only)
+
+   Single-use codes with a 60s TTL, swept every 5 minutes.
+============================================================ */
+
 export const oauthCodeStore = new Map();
 
-// Sweep expired OAuth exchange codes every 5 minutes
 setInterval(() => {
   const now = Date.now();
+
   for (const [code, entry] of oauthCodeStore.entries()) {
     if (now > entry.expiresAt) {
       oauthCodeStore.delete(code);
@@ -15,174 +20,317 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000).unref();
 
+/* ============================================================
+   WEB ROUTE SHAPE
+
+   The web client renders ONE signup page and ONE login page.
+   Account type travels as ?role=, never as a path segment:
+
+     http://localhost:5173/signup?registrationId=...&step=2&role=advocate
+     http://localhost:5173/login?error=advocate_exists&role=advocate
+============================================================ */
+
+const WEB_SIGNUP_PATH = '/signup';
+const WEB_LOGIN_PATH = '/login';
+
+const buildWebUrl = (base, path, params = {}) => {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== ''
+    )
+  ).toString();
+
+  return query ? `${base}${path}?${query}` : `${base}${path}`;
+};
+
 /**
- * Resolves base redirect URLs for Web and Mobile clients.
- * - Web client: Configured via WEB_CLIENT_URL or CLIENT_URL (default: 'http://localhost:5173')
- * - Mobile client: Configured via MOBILE_CLIENT_URL or MOBILE_APP_SCHEME (default: 'advocateconnect://')
+ * Resolves base redirect URLs for web and mobile clients.
+ *
+ * Web:    WEB_CLIENT_URL or CLIENT_URL   (default http://localhost:5173)
+ * Mobile: MOBILE_CLIENT_URL or MOBILE_APP_SCHEME (default advocateconnect://)
  */
 export const getClientRedirectUrls = (scheme) => {
-  const rawWeb = process.env.WEB_CLIENT_URL || process.env.CLIENT_URL || 'http://localhost:5173';
+  const rawWeb =
+    process.env.WEB_CLIENT_URL ||
+    process.env.CLIENT_URL ||
+    'http://localhost:5173';
+
   const webBase = rawWeb.replace(/\/+$/, '');
 
-  const fallbackScheme = scheme || process.env.MOBILE_APP_SCHEME || 'advocateconnect';
-  let rawMobile = process.env.MOBILE_CLIENT_URL || `${fallbackScheme}://`;
+  const fallbackScheme =
+    scheme || process.env.MOBILE_APP_SCHEME || 'advocateconnect';
+
+  let rawMobile =
+    process.env.MOBILE_CLIENT_URL || `${fallbackScheme}://`;
+
   rawMobile = rawMobile.trim();
+
   if (!rawMobile.includes('://')) {
     rawMobile = `${rawMobile}://`;
   }
-  const mobileBase = rawMobile.endsWith('://') ? rawMobile : `${rawMobile.replace(/\/+$/, '')}/`;
+
+  const mobileBase = rawMobile.endsWith('://')
+    ? rawMobile
+    : `${rawMobile.replace(/\/+$/, '')}/`;
 
   return { webBase, mobileBase };
 };
 
-/**
- * Parses state string passed via OAuth flow.
- * Supports:
- * - base64url JSON string e.g. Buffer.from(JSON.stringify({ client, platform, registrationId, scheme })).toString('base64url')
- * - raw JSON string
- * - plain string fallback ('web', 'mobile', or registrationId)
- *
- * Security: Only permits client to be 'web' or 'mobile'. Defaults safely to 'web' to prevent open redirect vulnerabilities.
- */
-export const parseOAuthState = (stateParam) => {
-  const defaultScheme = process.env.MOBILE_APP_SCHEME || 'advocateconnect';
-  if (!stateParam || stateParam === 'undefined' || stateParam === 'null') {
-    return { registrationId: null, client: 'web', platform: 'web', scheme: defaultScheme };
-  }
+/* ============================================================
+   OAUTH STATE
 
-  // 1. Try base64url JSON
-  try {
-    const jsonStr = Buffer.from(stateParam, 'base64url').toString('utf8');
-    const parsed = JSON.parse(jsonStr);
-    if (parsed && typeof parsed === 'object') {
-      const rawClient = (parsed.client || parsed.platform || 'web').toLowerCase().trim();
-      const client = rawClient === 'mobile' ? 'mobile' : 'web';
-      return {
-        registrationId: parsed.registrationId || null,
-        client,
-        platform: client,
-        scheme: parsed.scheme || defaultScheme
-      };
-    }
-  } catch (e) {}
+   Accepted forms:
+     1. base64url JSON  { client, platform, registrationId, scheme }
+     2. URI-encoded JSON
+     3. raw JSON
+     4. plain "web" / "mobile"
+     5. plain registrationId (backwards compatible)
 
-  // 2. Try raw JSON
-  try {
-    const parsed = JSON.parse(stateParam);
-    if (parsed && typeof parsed === 'object') {
-      const rawClient = (parsed.client || parsed.platform || 'web').toLowerCase().trim();
-      const client = rawClient === 'mobile' ? 'mobile' : 'web';
-      return {
-        registrationId: parsed.registrationId || null,
-        client,
-        platform: client,
-        scheme: parsed.scheme || defaultScheme
-      };
-    }
-  } catch (e) {}
+   Security: client is clamped to 'web' | 'mobile' and defaults to
+   'web', so a crafted state can never redirect somewhere else.
+============================================================ */
 
-  // 3. Fallback: if it's a plain string
-  const str = String(stateParam).toLowerCase().trim();
-  if (str === 'mobile') {
-    return { registrationId: null, client: 'mobile', platform: 'mobile', scheme: defaultScheme };
-  }
-  if (str === 'web') {
-    return { registrationId: null, client: 'web', platform: 'web', scheme: defaultScheme };
-  }
+const readStateObject = (parsed, defaultScheme) => {
+  const rawClient = String(parsed.client || parsed.platform || 'web')
+    .toLowerCase()
+    .trim();
 
-  // Fallback for plain registrationId string (default client is web)
+  const client = rawClient === 'mobile' ? 'mobile' : 'web';
+
   return {
-    registrationId: stateParam,
-    client: 'web',
-    platform: 'web',
-    scheme: defaultScheme
+    registrationId:
+      String(parsed.registrationId || parsed.registration_id || '').trim() ||
+      null,
+    client,
+    platform: client,
+    scheme: parsed.scheme || defaultScheme,
   };
 };
 
-/**
- * Google Registration Callback Handler
- * Supports Mobile App (Deep Link redirect to MOBILE_CLIENT_URL) and Web (Cookie + WEB_CLIENT_URL redirect)
- */
+export const parseOAuthState = (stateParam) => {
+  const defaultScheme = process.env.MOBILE_APP_SCHEME || 'advocateconnect';
+
+  if (!stateParam || stateParam === 'undefined' || stateParam === 'null') {
+    return {
+      registrationId: null,
+      client: 'web',
+      platform: 'web',
+      scheme: defaultScheme,
+    };
+  }
+
+  const value = String(stateParam).trim();
+
+  /* 1. base64url JSON */
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(value, 'base64url').toString('utf8')
+    );
+
+    if (parsed && typeof parsed === 'object') {
+      return readStateObject(parsed, defaultScheme);
+    }
+  } catch {
+    /* not base64url JSON */
+  }
+
+  /* 2. URI-encoded JSON */
+  try {
+    const parsed = JSON.parse(decodeURIComponent(value));
+
+    if (parsed && typeof parsed === 'object') {
+      return readStateObject(parsed, defaultScheme);
+    }
+  } catch {
+    /* not URI-encoded JSON */
+  }
+
+  /* 3. raw JSON */
+  try {
+    const parsed = JSON.parse(value);
+
+    if (parsed && typeof parsed === 'object') {
+      return readStateObject(parsed, defaultScheme);
+    }
+  } catch {
+    /* not raw JSON */
+  }
+
+  /* 4. plain client string */
+  const lowered = value.toLowerCase();
+
+  if (lowered === 'mobile') {
+    return {
+      registrationId: null,
+      client: 'mobile',
+      platform: 'mobile',
+      scheme: defaultScheme,
+    };
+  }
+
+  if (lowered === 'web') {
+    return {
+      registrationId: null,
+      client: 'web',
+      platform: 'web',
+      scheme: defaultScheme,
+    };
+  }
+
+  /* 5. plain registrationId */
+  return {
+    registrationId: value,
+    client: 'web',
+    platform: 'web',
+    scheme: defaultScheme,
+  };
+};
+
+const isUsableRegistrationId = (value) =>
+  typeof value === 'string' &&
+  value.trim() !== '' &&
+  value !== 'undefined' &&
+  value !== 'null';
+
+/* ============================================================
+   GOOGLE REGISTRATION CALLBACK
+
+   Web success  -> /signup?registrationId=...&step=N&role=...
+   Web error    -> /signup?error=...&role=...
+   Already has an account -> /login?error=...&role=...
+============================================================ */
+
 export const googleCallbackHandler = (accountType) => {
-  return async (req, res, next) => {
-    const redirectType = accountType.toLowerCase();
-    const { registrationId, client, scheme } = parseOAuthState(req.query.state);
+  return async (req, res) => {
+    const normalizedAccountType = String(accountType || '')
+      .trim()
+      .toUpperCase();
+
+    const redirectType =
+      normalizedAccountType === 'ADVOCATE' ? 'advocate' : 'user';
+
+    const { registrationId, client, scheme } = parseOAuthState(
+      req.query.state
+    );
+
     const isMobile = client === 'mobile';
     const { webBase, mobileBase } = getClientRedirectUrls(scheme);
 
+    const signupError = (error) =>
+      buildWebUrl(webBase, WEB_SIGNUP_PATH, { error, role: redirectType });
+
+    const loginError = (error) =>
+      buildWebUrl(webBase, WEB_LOGIN_PATH, { error, role: redirectType });
+
     try {
-      // If user profile is not supplied by Passport
+      /* ---- Passport gave us nothing ---- */
+
       if (!req.user) {
         if (isMobile) {
-          return res.redirect(`${mobileBase}register-callback?error=google_auth_failed&type=${redirectType}`);
+          return res.redirect(
+            `${mobileBase}register-callback?error=google_auth_failed&type=${redirectType}`
+          );
         }
-        return res.redirect(`${webBase}/login/${redirectType}?error=google_auth_failed`);
+
+        return res.redirect(signupError('google_auth_failed'));
       }
 
       const { fullName, email } = req.user;
-      const normalizedEmail = email.toLowerCase().trim();
 
-      // Check duplicate accounts in DB
-      const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-      const existingAdvocate = await prisma.advocate.findUnique({ where: { email: normalizedEmail } });
-
-      if (existingUser || existingAdvocate) {
-        const errType = accountType === 'ADVOCATE' ? 'advocate_exists' : 'account_exists';
+      if (!email) {
         if (isMobile) {
-          return res.redirect(`${mobileBase}register-callback?error=${errType}&type=${redirectType}`);
+          return res.redirect(
+            `${mobileBase}register-callback?error=google_email_missing&type=${redirectType}`
+          );
         }
-        return res.redirect(`${webBase}/login/${redirectType}?error=${errType}`);
+
+        return res.redirect(signupError('google_email_missing'));
       }
 
-      // Recover registration session ID from state
+      const normalizedEmail = email.toLowerCase().trim();
+
+      /* ---- already registered? ---- */
+
+      const [existingUser, existingAdvocate] = await Promise.all([
+        prisma.user.findUnique({ where: { email: normalizedEmail } }),
+        prisma.advocate.findUnique({ where: { email: normalizedEmail } }),
+      ]);
+
+      if (existingUser || existingAdvocate) {
+        const errType =
+          normalizedAccountType === 'ADVOCATE'
+            ? 'advocate_exists'
+            : 'account_exists';
+
+        if (isMobile) {
+          return res.redirect(
+            `${mobileBase}register-callback?error=${errType}&type=${redirectType}`
+          );
+        }
+
+        /* Send them to LOGIN, not back to signup — otherwise the two
+           pages bounce the user between each other. */
+        return res.redirect(loginError(errType));
+      }
+
+      /* ---- resolve the registration session ---- */
+
       let session;
 
-      if (registrationId) {
+      if (isUsableRegistrationId(registrationId)) {
         const sessionExists = await prisma.registrationSession.findUnique({
-          where: { id: registrationId }
+          where: { id: registrationId },
         });
 
-        // If the registration session expired or is invalid
         if (!sessionExists) {
           if (isMobile) {
-            return res.redirect(`${mobileBase}register-callback?error=session_expired&type=${redirectType}`);
+            return res.redirect(
+              `${mobileBase}register-callback?error=session_expired&type=${redirectType}`
+            );
           }
-          return res.redirect(`${webBase}/register/${redirectType}?error=session_expired`);
+
+          return res.redirect(signupError('session_expired'));
         }
 
-        // Verify accountType matches the registration session
-        if (sessionExists.accountType !== accountType) {
+        if (sessionExists.accountType !== normalizedAccountType) {
           if (isMobile) {
-            return res.redirect(`${mobileBase}register-callback?error=invalid_registration_state&type=${redirectType}`);
+            return res.redirect(
+              `${mobileBase}register-callback?error=invalid_registration_state&type=${redirectType}`
+            );
           }
-          return res.redirect(`${webBase}/register/${redirectType}?error=invalid_registration_state`);
+
+          return res.redirect(signupError('invalid_registration_state'));
         }
 
-        // Update existing registration session
         session = await prisma.registrationSession.update({
           where: { id: registrationId },
           data: {
             email: normalizedEmail,
             emailVerified: true,
-            fullName: sessionExists.fullName || fullName // Preserve manually entered name if present
-          }
+            /* A name typed by hand beats the one Google supplies. */
+            fullName:
+              sessionExists.fullName?.trim() ||
+              fullName?.trim() ||
+              normalizedEmail.split('@')[0],
+          },
         });
       } else {
-        // Genuinely no registration session existed: create a new one
         session = await prisma.registrationSession.create({
           data: {
-            fullName,
-            accountType,
+            fullName: fullName?.trim() || normalizedEmail.split('@')[0],
             email: normalizedEmail,
             emailVerified: true,
-            expiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
-          }
+            accountType: normalizedAccountType,
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+          },
         });
       }
 
-      // Determine targetStep dynamically
+      /* ---- where the wizard should resume ---- */
+
       let targetStep = 2;
-      if (accountType === 'ADVOCATE') {
+
+      if (normalizedAccountType === 'ADVOCATE') {
         if (!session.profilePhotoUrl || !session.gender) {
           targetStep = 2;
         } else if (!session.phoneVerified) {
@@ -194,110 +342,175 @@ export const googleCallbackHandler = (accountType) => {
         targetStep = 2;
       }
 
+      /* ---- success ---- */
+
       if (isMobile) {
         const nameEnc = encodeURIComponent(session.fullName || '');
         const emailEnc = encodeURIComponent(session.email || '');
-        return res.redirect(`${mobileBase}register-callback?step=${targetStep}&registrationId=${session.id}&type=${redirectType}&fullName=${nameEnc}&email=${emailEnc}`);
+
+        return res.redirect(
+          `${mobileBase}register-callback?step=${targetStep}&registrationId=${session.id}&type=${redirectType}&fullName=${nameEnc}&email=${emailEnc}`
+        );
       }
 
-      return res.redirect(`${webBase}/register/${redirectType}?step=${targetStep}&registrationId=${session.id}`);
+      const finalRedirectUrl = buildWebUrl(webBase, WEB_SIGNUP_PATH, {
+        registrationId: session.id,
+        step: targetStep,
+        role: redirectType,
+      });
+
+      console.log('GOOGLE REGISTRATION REDIRECT:', finalRedirectUrl);
+
+      return res.redirect(finalRedirectUrl);
     } catch (error) {
-      console.error('OAuth Callback Controller Error:', error);
+      console.error('OAuth Registration Callback Error:', error);
+
       if (isMobile) {
-        return res.redirect(`${mobileBase}register-callback?error=server_error&type=${redirectType}`);
+        return res.redirect(
+          `${mobileBase}register-callback?error=server_error&type=${redirectType}`
+        );
       }
-      return res.redirect(`${webBase}/login/${redirectType}?error=server_error`);
+
+      return res.redirect(signupError('server_error'));
     }
   };
 };
 
-/**
- * Google Login Callback Handler
- * Supports both Web (Sets HTTP-Only Cookie + WEB_CLIENT_URL redirect) and Mobile App (Deep Link to MOBILE_CLIENT_URL with 60s single-use exchange code)
- */
+/* ============================================================
+   GOOGLE LOGIN CALLBACK
+
+   Web:    HTTP-only cookie, then redirect into the app.
+   Mobile: single-use 60s exchange code on a deep link.
+============================================================ */
+
 export const googleLoginCallbackHandler = (accountType) => {
-  return async (req, res, next) => {
-    const redirectType = accountType.toLowerCase();
+  return async (req, res) => {
+    const normalizedAccountType = String(accountType || '')
+      .trim()
+      .toUpperCase();
+
+    const redirectType =
+      normalizedAccountType === 'ADVOCATE' ? 'advocate' : 'user';
+
     const { client, scheme } = parseOAuthState(req.query.state);
     const isMobile = client === 'mobile';
     const { webBase, mobileBase } = getClientRedirectUrls(scheme);
 
+    const loginError = (error) =>
+      buildWebUrl(webBase, WEB_LOGIN_PATH, { error, role: redirectType });
+
     try {
       if (!req.user) {
         if (isMobile) {
-          return res.redirect(`${mobileBase}auth-callback?error=google_auth_failed&type=${redirectType}`);
+          return res.redirect(
+            `${mobileBase}auth-callback?error=google_auth_failed&type=${redirectType}`
+          );
         }
-        return res.redirect(`${webBase}/login/${redirectType}?error=google_auth_failed`);
+
+        return res.redirect(loginError('google_auth_failed'));
       }
 
       const { email } = req.user;
+
+      if (!email) {
+        if (isMobile) {
+          return res.redirect(
+            `${mobileBase}auth-callback?error=google_email_missing&type=${redirectType}`
+          );
+        }
+
+        return res.redirect(loginError('google_email_missing'));
+      }
+
       const normalizedEmail = email.toLowerCase().trim();
 
-      let account;
-      if (accountType === 'USER') {
-        account = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-      } else {
-        account = await prisma.advocate.findUnique({ where: { email: normalizedEmail } });
-      }
+      const account =
+        normalizedAccountType === 'USER'
+          ? await prisma.user.findUnique({ where: { email: normalizedEmail } })
+          : await prisma.advocate.findUnique({
+              where: { email: normalizedEmail },
+            });
 
       if (!account) {
         if (isMobile) {
-          return res.redirect(`${mobileBase}auth-callback?error=account_not_found&type=${redirectType}`);
+          return res.redirect(
+            `${mobileBase}auth-callback?error=account_not_found&type=${redirectType}`
+          );
         }
-        return res.redirect(`${webBase}/login/${redirectType}?error=account_not_found`);
+
+        return res.redirect(loginError('account_not_found'));
       }
 
-      if (!account.isActive) {
+      if (account.isActive === false) {
         if (isMobile) {
-          return res.redirect(`${mobileBase}auth-callback?error=account_inactive&type=${redirectType}`);
+          return res.redirect(
+            `${mobileBase}auth-callback?error=account_inactive&type=${redirectType}`
+          );
         }
-        return res.redirect(`${webBase}/login/${redirectType}?error=account_inactive`);
+
+        return res.redirect(loginError('account_inactive'));
       }
 
-      // Sign JWT Token
-      const token = signToken({ id: account.id, type: redirectType });
+      const token = signToken({
+        id: account.id,
+        type: normalizedAccountType.toLowerCase(),
+      });
 
       if (isMobile) {
-        // Generate single-use exchange code for mobile app
         const code = crypto.randomBytes(32).toString('hex');
+
         oauthCodeStore.set(code, {
           token,
           user: {
             id: account.id,
             email: account.email,
             fullName: account.fullName,
-            accountType: redirectType
+            accountType: redirectType,
           },
-          expiresAt: Date.now() + 60 * 1000 // 60s expiry
+          expiresAt: Date.now() + 60 * 1000,
         });
 
-        return res.redirect(`${mobileBase}auth-callback?code=${code}&type=${redirectType}`);
+        return res.redirect(
+          `${mobileBase}auth-callback?code=${code}&type=${redirectType}`
+        );
       }
 
-      // Web flow: Set HTTP-only cookie & redirect to web client dashboard
       sendTokenCookie(res, token);
-      return res.redirect(`${webBase}/dashboard`);
+
+      /* Advocates land in their workspace, users at the app root. */
+      return res.redirect(
+        normalizedAccountType === 'ADVOCATE'
+          ? `${webBase}/advocate/dashboard`
+          : `${webBase}/`
+      );
     } catch (error) {
-      console.error('OAuth Login Callback Controller Error:', error);
+      console.error('OAuth Login Callback Error:', error);
+
       if (isMobile) {
-        return res.redirect(`${mobileBase}auth-callback?error=server_error&type=${redirectType}`);
+        return res.redirect(
+          `${mobileBase}auth-callback?error=server_error&type=${redirectType}`
+        );
       }
-      return res.redirect(`${webBase}/login/${redirectType}?error=server_error`);
+
+      return res.redirect(loginError('server_error'));
     }
   };
 };
 
-/**
- * Exchange temporary OAuth code for JWT Token (used by Mobile Apps)
- * POST /api/auth/oauth/exchange
- */
+/* ============================================================
+   EXCHANGE OAUTH CODE (mobile)
+
+   POST /api/auth/oauth/exchange
+============================================================ */
+
 export const exchangeOAuthCode = async (req, res, next) => {
   try {
     const { code } = req.body;
+
     if (!code) {
       return res.status(400).json({
         success: false,
-        message: 'OAuth authorization code is required'
+        message: 'OAuth authorization code is required',
       });
     }
 
@@ -306,17 +519,17 @@ export const exchangeOAuthCode = async (req, res, next) => {
     if (!entry) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired OAuth authorization code'
+        message: 'Invalid or expired OAuth authorization code',
       });
     }
 
-    // Delete code immediately to ensure single-use
+    /* Deleted immediately so the code can only ever be used once. */
     oauthCodeStore.delete(code);
 
     if (Date.now() > entry.expiresAt) {
       return res.status(400).json({
         success: false,
-        message: 'OAuth authorization code has expired'
+        message: 'OAuth authorization code has expired',
       });
     }
 
@@ -324,7 +537,7 @@ export const exchangeOAuthCode = async (req, res, next) => {
       success: true,
       message: 'Login successful',
       token: entry.token,
-      user: entry.user
+      user: entry.user,
     });
   } catch (error) {
     next(error);

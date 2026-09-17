@@ -3473,6 +3473,7 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
         "barCouncilId": "BAR12345",
         "profileImage": "https://res.cloudinary.com/...",
         "profilePhotoUrl": "https://res.cloudinary.com/...",
+        "experience": 8,
         "lawType": "Criminal Law",
         "bestPracticeArea": "Criminal Law",
         "city": "New Delhi",
@@ -3483,6 +3484,11 @@ An authenticated **ADVOCATE** (Advocate A) can search for another advocate (Advo
     ]
   }
   ```
+* **Key Fields:**
+  * `barId` → Advocate's Bar ID (populated from `barCouncilId`)
+  * `barCouncilId` → Advocate's Bar Council ID
+  * `experience` → Advocate's experience from the Advocate profile (in years)
+
 
 ---
 

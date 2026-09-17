@@ -369,6 +369,8 @@ export const getTeamMates = async (advocateId) => {
       barCouncilId: target.barCouncilId,
       profileImage: target.profilePhotoUrl,
       profilePhotoUrl: target.profilePhotoUrl,
+      experience: target.experienceYears !== undefined && target.experienceYears !== null ? target.experienceYears : null,
+      experienceYears: target.experienceYears !== undefined && target.experienceYears !== null ? target.experienceYears : null,
       lawType: target.bestPracticeArea || (target.practiceAreas?.[0] || null),
       bestPracticeArea: target.bestPracticeArea,
       city: target.city,

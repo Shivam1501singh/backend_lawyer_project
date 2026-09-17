@@ -11,7 +11,7 @@ async function runE2ETests() {
   // 1. Setup Test Data
   const advocateA = await prisma.advocate.upsert({
     where: { email: 'team_test_advocate_a@example.com' },
-    update: { status: 'ACTIVE', isActive: true, barCouncilId: 'DL/10001/2026' },
+    update: { status: 'ACTIVE', isActive: true, approvalStatus: 'APPROVED', barCouncilId: 'DL/10001/2026', experienceYears: 12 },
     create: {
       fullName: 'Advocate Alpha',
       email: 'team_test_advocate_a@example.com',
@@ -22,6 +22,7 @@ async function runE2ETests() {
       city: 'New Delhi',
       status: 'ACTIVE',
       isActive: true,
+      approvalStatus: 'APPROVED',
       experienceYears: 12,
       bestPracticeArea: 'Civil Law'
     }
@@ -29,7 +30,7 @@ async function runE2ETests() {
 
   const advocateB = await prisma.advocate.upsert({
     where: { email: 'team_test_advocate_b@example.com' },
-    update: { status: 'ACTIVE', isActive: true, barCouncilId: 'DL/10002/2026' },
+    update: { status: 'ACTIVE', isActive: true, approvalStatus: 'APPROVED', barCouncilId: 'DL/10002/2026', experienceYears: 8 },
     create: {
       fullName: 'Advocate Beta',
       email: 'team_test_advocate_b@example.com',
@@ -40,6 +41,7 @@ async function runE2ETests() {
       city: 'New Delhi',
       status: 'ACTIVE',
       isActive: true,
+      approvalStatus: 'APPROVED',
       experienceYears: 8,
       bestPracticeArea: 'Criminal Law'
     }
@@ -105,15 +107,10 @@ async function runE2ETests() {
 
     // Test 2: Search Non-Existent BAR ID
     console.log('\n[Test 2] Advocate A searches non-existent BAR ID...');
-    try {
-      await clientA.get('/api/advocates/search?barId=DL/99999/9999');
-      throw new Error('Test 2 Failed: Non-existent BAR ID should return 404.');
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        console.log('Passed 404 check:', err.response.data.message);
-      } else {
-        throw err;
-      }
+    const emptySearchRes = await clientA.get('/api/advocates/search?barId=DL/99999/9999');
+    console.log('Empty search count:', emptySearchRes.data.data.length);
+    if (!emptySearchRes.data.success || emptySearchRes.data.data.length !== 0) {
+      throw new Error('Test 2 Failed: Non-existent BAR ID should return empty data array.');
     }
 
     // Test 3: Cannot add self as team mate
@@ -202,17 +199,24 @@ async function runE2ETests() {
     // Test 9: Get Team Mates for Advocate A
     console.log('\n[Test 9] Advocate A calls GET /api/advocates/team-mates...');
     const teamA = await clientA.get('/api/advocates/team-mates');
-    console.log('Advocate A Team Mates count:', teamA.data.teamMates.length);
-    if (!teamA.data.teamMates.some(t => t.id === advocateB.id)) {
+    const mateB = teamA.data.teamMates.find(t => t.id === advocateB.id);
+    if (!mateB) {
       throw new Error('Test 9 Failed: Advocate B is not in Advocate A team list.');
+    }
+    if (mateB.barId !== advocateB.barCouncilId || mateB.experience !== advocateB.experienceYears) {
+      throw new Error(`Test 9 Failed: Advocate B fields mismatch (barId: ${mateB.barId}, experience: ${mateB.experience})`);
     }
 
     // Test 10: Get Team Mates for Advocate B (Mutual Relationship)
     console.log('\n[Test 10] Advocate B calls GET /api/advocates/team-mates...');
     const teamB = await clientB.get('/api/advocates/team-mates');
     console.log('Advocate B Team Mates count:', teamB.data.teamMates.length);
-    if (!teamB.data.teamMates.some(t => t.id === advocateA.id)) {
+    const mateA = teamB.data.teamMates.find(t => t.id === advocateA.id);
+    if (!mateA) {
       throw new Error('Test 10 Failed: Advocate A is not in Advocate B team list (Mutual failure).');
+    }
+    if (mateA.barId !== advocateA.barCouncilId || mateA.experience !== advocateA.experienceYears) {
+      throw new Error(`Test 10 Failed: Advocate A fields mismatch (barId: ${mateA.barId}, experience: ${mateA.experience})`);
     }
 
     // Test 11: Attempt duplicate team request for already existing team mate

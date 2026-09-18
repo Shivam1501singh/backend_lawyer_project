@@ -5300,6 +5300,256 @@ model UserRight {
 - **URL:** `http://localhost:5000/api/content-creator/user-rights/<user_right_id>`
 - **Headers:** `Authorization: Bearer <creator_token>`
 
+---
+
+## Guides
+
+The **Guides** module enables authenticated **Content Creators** to create, edit, and delete comprehensive legal and procedural guides. Guides are **publicly accessible** to all visitors and normal users without requiring authentication.
+
+---
+
+### Database Model (`Guide`)
+
+```prisma
+model Guide {
+  id          String          @id @default(uuid())
+  title       String
+  description String          @db.Text
+  createdBy   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  creator     ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([createdAt])
+}
+```
+
+---
+
+### Authorization & Permission Matrix
+
+| Endpoint | Method | Public | Normal User | Advocate | Content Creator |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `/api/guides` | `GET` | ✅ | ✅ | ✅ | ✅ |
+| `/api/guides/:id` | `GET` | ✅ | ✅ | ✅ | ✅ |
+| `/api/content-creator/guides` | `POST` | ❌ | ❌ | ❌ | ✅ |
+| `/api/content-creator/guides/:id` | `PATCH` | ❌ | ❌ | ❌ | ✅ |
+| `/api/content-creator/guides/:id` | `DELETE` | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+### Endpoints Reference
+
+#### 1. Public — Get All Guides
+- **Endpoint:** `GET /api/guides`
+- **Authentication:** None (Public)
+- **Query Parameters:**
+  - `page` *(optional, integer, default: 1)*
+  - `limit` *(optional, integer, default: 10, max: 50)*
+- **Ordering:** Deterministic database ordering by `createdAt DESC` (newest first).
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "e305e94b-1422-45e5-be45-81ca04df45e9",
+        "title": "How to Choose the Right Advocate in India",
+        "description": "Choosing an advocate is a crucial decision that requires understanding jurisdiction, specializations, and fee agreements...",
+        "createdAt": "2026-09-18T11:42:00.000Z",
+        "updatedAt": "2026-09-18T11:42:00.000Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "limit": 10,
+      "totalGuides": 1,
+      "totalPages": 1,
+      "hasNextPage": false,
+      "hasPreviousPage": false
+    }
+  }
+  ```
+
+---
+
+#### 2. Public — Get Single Guide
+- **Endpoint:** `GET /api/guides/:id`
+- **Authentication:** None (Public)
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "e305e94b-1422-45e5-be45-81ca04df45e9",
+      "title": "How to Choose the Right Advocate in India",
+      "description": "Detailed guide content...",
+      "createdAt": "2026-09-18T11:42:00.000Z",
+      "updatedAt": "2026-09-18T11:42:00.000Z"
+    }
+  }
+  ```
+- **Error Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "Guide not found"
+  }
+  ```
+
+---
+
+#### 3. Content Creator — Create Guide
+- **Endpoint:** `POST /api/content-creator/guides`
+- **Authentication:** `CONTENT_CREATOR` role required (`requireAuth`, `requireRole('CONTENT_CREATOR')`)
+- **Content-Type:** `application/json`
+- **Request Body:**
+  ```json
+  {
+    "title": "How to Find the Right Advocate",
+    "description": "Detailed educational guide content explaining steps, consultation preparation, and engagement agreements."
+  }
+  ```
+- **Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "Guide created successfully",
+    "data": {
+      "id": "e305e94b-1422-45e5-be45-81ca04df45e9",
+      "title": "How to Find the Right Advocate",
+      "description": "Detailed educational guide content...",
+      "createdAt": "2026-09-18T11:42:00.000Z",
+      "updatedAt": "2026-09-18T11:42:00.000Z"
+    }
+  }
+  ```
+- **Validation Errors (400 Bad Request):**
+  ```json
+  {
+    "success": false,
+    "message": "Title is required and must not be empty"
+  }
+  ```
+
+---
+
+#### 4. Content Creator — Update Guide
+- **Endpoint:** `PATCH /api/content-creator/guides/:id`
+- **Authentication:** `CONTENT_CREATOR` role required
+- **Content-Type:** `application/json`
+- **Request Body (Partial updates allowed):**
+  ```json
+  {
+    "title": "How to Find the Right Advocate (Updated)",
+    "description": "Updated guide description..."
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Guide updated successfully",
+    "data": {
+      "id": "e305e94b-1422-45e5-be45-81ca04df45e9",
+      "title": "How to Find the Right Advocate (Updated)",
+      "description": "Updated guide description...",
+      "createdAt": "2026-09-18T11:42:00.000Z",
+      "updatedAt": "2026-09-18T11:45:00.000Z"
+    }
+  }
+  ```
+- **Error Responses:**
+  - `404 Not Found`: If guide ID does not exist.
+  - `400 Bad Request`: If title or description is empty string/whitespace.
+
+---
+
+#### 5. Content Creator — Delete Guide
+- **Endpoint:** `DELETE /api/content-creator/guides/:id`
+- **Authentication:** `CONTENT_CREATOR` role required
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Guide deleted successfully"
+  }
+  ```
+- **Error Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "Guide not found"
+  }
+  ```
+
+---
+
+### Postman Testing Guide
+
+#### 1. Content Creator Login
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/content-creator/login`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "email": "creator@example.com",
+    "password": "your_password"
+  }
+  ```
+- **Save Token:** Copy `token` from response to use in `Authorization: Bearer <creator_token>` header.
+
+#### 2. Create Guide
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/content-creator/guides`
+- **Headers:**
+  - `Authorization: Bearer <creator_token>`
+  - `Content-Type: application/json`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "title": "How to Find the Right Advocate",
+    "description": "Detailed guide description..."
+  }
+  ```
+
+#### 3. Public List All Guides
+- **Method:** `GET`
+- **URL:** `http://localhost:5000/api/guides?page=1&limit=10`
+- **Headers:** *(None required)*
+
+#### 4. Public Get Single Guide
+- **Method:** `GET`
+- **URL:** `http://localhost:5000/api/guides/<guide_id>`
+- **Headers:** *(None required)*
+
+#### 5. Update Guide
+- **Method:** `PATCH`
+- **URL:** `http://localhost:5000/api/content-creator/guides/<guide_id>`
+- **Headers:**
+  - `Authorization: Bearer <creator_token>`
+  - `Content-Type: application/json`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "title": "Updated Guide Title",
+    "description": "Updated content..."
+  }
+  ```
+
+#### 6. Delete Guide
+- **Method:** `DELETE`
+- **URL:** `http://localhost:5000/api/content-creator/guides/<guide_id>`
+- **Headers:** `Authorization: Bearer <creator_token>`
+
+#### 7. Unauthorized / Forbidden Checks
+- Attempt `POST /api/content-creator/guides` without `Authorization` header -> Verify `401 Unauthorized`.
+- Attempt `POST /api/content-creator/guides` with a Normal User or Advocate token -> Verify `403 Forbidden`.
+- Attempt `GET /api/guides/00000000-0000-0000-0000-000000000000` -> Verify `404 Not Found`.
+
+
 
 
 

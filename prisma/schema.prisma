@@ -419,6 +419,7 @@ model ContentCreator {
   ipcSections  IPCSection[]
   bnsSections  BNSSection[]
   userRights   UserRight[]
+  guides       Guide[]
 }
 
 model UserRight {
@@ -432,6 +433,20 @@ model UserRight {
   updatedAt     DateTime        @updatedAt
 
   creator       ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([createdAt])
+}
+
+model Guide {
+  id          String          @id @default(uuid())
+  title       String
+  description String          @db.Text
+  createdBy   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  creator     ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([createdBy])
   @@index([createdAt])

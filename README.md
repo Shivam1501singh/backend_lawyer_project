@@ -5055,6 +5055,252 @@ model DeletedAdvocate {
 1. Call `GET /api/admin/advocates/deletion-requests` using a Normal User or Advocate token.
 2. Verify response: `403 Forbidden` (`Access forbidden. Insufficient permissions.`).
 
+---
+
+## User Rights
+
+The **User Rights** feature enables authenticated **Content Creators** to create, update, and manage legal rights information for citizens. Published User Rights are publicly visible and accessible without authentication to normal users and visitors.
+
+This system is completely isolated from Blogs and IPC/BNS legal sections, backed by a dedicated `UserRight` database table.
+
+---
+
+### Initial Seed Data Categories
+
+The database seed provides 6 initial legal rights categories:
+
+1. **Children Rights** — Protection, education, healthcare, identity, dignity, and anti-exploitation protections.
+2. **Consumer Rights** — Safety, information, choice, fair treatment, and remedies against unfair trade practices.
+3. **Tenant Rights** — Legal occupation protections, notice, privacy, maintenance, and unlawful eviction safeguards.
+4. **Employee Rights** — Fair employment conditions, wages, workplace safety, working hours, and anti-harassment laws.
+5. **Women Rights** — Equality, dignity, safety, property inheritance, POSH protections, and anti-discrimination safeguards.
+6. **Digital and Privacy Rights** — Personal data protection, communication privacy, and safeguards against unauthorized access.
+
+#### Seeding Command
+To seed or re-seed the initial categories idempotently:
+
+```bash
+npx prisma db seed
+```
+
+*Note: The seed is strictly idempotent. Running it multiple times does not create duplicate categories and never deletes custom user rights created by Content Creators.*
+
+---
+
+### Database Model (`UserRight`)
+
+```prisma
+model UserRight {
+  id            String          @id @default(uuid())
+  title         String
+  description   String          @db.Text
+  photo         String?
+  photoPublicId String?
+  createdBy     String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  creator       ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([createdAt])
+}
+```
+
+---
+
+### Authorization & Permission Matrix
+
+| Endpoint | Method | Public | Normal User | Advocate | Content Creator |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `/api/user-rights` | `GET` | ✅ | ✅ | ✅ | ✅ |
+| `/api/user-rights/:id` | `GET` | ✅ | ✅ | ✅ | ✅ |
+| `/api/content-creator/user-rights` | `POST` | ❌ | ❌ | ❌ | ✅ |
+| `/api/content-creator/user-rights/:id` | `PATCH` | ❌ | ❌ | ❌ | ✅ |
+| `/api/content-creator/user-rights/:id` | `DELETE` | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+### Endpoints Reference
+
+#### 1. Content Creator — Create User Right
+- **Endpoint:** `POST /api/content-creator/user-rights`
+- **Authentication:** `CONTENT_CREATOR` role required (`requireAuth`, `requireRole('CONTENT_CREATOR')`)
+- **Content-Type:** `multipart/form-data` (or `application/json` if no photo is attached)
+- **Request Fields:**
+  - `title` *(string, required)*: Non-empty title (max 255 chars).
+  - `description` *(string, required)*: Detailed explanation of the right.
+  - `photo` *(file, optional)*: Image file (`JPEG`, `JPG`, `PNG`, `WEBP`, max 5MB).
+- **Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "User Right created successfully",
+    "data": {
+      "id": "dcdd551f-2e37-408f-afb4-59d955030bff",
+      "title": "Right to Equality",
+      "description": "Every citizen has the right to equality before the law and equal protection of the laws.",
+      "photo": "https://res.cloudinary.com/.../rights_sample.png",
+      "createdAt": "2026-09-18T10:00:00.000Z",
+      "updatedAt": "2026-09-18T10:00:00.000Z"
+    }
+  }
+  ```
+
+---
+
+#### 2. Public — Get All User Rights
+- **Endpoint:** `GET /api/user-rights`
+- **Authentication:** None (Public)
+- **Query Parameters:**
+  - `page` *(optional, integer, default: 1)*
+  - `limit` *(optional, integer, default: 10, max: 50)*
+- **Ordering:** Deterministic database ordering by `createdAt DESC` (newest first).
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "dcdd551f-2e37-408f-afb4-59d955030bff",
+        "title": "Right to Equality",
+        "description": "Every citizen has the right to equality before the law and equal protection of the laws.",
+        "photo": "https://res.cloudinary.com/.../equality.png",
+        "createdAt": "2026-09-18T10:00:00.000Z",
+        "updatedAt": "2026-09-18T10:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "limit": 10,
+      "totalRights": 1,
+      "totalPages": 1,
+      "hasNextPage": false,
+      "hasPreviousPage": false
+    }
+  }
+  ```
+
+---
+
+#### 3. Public — Get Single User Right
+- **Endpoint:** `GET /api/user-rights/:id`
+- **Authentication:** None (Public)
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "dcdd551f-2e37-408f-afb4-59d955030bff",
+      "title": "Right to Equality",
+      "description": "Every citizen has the right to equality before the law and equal protection of the laws.",
+      "photo": "https://res.cloudinary.com/.../equality.png",
+      "createdAt": "2026-09-18T10:00:00.000Z",
+      "updatedAt": "2026-09-18T10:00:00.000Z"
+    }
+  }
+  ```
+- **Error Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "User Right not found"
+  }
+  ```
+
+---
+
+#### 4. Content Creator — Update User Right
+- **Endpoint:** `PATCH /api/content-creator/user-rights/:id`
+- **Authentication:** `CONTENT_CREATOR` role required
+- **Content-Type:** `multipart/form-data` or `application/json`
+- **Request Fields (Optional):**
+  - `title` *(string)*: Updated title.
+  - `description` *(string)*: Updated description.
+  - `photo` *(file)*: New image file to replace existing photo. Previous photo asset on Cloudinary is automatically deleted upon replacement.
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "User Right updated successfully",
+    "data": {
+      "id": "dcdd551f-2e37-408f-afb4-59d955030bff",
+      "title": "Right to Equality & Non-Discrimination",
+      "description": "Updated detailed text...",
+      "photo": "https://res.cloudinary.com/.../new_photo.png",
+      "createdAt": "2026-09-18T10:00:00.000Z",
+      "updatedAt": "2026-09-18T10:05:00.000Z"
+    }
+  }
+  ```
+
+---
+
+#### 5. Content Creator — Delete User Right
+- **Endpoint:** `DELETE /api/content-creator/user-rights/:id`
+- **Authentication:** `CONTENT_CREATOR` role required
+- **Behavior:** Permanently removes database record and deletes associated image from Cloudinary storage if present.
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "User Right deleted successfully"
+  }
+  ```
+
+---
+
+### Postman Testing Guide
+
+#### 1. Content Creator Login
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/content-creator/login`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "email": "creator@example.com",
+    "password": "your_password"
+  }
+  ```
+- **Save Token:** Copy `token` from response to use in `Authorization: Bearer <token>` for creator requests.
+
+#### 2. Create User Right (with image)
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/content-creator/user-rights`
+- **Headers:** `Authorization: Bearer <creator_token>`
+- **Body (`form-data`):**
+  - `title` *(Text)*: `Right to Equality`
+  - `description` *(Text)*: `Every citizen has the right to equality before the law.`
+  - `photo` *(File)*: Select an image (`.png` / `.jpg` / `.webp`)
+
+#### 3. Public List
+- **Method:** `GET`
+- **URL:** `http://localhost:5000/api/user-rights?page=1&limit=10`
+- **Headers:** *(None required)*
+
+#### 4. Public Single Record
+- **Method:** `GET`
+- **URL:** `http://localhost:5000/api/user-rights/<user_right_id>`
+- **Headers:** *(None required)*
+
+#### 5. Update User Right
+- **Method:** `PATCH`
+- **URL:** `http://localhost:5000/api/content-creator/user-rights/<user_right_id>`
+- **Headers:** `Authorization: Bearer <creator_token>`
+- **Body (`form-data` or `raw JSON`):**
+  ```json
+  {
+    "title": "Right to Equality (Amended)",
+    "description": "Comprehensive explanation of Article 14 rights."
+  }
+  ```
+
+#### 6. Delete User Right
+- **Method:** `DELETE`
+- **URL:** `http://localhost:5000/api/content-creator/user-rights/<user_right_id>`
+- **Headers:** `Authorization: Bearer <creator_token>`
+
+
 
 
 

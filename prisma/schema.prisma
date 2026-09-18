@@ -418,6 +418,23 @@ model ContentCreator {
   blogs        Blog[]
   ipcSections  IPCSection[]
   bnsSections  BNSSection[]
+  userRights   UserRight[]
+}
+
+model UserRight {
+  id            String          @id @default(uuid())
+  title         String
+  description   String          @db.Text
+  photo         String?
+  photoPublicId String?
+  createdBy     String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  creator       ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([createdAt])
 }
 
 model IPCSection {

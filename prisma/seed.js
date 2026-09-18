@@ -924,6 +924,324 @@ async function main() {
   for (const b of mockBlogs) {
     await prisma.blog.create({ data: b });
   }
+
+  // Idempotent Seeding of User Rights
+  console.log('Seeding initial User Rights (idempotent with detailed ~500-word content)...');
+  const initialUserRights = [
+    {
+      title: 'Children Rights',
+      description: `## Overview
+
+Children represent one of the most vulnerable groups in society and are entitled to special legal protections, care, and guidance. The legal framework establishes fundamental safeguards to ensure that every child can grow up in a safe, healthy, and nurturing environment free from harm, neglect, and exploitation.
+
+## Right to Education
+
+Every child has a fundamental right to free and compulsory elementary education. The law mandates that children between the ages of six and fourteen years are entitled to formal schooling without financial barriers. Educational institutions are expected to maintain inclusive classrooms, provide basic infrastructure, and ensure that no child is subjected to physical punishment or mental harassment.
+
+## Right to Protection From Abuse and Exploitation
+
+Children are legally shielded from all forms of physical, emotional, and sexual abuse. Strict legal frameworks establish zero tolerance for offenses against children, mandating child-friendly investigation procedures, mandatory reporting by professionals, and in-camera trial proceedings to safeguard the child's identity and psychological well-being. Exploitation, trafficking, and abandonment are serious criminal offenses.
+
+## Right to Health and Development
+
+Every child has the inherent right to standard healthcare, balanced nutrition, clean drinking water, and immunization. Healthcare providers and public health programs are designed to reduce infant mortality, treat childhood illnesses, and support physical as well as cognitive development throughout developmental stages.
+
+## Right to Identity and Dignity
+
+From birth, every child possesses the legal right to a registered name, nationality, and legal identity. Birth registration serves as an essential foundation for accessing public entitlements, education, healthcare, and inheritance rights. Children are also entitled to personal dignity, respectful treatment, and consideration of their best interests in all administrative and judicial decisions concerning their custody or welfare.
+
+## Protection Against Child Labour
+
+Child labor laws strictly prohibit the employment of children in hazardous occupations and processes, while regulating general employment conditions for adolescents. The objective is to prevent premature entry into the workforce that disrupts schooling, damages physical health, or impedes overall mental growth.
+
+## Right to Voice and Participation
+
+Children capable of forming their own views have the right to express their opinions freely in all matters affecting them, with appropriate weight given to their age and maturity in family, school, and legal proceedings.
+
+## What Parents and Guardians Should Know
+
+Parents and legal guardians bear the primary responsibility for the upbringing, safety, and moral care of their children. While guardians have decision-making authority, the law prioritizes the paramount welfare and best interest of the child. Neglect, severe mistreatment, or failure to provide basic necessities can lead to legal intervention and protective custody.
+
+## Where to Seek Help
+
+In cases involving child distress, abuse, neglect, or missing children, citizens can reach out to dedicated child helplines (such as national emergency child services), Child Welfare Committees (CWCs), District Child Protection Units, or local law enforcement authorities.
+
+## Important Note
+
+Applicable rights, institutional procedures, and welfare schemes may vary depending on local jurisdictions and specific circumstances. This information is intended for educational purposes and does not constitute formal legal advice.`,
+      photo: 'https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?w=800&auto=format&fit=crop&q=80',
+      createdBy: creator.id
+    },
+    {
+      title: 'Consumer Rights',
+      description: `## Overview
+
+Consumer rights form the backbone of modern commercial fairness, protecting individuals when purchasing goods or availing services. Legal statutes establish clear standards to balance the relationship between consumers and commercial enterprises, ensuring accountability, transparency, and product reliability.
+
+## Right to Safety
+
+Consumers have the right to be protected against the marketing of goods and delivery of services that are hazardous to life and property. Manufactured products, electrical appliances, pharmaceuticals, and packaged foods must adhere to established safety standards and undergo mandatory quality testing before reaching the marketplace.
+
+## Right to Information
+
+Consumers are legally entitled to receive accurate information regarding the quality, quantity, potency, purity, standard, and price of goods or services. This right obligates manufacturers and sellers to provide comprehensive labeling, including manufacturing dates, expiry dates, ingredient lists, maximum retail prices (MRP), and appropriate warning labels.
+
+## Right to Choose
+
+Consumers have the right to be assured of access to a variety of goods and services at competitive prices. Monopolistic practices, forced bundling of unwanted products, and artificial market restrictions that limit consumer choice are prohibited under fair trade principles.
+
+## Right to Be Heard
+
+Consumers have the right to voice their grievances and receive due consideration in appropriate forums. Businesses are encouraged to maintain responsive consumer care channels, while consumer protection bodies represent consumer interests in policy formulation and dispute resolution.
+
+## Right to Seek Redressal
+
+When a consumer suffers damage or loss due to defective goods, deficient services, or fraudulent trade behavior, they are entitled to seek legal redressal. Redressal remedies include product repair, complete replacement, price refund, and compensation for financial loss or mental harassment.
+
+## Protection Against Unfair Trade Practices
+
+Unfair trade practices, such as deceptive advertising, false claims regarding product performance, hoarding, selling counterfeit items, and refusal to issue proper receipts, are strictly prohibited under consumer protection legislation.
+
+## Misleading Advertisements and Endorsements
+
+Manufacturers, advertisers, and celebrity endorsers face strict liability for unsubstantiated claims or misleading endorsements. Regulatory authorities can impose penalties and order corrective advertisements when promotional campaigns misrepresent product efficacy, safety, or nutritional benefits.
+
+## Online Shopping and Digital Transactions
+
+In e-commerce, consumers enjoy enhanced protections regarding transparent return policies, accurate product representations, delivery timelines, secure payment gateways, and explicit disclosure of seller identities and grievance officer details.
+
+## How Consumers Can Raise a Complaint
+
+Consumers experiencing unresolved issues should first send a formal notice or written complaint to the merchant or service provider. If the issue remains unresolved, complaints can be lodged before appropriate consumer commissions (district, state, or national) or through official national consumer helplines and digital portals.
+
+## Important Note
+
+Specific remedies, jurisdictional limits, and statutory limitation periods depend on the value of goods and the nature of the transaction. This content is for general informational awareness and does not replace personalized legal counsel.`,
+      photo: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format&fit=crop&q=80',
+      createdBy: creator.id
+    },
+    {
+      title: 'Tenant Rights',
+      description: `## Overview
+
+Tenant rights protect individuals and families renting residential or commercial properties. A fair tenancy framework balances the legitimate ownership rights of property owners with the security, dignity, and peaceful possession of occupants.
+
+## Rental Agreement
+
+A comprehensive written rental agreement is the most critical document in any tenancy. The agreement outlines vital terms including the monthly rent, payment due dates, duration of lease, renewal clauses, security deposit amount, and specific usage restrictions. Registering or properly executing the tenancy contract ensures clarity and legal enforceability for both parties.
+
+## Rent and Security Deposit
+
+Landlords are entitled to receive agreed-upon rent in a timely manner and may collect a reasonable security deposit at the commencement of the lease. Tenants have the right to receive formal rent receipts. Security deposits must be refunded upon lawful vacation of the property, subject only to legitimate deductions for unpaid dues or actual damages beyond ordinary wear and tear.
+
+## Privacy and Peaceful Possession
+
+Once a property is leased, the tenant holds the right to quiet enjoyment and peaceful possession. Landlords cannot enter the rented premises arbitrarily without prior reasonable notice, except during genuine emergencies. Harassment, unauthorized intrusion, or intimidation by the property owner violates basic tenancy protections.
+
+## Repairs and Maintenance
+
+Generally, structural repairs, major plumbing overhauls, and external maintenance remain the responsibility of the landlord, while routine day-to-day upkeep is managed by the tenant. Essential utilities, including uninterrupted water supply, electricity connections, and sanitary services, cannot be disconnected or withheld by the landlord to exert pressure.
+
+## Notice and Eviction
+
+Tenants cannot be arbitrarily or forcibly evicted without due process of law. Landlords must provide formal written notice with adequate time as specified in the rental agreement or statutory regulations. Eviction grounds typically require legitimate reasons such as non-payment of rent, substantial breach of agreement terms, or bona fide personal requirement.
+
+## Unfair Deductions and Deposit Refunds
+
+At the conclusion of the lease, property inspections must be conducted jointly. Landlords cannot make arbitrary deductions for regular repainting or aging fixtures unless expressly negotiated. Unreasonable delays in returning security deposits may entitle tenants to statutory interest or dispute compensation.
+
+## Landlord and Tenant Responsibilities
+
+Tenants must maintain the premises responsibly, refrain from causing structural alterations without consent, avoid unlawful activities, and pay utility bills as agreed. Landlords must deliver habitable premises that meet basic safety and hygiene standards.
+
+## Common Tenant Disputes
+
+Frequent disputes involve security deposit withholding, unexpected rent hikes, delayed repairs, and early termination conflicts. Retaining copies of contracts, payment proofs, and photographic condition records helps resolve disagreements quickly.
+
+## Where to Seek Legal Help
+
+Tenants facing unlawful eviction or utility disconnections can approach Rent Authorities, Rent Tribunals, civil courts, or local mediation centers depending on applicable tenancy legislation.
+
+## Important Note
+
+Tenancy regulations and rent control acts differ substantially across states and union territories. Applicable procedures depend on state-specific laws and the executed contract. This information is educational and not individual legal advice.`,
+      photo: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&auto=format&fit=crop&q=80',
+      createdBy: creator.id
+    },
+    {
+      title: 'Employee Rights',
+      description: `## Overview
+
+Employee rights establish the foundational standards for dignity, fairness, and safety in the workplace. Employment regulations aim to protect workers from exploitation, promote equitable compensation, and ensure healthy occupational environments across diverse industrial, corporate, and informal sectors.
+
+## Wages and Payment
+
+Employees are legally entitled to receive timely payment of wages without unauthorized deductions. Minimum wage regulations prescribe baseline compensation levels across different industries and skill categories. Additionally, statutory frameworks govern entitlements such as overtime compensation, annual bonuses, gratuity, and provident fund contributions where applicable.
+
+## Working Conditions
+
+Employers are obligated to provide a humane, clean, and well-ventilated working environment. Basic amenities, including access to clean drinking water, adequate sanitary facilities, first aid supplies, and ergonomic work arrangements, are fundamental expectations under occupational health standards.
+
+## Workplace Safety
+
+Workplace safety regulations require employers to identify occupational hazards, maintain machinery, implement protective measures, and supply personal protective equipment (PPE) in hazardous operations. In the unfortunate event of work-related injury or accident, employees or their dependents have the right to statutory compensation.
+
+## Working Hours and Leave
+
+Labor laws regulate standard daily and weekly working hours, mandatory rest intervals, and weekly rest days. Employees are entitled to various categories of leave, including earned leave, casual leave, sick leave, and paid statutory festival holidays. Female employees are entitled to comprehensive maternity benefits, including paid leave and nursing breaks.
+
+## Equality and Non-Discrimination
+
+Every worker is entitled to equal treatment and fair opportunity. Discrimination in hiring, remuneration, promotions, or working conditions based on gender, religion, caste, race, or disability is strictly prohibited. Equal pay for equal work remains an established legal principle.
+
+## Protection Against Workplace Harassment
+
+Workplaces must maintain zero tolerance for sexual harassment and abusive behavior. Organizations employing ten or more individuals are legally required to constitute Internal Committees (IC) to address complaints impartially, confidentially, and expeditiously through structured inquiry mechanisms.
+
+## Termination, Notice Periods, and Retrenchment
+
+Employers cannot terminate employment arbitrarily without adhering to contractual notice periods or providing statutory severance compensation in retrenchment situations. Employees terminated without lawful cause or natural justice principles are entitled to contest unfair dismissals before statutory labor courts.
+
+## Employment Records
+
+Workers are entitled to formal documentation, including appointment letters, wage slips, attendance records, and experience certificates upon separation. Clear documentation helps prevent disputes regarding employment terms, tenure, and benefits.
+
+## What an Employee Can Do
+
+Employees facing wage non-payment, wrongful termination, or safety violations should preserve employment records, communications, and pay slips. Grievances can be raised through internal HR channels, trade unions, labor conciliation officers, or specialized labor tribunals.
+
+## Important Note
+
+Employment rights, statutory thresholds, and dispute forums vary significantly depending on job roles, establishment size, contract terms, and whether the employee is categorized as a workman or managerial staff. This content is for general educational reference only.`,
+      photo: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&auto=format&fit=crop&q=80',
+      createdBy: creator.id
+    },
+    {
+      title: 'Women Rights',
+      description: `## Overview
+
+Women's rights are rooted in principles of equality, dignity, personal safety, and social justice. Legal frameworks encompass constitutional guarantees and specialized statutory protections designed to eliminate gender discrimination, prevent violence, and support female empowerment across personal, domestic, and professional spheres.
+
+## Right to Equality
+
+Women are guaranteed equal rights under the law and protection against state-sponsored or institutional discrimination. The legal system actively promotes affirmative measures, educational initiatives, and welfare programs to advance gender parity and socioeconomic participation.
+
+## Protection From Violence
+
+Comprehensive legal mechanisms protect women against domestic violence, physical assault, emotional cruelty, dowry harassment, stalking, and sexual offenses. Domestic violence laws provide multi-faceted civil remedies, including protection orders against abusers, residence orders securing the right to live in the shared household, monetary relief, and temporary child custody.
+
+## Protection Against Workplace Harassment
+
+Legislation on the prevention of sexual harassment at the workplace ensures safe professional environments. Organizations are mandated to establish internal redressal committees, conduct gender-sensitization workshops, maintain confidential complaint registers, and complete inquiries within statutory timelines.
+
+## Rights in the Workplace
+
+Women are entitled to equal remuneration for identical work and non-discriminatory hiring and promotion opportunities. Working mothers are protected by extensive maternity benefit laws, which provide paid maternity leave, job security during pregnancy, medical bonuses, and mandatory crèche facilities in qualifying commercial establishments.
+
+## Childcare and Health Protections
+
+In addition to paid leave, female employees returning from maternity leave are entitled to nursing breaks during working hours. Establishments with qualifying staff numbers are legally mandated to maintain crèche facilities within accessible distances, ensuring mothers can balance professional duties with infant care.
+
+## Rights Relating to Marriage and Family
+
+Family law provides women with vital protections concerning consensual marriage, maintenance rights during separation, divorce remedies, and custody considerations prioritizing the child's welfare. Women are entitled to financial maintenance and alimony to sustain a life of dignity following marital dissolution.
+
+## Property and Financial Rights
+
+Women enjoy equal coparcenary rights in ancestral property and full ownership rights over self-acquired or inherited assets. Additionally, 'Stridhan'—comprising gifts, jewelry, and property received before, during, or after marriage—remains the exclusive absolute property of the woman, and she retains the unrestricted right to its possession and management.
+
+## Access to Legal Protection
+
+Women are entitled to free legal aid services through State and National Legal Services Authorities. Criminal procedure rules provide specific protections during investigations, such as recording statements by female officers, avoiding arrest after sunset without special judicial authorization, and medical examinations conducted only by female practitioners.
+
+## Where to Seek Help
+
+Women experiencing distress, violence, or legal denial can contact dedicated national women helplines (such as 1091 or 181), National and State Commissions for Women, One-Stop Crisis Centers, or Protection Officers appointed under domestic violence legislation.
+
+## Important Note
+
+Specific family laws and inheritance codes may vary based on religious and personal laws. This material provides general educational knowledge and does not constitute formal legal counsel.`,
+      photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80',
+      createdBy: creator.id
+    },
+    {
+      title: 'Digital and Privacy Rights',
+      description: `## Overview
+
+In an increasingly interconnected digital world, privacy and personal autonomy are recognized as fundamental aspects of human dignity. Digital and privacy rights encompass the legal standards, protocols, and individual entitlements that protect personal information, online communications, and digital identities from unauthorized exploitation or surveillance.
+
+## Right to Privacy
+
+Privacy is recognized as an intrinsic fundamental right under constitutional jurisprudence. It safeguards individual decisional autonomy, bodily integrity, spatial privacy, and informational privacy. The state and private entities must demonstrate legality, necessity, and proportionality when accessing or processing private individual data.
+
+## Personal Data
+
+Personal data includes any information that can identify an individual, such as names, identification numbers, addresses, contact details, biometric information, financial credentials, and health records. Because of its sensitive nature, handling personal data requires heightened standards of care, security, and institutional confidentiality.
+
+## Consent and Data Handling
+
+Data processing entities must adhere to core data protection principles. Data should be collected solely for specified, lawful purposes and with the informed consent of the individual. Users are entitled to clear notice regarding what data is gathered, how long it will be retained, and with whom it may be shared. Individuals generally retain rights to access, correct, update, or request erasure of their personal data.
+
+## Online Safety
+
+Digital users have the right to be protected against online harassment, cyber stalking, non-consensual sharing of intimate images, identity theft, and impersonation. Digital security frameworks mandate quick takedown mechanisms and criminal liability for perpetrators of digital harassment.
+
+## Protection of Children in the Digital Space
+
+Stricter standards apply to the processing of personal data belonging to minors. Digital platforms and service providers are prohibited from tracking, behavioral profiling, or serving targeted advertisements to children that could compromise their mental well-being or physical safety.
+
+## Protection Against Unauthorized Access
+
+Unauthorized access to computer systems, data theft, hacking, spreading malware, and interception of electronic communications are prohibited by cyber law. Organizations maintaining digital infrastructure are legally obligated to implement reasonable security practices to prevent data breaches.
+
+## Digital Transactions
+
+Consumers engaging in online banking and e-commerce transactions are protected by financial security standards. Financial institutions must implement multi-factor authentication, transaction alerts, and transparent dispute-resolution mechanisms for unauthorized digital debits.
+
+## Social Media and Online Platforms
+
+Online intermediaries and social media platforms must publish terms of service, maintain user grievance mechanisms, appoint grievance officers, and act promptly on court or government orders regarding unlawful content.
+
+## What to Do When Privacy Is Violated
+
+If personal data is compromised or online harassment occurs, individuals should preserve digital evidence (such as screenshots, transaction logs, and URLs), report the incident to platform grievance officers, file a complaint on national cybercrime portals, and notify relevant banking or data protection authorities.
+
+## Important Note
+
+Digital regulations, data fiduciary responsibilities, and procedural remedies evolve continuously through emerging legislation and judicial rulings. This guide serves general educational purposes and does not represent specific legal advice.`,
+      photo: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=80',
+      createdBy: creator.id
+    }
+  ];
+
+  let createdRightsCount = 0;
+  let updatedRightsCount = 0;
+
+  for (const rightData of initialUserRights) {
+    const existing = await prisma.userRight.findFirst({
+      where: { title: rightData.title }
+    });
+
+    if (!existing) {
+      await prisma.userRight.create({
+        data: rightData
+      });
+      createdRightsCount++;
+    } else {
+      await prisma.userRight.update({
+        where: { id: existing.id },
+        data: {
+          description: rightData.description,
+          photo: existing.photo || rightData.photo,
+          createdBy: existing.createdBy || rightData.createdBy
+        }
+      });
+      updatedRightsCount++;
+    }
+  }
+
+  console.log(`User Rights seed finished: ${createdRightsCount} created, ${updatedRightsCount} updated.`);
+
   // Seed Demo Advocates (Idempotent)
   console.log('Seeding Demo Advocates...');
   const demoPasswordHash = await bcrypt.hash('123456789', 10);

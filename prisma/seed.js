@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { ipcSectionsData } from './ipcData.js';
 
 const prisma = new PrismaClient();
 
@@ -1652,6 +1653,44 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
   }
 
   console.log(`Updates seed finished: ${createdUpdatesCount} created, ${updatedUpdatesCount} updated.`);
+
+  // Seed IPC Sections from Bare Act PDF (Idempotent)
+  console.log(`Seeding ${ipcSectionsData.length} IPC Sections from Bare Act PDF...`);
+  let createdIPCCount = 0;
+  let updatedIPCCount = 0;
+
+  for (const ipc of ipcSectionsData) {
+    const existing = await prisma.iPCSection.findUnique({
+      where: { sectionNo: ipc.sectionNo }
+    });
+
+    if (!existing) {
+      await prisma.iPCSection.create({
+        data: {
+          sectionNo: ipc.sectionNo,
+          heading: ipc.heading,
+          paragraph: ipc.paragraph,
+          explanation: ipc.explanation,
+          content: ipc.content,
+          createdBy: creator.id
+        }
+      });
+      createdIPCCount++;
+    } else {
+      await prisma.iPCSection.update({
+        where: { sectionNo: ipc.sectionNo },
+        data: {
+          heading: ipc.heading,
+          paragraph: ipc.paragraph,
+          explanation: ipc.explanation,
+          content: ipc.content,
+          createdBy: creator.id
+        }
+      });
+      updatedIPCCount++;
+    }
+  }
+  console.log(`IPC Sections seed finished: ${createdIPCCount} created, ${updatedIPCCount} updated.`);
 
   // Seed Demo Advocates (Idempotent)
   console.log('Seeding Demo Advocates...');

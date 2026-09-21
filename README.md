@@ -5328,6 +5328,24 @@ model Guide {
 
 ---
 
+### Seeded Demo Guides
+
+The backend includes idempotent seed data for five comprehensive, production-grade legal awareness guides:
+
+1. **How to File a Complaint:** Covers understanding grievance nature (criminal, consumer, civil, administrative), gathering evidence, identifying competent authorities, structured drafting, acknowledgement reference tracking, and legal counsel guidance.
+2. **How to Send a Legal Notice:** Covers purpose, recovery/contract/tenancy/consumer notice scenarios, drafting essentials, RPAD/speed post delivery proof, recipient response possibilities, and pre-litigation significance.
+3. **How to Find the Right Lawyer:** Covers practice-area specialization, Bar Council verification, court standing, transparent fee structures, consultation preparation, territorial jurisdiction, and VakeelSetu advocate discovery.
+4. **How to File for Divorce:** Covers applicable personal laws (Hindu, Special Marriage, Indian Divorce, Muslim, Parsi), mutual-consent vs. contested divorce, child custody, alimony/maintenance, Stridhan protection, court jurisdiction, and counseling/mediation stages.
+5. **How to Register Property:** Covers 30-year title searches, Mother Deed & Encumbrance Certificates, agreement to sell vs. sale deed, stamp duty/registration fee calculations, Sub-Registrar biometric verification, and post-registration municipal mutation.
+
+To execute or re-run the seed idempotently:
+```bash
+npx prisma db seed
+```
+*(Running the seed multiple times safely updates the existing demo guides without wiping custom creator content or generating duplicate records).*
+
+---
+
 ### Authorization & Permission Matrix
 
 | Endpoint | Method | Public | Normal User | Advocate | Content Creator |
@@ -5548,6 +5566,299 @@ model Guide {
 - Attempt `POST /api/content-creator/guides` without `Authorization` header -> Verify `401 Unauthorized`.
 - Attempt `POST /api/content-creator/guides` with a Normal User or Advocate token -> Verify `403 Forbidden`.
 - Attempt `GET /api/guides/00000000-0000-0000-0000-000000000000` -> Verify `404 Not Found`.
+
+---
+
+## Updates
+
+The **Updates** module enables authenticated **Content Creators** to post, edit, and delete platform and legal updates (showing what was previously in place with `oldDescription` and what is new with `newDescription`). Updates are **publicly accessible** to all visitors and normal users without requiring authentication.
+
+---
+
+### Database Model (`Update`)
+
+```prisma
+model Update {
+  id             String          @id @default(uuid())
+  title          String
+  oldDescription String          @db.Text
+  newDescription String          @db.Text
+  createdBy      String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  creator        ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([createdAt])
+}
+```
+
+---
+
+### Seeded Demo Updates
+
+The backend includes idempotent seed data for three legally responsible, production-grade legal and regulatory updates:
+
+1. **Important Changes in Consumer Law:**
+   - **`oldDescription`:** Explains the existing Consumer Protection Act, 2019 framework, 3-tier Consumer Commissions (District, State, National), online filing mechanisms (e-Daakhil, NCH), and the baseline 2020 e-commerce rules.
+   - **`newDescription`:** Explains the Consumer Protection (E-Commerce) (Amendment) Rules, 2026 (notified September 2026), focusing on transparent merchant disclosures, authentic listing descriptions, prompt grievance redressal, and practical tips on preserving transaction records for dispute resolution.
+
+2. **New Digital Privacy Regulations:**
+   - **`oldDescription`:** Details the previous statutory landscape under Section 43A of the IT Act, 2000, the 2011 SPDI rules, and the baseline principles established by the Digital Personal Data Protection Act, 2023.
+   - **`newDescription`:** Details the Digital Personal Data Protection Rules, 2025 (notified November 2025), explaining operational rules for Data Fiduciaries, Data Principal rights (access, correction, erasure, nomination), the Data Protection Board of India, and phased enforcement timelines.
+
+3. **Recent Developments in Property and Land-Record Rules:**
+   - **`oldDescription`:** Explains the traditional state-level property registration framework under the Registration Act, 1908, local revenue systems (Khata/Patta mutation), Sub-Registrar offices, and the need for comprehensive title due diligence.
+   - **`newDescription`:** Outlines the Digital India Land Records Modernization Programme (DILRMP) 3.0 (2026–2031) announced in September 2026, explaining GIS-enabled spatial mapping, standardisation of digital land records, and reiterating that digital records assist transparency but do not replace legal title searches under State/UT property laws.
+
+To execute or re-run the seed idempotently:
+```bash
+npx prisma db seed
+```
+*(Running the seed multiple times safely updates the existing demo updates without wiping custom content or creating duplicates).*
+
+---
+
+### Authorization & Permission Matrix
+
+| Endpoint | Method | Public | Normal User | Advocate | Content Creator |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `/api/updates` | `GET` | ✅ | ✅ | ✅ | ✅ |
+| `/api/updates/:id` | `GET` | ✅ | ✅ | ✅ | ✅ |
+| `/api/content-creator/updates` | `POST` | ❌ | ❌ | ❌ | ✅ |
+| `/api/content-creator/updates/:id` | `PATCH` | ❌ | ❌ | ❌ | ✅ |
+| `/api/content-creator/updates/:id` | `DELETE` | ❌ | ❌ | ❌ | ✅ |
+
+Normal Users, Advocates, and unauthenticated visitors cannot create, update, or delete updates. All modification attempts without valid `CONTENT_CREATOR` role return standard `401 Unauthorized` or `403 Forbidden` responses.
+
+---
+
+### Endpoints Reference
+
+#### 1. Public — Get All Updates
+- **Endpoint:** `GET /api/updates`
+- **Authentication:** None (Public)
+- **Query Parameters:**
+  - `page` *(optional, integer, default: 1)*
+  - `limit` *(optional, integer, default: 10, max: 50)*
+- **Ordering:** Deterministic database ordering by `createdAt DESC` (newest first).
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "1cea7e26-893f-4157-a85b-8ed2a82c045f",
+        "title": "Updated Legal Consultation Process",
+        "oldDescription": "Previously, users had to contact advocates manually to arrange a consultation.",
+        "newDescription": "Users can now view advocate profiles and book consultations directly through the platform.",
+        "createdAt": "2026-09-21T05:50:00.000Z",
+        "updatedAt": "2026-09-21T05:50:00.000Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "limit": 10,
+      "totalUpdates": 1,
+      "totalPages": 1,
+      "hasNextPage": false,
+      "hasPreviousPage": false
+    }
+  }
+  ```
+
+---
+
+#### 2. Public — Get Single Update
+- **Endpoint:** `GET /api/updates/:id`
+- **Authentication:** None (Public)
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "1cea7e26-893f-4157-a85b-8ed2a82c045f",
+      "title": "Updated Legal Consultation Process",
+      "oldDescription": "Previously, users had to contact advocates manually to arrange a consultation.",
+      "newDescription": "Users can now view advocate profiles and book consultations directly through the platform.",
+      "createdAt": "2026-09-21T05:50:00.000Z",
+      "updatedAt": "2026-09-21T05:50:00.000Z"
+    }
+  }
+  ```
+- **Error Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "Update not found"
+  }
+  ```
+
+---
+
+#### 3. Content Creator — Create Update
+- **Endpoint:** `POST /api/content-creator/updates`
+- **Authentication:** `CONTENT_CREATOR` role required (`requireAuth`, `requireRole('CONTENT_CREATOR')`)
+- **Content-Type:** `application/json`
+- **Request Body:**
+  ```json
+  {
+    "title": "Updated Legal Consultation Process",
+    "oldDescription": "Previously, users had to contact advocates manually to arrange a consultation.",
+    "newDescription": "Users can now view advocate profiles and book consultations directly through the platform."
+  }
+  ```
+- **Response (201 Created):**
+  ```json
+  {
+    "success": true,
+    "message": "Update created successfully",
+    "data": {
+      "id": "1cea7e26-893f-4157-a85b-8ed2a82c045f",
+      "title": "Updated Legal Consultation Process",
+      "oldDescription": "Previously, users had to contact advocates manually to arrange a consultation.",
+      "newDescription": "Users can now view advocate profiles and book consultations directly through the platform.",
+      "createdAt": "2026-09-21T05:50:00.000Z",
+      "updatedAt": "2026-09-21T05:50:00.000Z"
+    }
+  }
+  ```
+- **Validation Errors (400 Bad Request):**
+  ```json
+  {
+    "success": false,
+    "message": "Title is required and must not be empty",
+    "errors": [
+      {
+        "field": "title",
+        "message": "Title is required and must not be empty"
+      }
+    ]
+  }
+  ```
+
+---
+
+#### 4. Content Creator — Update Update
+- **Endpoint:** `PATCH /api/content-creator/updates/:id`
+- **Authentication:** `CONTENT_CREATOR` role required
+- **Content-Type:** `application/json`
+- **Request Body (Partial updates supported):**
+  ```json
+  {
+    "title": "Updated Legal Consultation Process (v2)",
+    "oldDescription": "Previous manual process description",
+    "newDescription": "New automated consultation and appointment booking flow"
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Update updated successfully",
+    "data": {
+      "id": "1cea7e26-893f-4157-a85b-8ed2a82c045f",
+      "title": "Updated Legal Consultation Process (v2)",
+      "oldDescription": "Previous manual process description",
+      "newDescription": "New automated consultation and appointment booking flow",
+      "createdAt": "2026-09-21T05:50:00.000Z",
+      "updatedAt": "2026-09-21T05:55:00.000Z"
+    }
+  }
+  ```
+- **Error Responses:**
+  - `404 Not Found`: If update ID does not exist.
+  - `400 Bad Request`: If title, oldDescription, or newDescription contains only whitespace, or if empty body is supplied.
+
+---
+
+#### 5. Content Creator — Delete Update
+- **Endpoint:** `DELETE /api/content-creator/updates/:id`
+- **Authentication:** `CONTENT_CREATOR` role required
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Update deleted successfully"
+  }
+  ```
+- **Error Response (404 Not Found):**
+  ```json
+  {
+    "success": false,
+    "message": "Update not found"
+  }
+  ```
+
+---
+
+### Postman Testing Guide
+
+#### 1. Content Creator Login
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/content-creator/login`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "email": "creator@example.com",
+    "password": "your_password"
+  }
+  ```
+- **Save Token:** Copy `token` from response to use in `Authorization: Bearer <creator_token>` header.
+
+#### 2. Create Update
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/content-creator/updates`
+- **Headers:**
+  - `Authorization: Bearer <creator_token>`
+  - `Content-Type: application/json`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "title": "Updated Legal Consultation Process",
+    "oldDescription": "Previously, users had to contact advocates manually to arrange a consultation.",
+    "newDescription": "Users can now view advocate profiles and book consultations directly through the platform."
+  }
+  ```
+
+#### 3. Public List All Updates
+- **Method:** `GET`
+- **URL:** `http://localhost:5000/api/updates?page=1&limit=10`
+- **Headers:** *(None required)*
+
+#### 4. Public Get Single Update
+- **Method:** `GET`
+- **URL:** `http://localhost:5000/api/updates/<update_id>`
+- **Headers:** *(None required)*
+
+#### 5. Update Update
+- **Method:** `PATCH`
+- **URL:** `http://localhost:5000/api/content-creator/updates/<update_id>`
+- **Headers:**
+  - `Authorization: Bearer <creator_token>`
+  - `Content-Type: application/json`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "title": "Updated Legal Consultation Process (v2)",
+    "oldDescription": "Previous manual process description",
+    "newDescription": "New automated consultation and appointment booking flow"
+  }
+  ```
+
+#### 6. Delete Update
+- **Method:** `DELETE`
+- **URL:** `http://localhost:5000/api/content-creator/updates/<update_id>`
+- **Headers:** `Authorization: Bearer <creator_token>`
+
+#### 7. Unauthorized / Forbidden Checks
+- Attempt `POST /api/content-creator/updates` without `Authorization` header -> Verify `401 Unauthorized`.
+- Attempt `POST /api/content-creator/updates` with a Normal User or Advocate token -> Verify `403 Forbidden`.
+- Attempt `PATCH /api/content-creator/updates/<update_id>` as Normal User -> Verify `403 Forbidden`.
+- Attempt `DELETE /api/content-creator/updates/<update_id>` as Advocate -> Verify `403 Forbidden`.
+- Attempt `GET /api/updates/00000000-0000-0000-0000-000000000000` -> Verify `404 Not Found`.
+
 
 
 

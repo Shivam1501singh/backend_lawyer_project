@@ -420,6 +420,7 @@ model ContentCreator {
   bnsSections  BNSSection[]
   userRights   UserRight[]
   guides       Guide[]
+  updates      Update[]
 }
 
 model UserRight {
@@ -447,6 +448,21 @@ model Guide {
   updatedAt   DateTime        @updatedAt
 
   creator     ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([createdBy])
+  @@index([createdAt])
+}
+
+model Update {
+  id             String          @id @default(uuid())
+  title          String
+  oldDescription String          @db.Text
+  newDescription String          @db.Text
+  createdBy      String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  creator        ContentCreator? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([createdBy])
   @@index([createdAt])

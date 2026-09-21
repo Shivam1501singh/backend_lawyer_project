@@ -1242,6 +1242,417 @@ Digital regulations, data fiduciary responsibilities, and procedural remedies ev
 
   console.log(`User Rights seed finished: ${createdRightsCount} created, ${updatedRightsCount} updated.`);
 
+  // Idempotent Seeding of Guides
+  console.log('Seeding initial Guides (idempotent with detailed ~500-word content)...');
+  const initialGuides = [
+    {
+      title: 'How to File a Complaint',
+      description: `## Overview
+
+Filing a complaint is the primary formal step taken by an individual or entity to seek redressal for a grievance, report an unlawful act, or initiate regulatory action. Whether addressing a consumer dispute, a criminal offense, a workplace violation, or a deficiency in public service, understanding how to properly document and present your complaint ensures that the appropriate authority can take prompt and effective action.
+
+## 1. Understand the Nature of the Grievance
+
+Before initiating any procedure, clearly determine the nature of the issue:
+- **Criminal Matters:** Involving offenses such as theft, physical harm, assault, fraud, cyber harassment, or threats, which must be reported to law enforcement authorities.
+- **Consumer Grievances:** Involving defective goods, substandard services, overcharging, or unfair trade practices by commercial sellers or service providers.
+- **Civil and Contractual Disputes:** Involving breach of agreements, tenancy disagreements, or property disputes.
+- **Administrative and Public Services:** Involving municipal issues, government utility failures, or departmental misconduct, which fall under departmental grievance cells or ombudsmen.
+
+## 2. Collect Supporting Documents and Evidence
+
+A strong complaint relies on verifiable facts and credible documentation. Gather all relevant evidence before drafting:
+- Identity and contact proofs of the complainant.
+- Chronological timeline of events, noting precise dates, times, and locations.
+- Written communications, including emails, letters, text messages, and chat transcripts.
+- Financial records such as invoices, payment receipts, bank transfer statements, or contract copies.
+- Photographs, audio/video recordings, medical reports, or witness contact details where relevant.
+
+## 3. Identify the Competent Authority
+
+Filing a complaint with the wrong forum causes unnecessary delays. Identify the proper jurisdiction:
+- **Police Station / Cyber Cell:** For cognizable criminal offenses or online fraud within the territorial jurisdiction where the incident occurred.
+- **Consumer Commissions:** District, State, or National Consumer Disputes Redressal Commissions based on the financial value of the transaction.
+- **Internal Grievance Cells / Ombudsmen:** For banking disputes, insurance grievances, telecommunication issues, or workplace harassment committees.
+- **Statutory Commissions:** National or State Human Rights Commissions, Women's Commissions, or Child Rights Protection Authorities.
+
+## 4. Draft a Clear and Structured Complaint
+
+When writing the complaint, use polite, objective, and precise language:
+- **Heading and Subject:** State the authority addressed and a concise subject line (e.g., "Complaint regarding unauthorized debit and fraudulent transaction").
+- **Complainant & Respondent Details:** Provide complete names, addresses, phone numbers, and email IDs of all parties involved.
+- **Statement of Facts:** Present the events in chronological order using numbered paragraphs.
+- **Specific Relief Sought:** Clearly articulate what outcome you request (e.g., refund, investigation, replacement, or compensation).
+- **Declaration:** State that the facts provided are true and correct to the best of your knowledge, followed by your dated signature.
+
+## 5. Submit and Secure an Official Acknowledgement
+
+Submit the complaint through authorized channels (in-person physical submission, registered post, or official government grievance portals). Always obtain a stamped acknowledgement, diary number, or digital reference ID. This reference is crucial for tracking progress and following up on inquiries.
+
+## 6. When to Seek Professional Legal Assistance
+
+While many routine complaints can be filed independently, consulting a qualified advocate is strongly advised when facing complex legal disputes, uncooperative authorities, serious criminal allegations, or when preparing formal court petitions.
+
+## Important Note
+
+Complaint submission procedures, required statutory formats, and appellate mechanisms vary widely based on the subject matter and jurisdiction. This guide provides general educational awareness and does not substitute for personalized legal advice.`,
+      createdBy: creator.id
+    },
+    {
+      title: 'How to Send a Legal Notice',
+      description: `## Overview
+
+A legal notice is a formal written communication sent by an aggrieved party to an individual or organization, outlining specific grievances, legal rights, and demanded remedies. It serves as a final formal opportunity for the recipient to resolve a dispute amicably before formal litigation is initiated in a court of law or tribunal.
+
+## 1. Purpose and Importance of a Legal Notice
+
+Sending a legal notice serves several critical functions:
+- **Formal Communication:** Clearly conveys your intention to initiate legal proceedings if the matter is not resolved.
+- **Opportunity for Settlement:** Allows both parties to settle disputes without incurring extensive court fees and trial delays.
+- **Creating Documentary Record:** Establishes on the legal record that the recipient was duly informed of their default and given reasonable time to remedy it.
+- **Statutory Requirement:** In certain civil and commercial matters (such as specific statutory notices or consumer complaints), serving a prior notice is a required procedural step.
+
+## 2. When Is a Legal Notice Appropriate?
+
+Legal notices are commonly sent in situations such as:
+- **Recovery of Money and Non-Payment:** Default on loans, unpaid vendor invoices, or delayed business payments.
+- **Property and Tenancy Matters:** Non-payment of rent, unlawful property occupation, breach of lease covenants, or termination of tenancy.
+- **Breach of Contract:** Non-fulfillment of agreed commercial terms, delivery failures, or employee agreement breaches.
+- **Consumer Grievances:** Deficient services, defective consumer products, or misleading trade advertisements.
+- **Employment Disputes:** Wrongful termination, unpaid severance or salaries, and refusal to release relieving letters.
+
+## 3. Gathering Necessary Facts and Documents
+
+Before drafting the notice, assemble all supporting documentation:
+- Executed contracts, agreements, or purchase orders.
+- Invoices, account statements, payment proofs, and dishonored instrument memos.
+- Relevant correspondence including email threads, letters, and SMS/chat records.
+- Accurate identification details and official physical/registered addresses of all intended recipients.
+
+## 4. Key Elements of a Well-Drafted Legal Notice
+
+A formal legal notice must be drafted with precision:
+- **Identification:** Full legal names, designations, and addresses of both the sender and the recipient.
+- **Factual Background:** A chronological statement detailing the relationship between parties, agreed obligations, and the specific breach that occurred.
+- **Legal Grounds & Demands:** Clear articulation of the legal basis for the claim and the exact remedy sought (e.g., payment of a specific amount, return of property, or specific performance).
+- **Stipulated Notice Period:** A specific, reasonable time window (commonly 15 to 30 days) granted to the recipient to comply or reply.
+- **Consequence of Non-Compliance:** A clear declaration that failure to resolve the grievance within the stipulated period will compel the sender to pursue appropriate legal action at the recipient's cost and risk.
+
+## 5. Serving the Notice and Retaining Delivery Proof
+
+A legal notice should be dispatched through legally recognized, verifiable communication channels:
+- **Registered Post with Acknowledgement Due (RPAD) or Speed Post:** Provides official postal receipts and delivery tracking reports.
+- **Electronic Transmission:** Sending a copy via verified email or electronic messaging alongside physical post provides additional proof of delivery.
+- **Preservation of Records:** Safely preserve copies of the signed notice, postal receipts, tracking printouts, and returned acknowledgement cards.
+
+## 6. What Happens After Delivery?
+
+Once the notice is received, the recipient may:
+- **Comply with Demands:** Fulfill the requested relief, resolving the dispute amicably.
+- **Send a Reply Notice:** Provide their version of facts, dispute claims, or propose negotiated settlement terms.
+- **Fail to Respond:** If the recipient ignores the notice within the stipulated timeline, the sender may proceed to file a formal court petition, civil suit, or complaint.
+
+## 7. Working with a Qualified Advocate
+
+While an individual can legally draft a notice on their own behalf, engaging an experienced advocate ensures that the notice accurately references relevant statutory provisions, preserves vital legal rights, and carries professional weight.
+
+## Important Note
+
+A legal notice does not constitute a court judgment or order; it is a pre-litigation communication. Applicable notice periods, statutory formats, and court jurisdictions vary by case type. This guide is for educational reference and does not constitute personalized legal counsel.`,
+      createdBy: creator.id
+    },
+    {
+      title: 'How to Find the Right Lawyer',
+      description: `## Overview
+
+Selecting the right legal counsel is one of the most critical decisions when facing a legal challenge or planning an important transaction. The legal profession encompasses diverse specialized fields, court hierarchies, and procedural nuances. Finding an advocate with the appropriate experience, communication style, and professional standing helps ensure that your interests are effectively represented.
+
+## 1. Understand Your Specific Legal Needs
+
+The law is vast, and most advocates specialize in distinct practice areas. Identify the core domain of your legal issue:
+- **Criminal Law:** Bail applications, criminal trials, cyber offenses, and defense representation.
+- **Family & Matrimonial Law:** Divorce proceedings, child custody, maintenance claims, and domestic disputes.
+- **Civil & Property Law:** Property title verification, partition suits, tenancy disputes, and injunctions.
+- **Corporate & Commercial Law:** Startup incorporation, shareholder agreements, contract drafting, and regulatory compliance.
+- **Taxation & Financial Law:** Direct/indirect taxes, GST disputes, and appellate tribunal proceedings.
+- **Consumer & Labor Law:** Service deficiencies, consumer forum complaints, and workplace grievances.
+
+## 2. Review Professional Credentials and Experience
+
+When evaluating prospective advocates, consider key indicators of professional competence:
+- **Bar Council Registration:** Verify that the advocate is properly enrolled with the State Bar Council.
+- **Relevant Practice Experience:** Look for demonstrable experience in the specific subject matter rather than generalist practice.
+- **Court of Practice:** Ensure the advocate routinely appears before the court or tribunal having jurisdiction over your case (e.g., District Court, High Court, NCLT, or Consumer Commission).
+- **Track Record:** Assess their familiarity with local procedural rules, filing requirements, and judicial precedents.
+
+## 3. Assess Communication and Professional Availability
+
+Effective advocacy requires transparent and clear communication:
+- **Accessibility:** Does the lawyer explain complex legal concepts in understandable terms without excessive jargon?
+- **Realistic Case Assessment:** A dependable advocate provides an objective evaluation of strengths and risks rather than making unrealistic guarantees.
+- **Responsiveness:** Ensure there is clarity regarding who will handle day-to-day communications, draft filings, and attend court hearings.
+
+## 4. Understand Legal Fees and Billing Structures
+
+Discuss professional fees transparently before formally engaging an advocate:
+- **Fee Models:** Inquire whether fees are charged on a consultation basis, per-appearance schedule, staged milestone structure, or flat overall fee.
+- **Out-of-Pocket Expenses:** Clarify responsibilities for court fees, stamp papers, typing/printing, process fees, and clerkage.
+- **Written Agreement:** Request written confirmation or formal fee memos to avoid misunderstandings during litigation.
+
+## 5. Prepare for the Initial Consultation
+
+Make the most of your initial meeting by preparing thoroughly:
+- Organize all relevant documents, contracts, notices, and correspondence in chronological order.
+- Write down a concise summary of key facts, dates, and names.
+- Prepare specific questions regarding legal options, procedural steps, anticipated timelines, and potential settlement avenues.
+
+## 6. Consider Location and Court Jurisdiction
+
+Litigation often requires multiple physical appearances, filings, and urgent court mentions. Choosing an advocate located near or regularly practicing in the relevant jurisdictional court complex can reduce travel expenses and streamline proceedings.
+
+## 7. Using VakeelSetu to Connect with Verified Advocates
+
+The VakeelSetu platform enables citizens and businesses to browse verified advocate profiles, filter by practice areas, review years of experience, check court practice locations, read client reviews, and schedule direct consultations with ease.
+
+## Important Note
+
+Finding the right advocate depends on your unique circumstances, financial budget, and case requirements. No directory or platform guarantees litigation outcomes. This guide is for educational information only and does not endorse specific legal practitioners.`,
+      createdBy: creator.id
+    },
+    {
+      title: 'How to File for Divorce',
+      description: `## Overview
+
+Filing for divorce is a significant legal and emotional process governed by personal and statutory laws in India. The legal framework provides mechanisms for the dissolution of marriage either through mutual agreement between spouses or through contested litigation on legally recognized grounds. Understanding the procedures, required documentation, and key legal considerations helps individuals navigate this transition responsibly.
+
+## 1. Applicable Personal and Statutory Laws
+
+In India, divorce procedures are governed by the law under which the marriage was solemnized:
+- **Hindu Marriage Act, 1955:** Applies to Hindus, Buddhists, Jains, and Sikhs.
+- **Special Marriage Act, 1954:** Applies to civil, inter-faith marriages registered under the Act.
+- **Indian Divorce Act, 1869:** Applies to Christians.
+- **Muslim Personal Law & Dissolution of Muslim Marriages Act, 1939:** Governs marriages among Muslims.
+- **Parsi Marriage and Divorce Act, 1936:** Governs marriages among Parsis.
+
+## 2. Mutual Consent vs. Contested Divorce
+
+The legal process differs fundamentally based on whether both parties agree to dissolve the marriage:
+
+### Mutual Consent Divorce
+- Both spouses mutually agree that they cannot live together and have lived separately for the required statutory period (generally one year or more).
+- Spouses amicably resolve all ancillary matters beforehand, including permanent alimony, return of Stridhan, division of joint assets, child custody, and visitation schedules.
+- Requires filing joint petitions (First Motion and Second Motion) with a statutory cooling-off/reflection period, unless waived by the court under exceptional circumstances.
+- This route is substantially faster, less expensive, and less contentious.
+
+### Contested Divorce
+- Initiated by one spouse when mutual agreement cannot be reached.
+- Must be filed on specific statutory grounds such as cruelty (mental or physical), desertion, adultery, conversion, unsoundness of mind, or chronic communicable diseases.
+- Involves formal trial proceedings, examination of witnesses, presentation of evidence, and judicial adjudication.
+
+## 3. Key Issues to Address in Divorce Proceedings
+
+Divorce proceedings encompass crucial interconnected considerations:
+- **Child Custody and Welfare:** Determining physical and legal custody, visitation schedules, and holiday arrangements with the child's paramount welfare as the sole governing principle.
+- **Maintenance and Alimony:** Determining interim maintenance during litigation and permanent alimony based on the financial capacities, standards of living, and needs of the parties.
+- **Stridhan and Joint Property:** Ensuring the return of Stridhan (exclusive property of the woman) and equitable settlement of joint bank accounts, vehicles, and real estate investments.
+
+## 4. Collecting Essential Documentation
+
+Preparing the divorce petition requires assembling key supporting records:
+- Marriage certificate and proof of marriage (e.g., wedding photographs, invitation card).
+- Proof of residence establishing territorial jurisdiction.
+- Passport-sized photographs of the petitioner(s).
+- Evidence of living separately for the statutory period.
+- Income tax returns, salary slips, and asset/liability declarations where maintenance is claimed.
+- Specific documentary, digital, or medical evidence substantiating grounds in contested matters.
+
+## 5. Identifying the Correct Family Court Jurisdiction
+
+A divorce petition must be filed in the competent Family Court or District Court having territorial jurisdiction:
+- Where the marriage was solemnized.
+- Where the couple last resided together as husband and wife.
+- Where the respondent resides at the time of presentation of the petition.
+- Where the petitioner resides (under specific provisions available to wives under certain personal laws).
+
+## 6. General Procedural Stages
+
+The standard court process typically follows these milestones:
+1. **Filing the Petition:** Drafting and presenting the petition with supporting affidavits and vakalatnama.
+2. **Notice Issuance:** The court issues summons/notice to the respondent spouse.
+3. **Mandatory Mediation & Counseling:** Family courts routinely refer parties to court-annexed counselors or mediation centers to explore reconciliation or settlement.
+4. **Evidence & Arguments:** In contested matters, filing written statements, presenting evidence, and cross-examining witnesses.
+5. **Final Judgment & Decree:** The court pronounces judgment and issues a certified copy of the divorce decree dissolving the marriage.
+
+## 7. Consulting an Experienced Family Law Advocate
+
+Divorce proceedings involve complex emotional, financial, and custody dimensions. Consulting a dedicated family law advocate ensures proper guidance, objective advice, and protection of your statutory rights throughout the legal process.
+
+## Important Note
+
+Divorce laws, statutory cooling periods, and personal law rules vary significantly across communities and case facts. This guide provides general educational awareness and should not be construed as individual legal counsel.`,
+      createdBy: creator.id
+    },
+    {
+      title: 'How to Register Property',
+      description: `## Overview
+
+Property registration is the official recording of property transactions with designated government authorities under the Registration Act, 1908. Registering a conveyance deed or sale deed provides public notice of ownership, prevents fraudulent transfers, establishes legal title, and creates an admissible permanent record in a court of law.
+
+## 1. Pre-Registration Title Verification and Due Diligence
+
+Prior to executing any property purchase or registration, conducting comprehensive legal due diligence is essential:
+- **Title Search:** Verify the seller's clear, marketable, and unencumbered ownership title covering at least the past 30 years.
+- **Mother Deed:** Examine the original chain of previous title deeds tracing ownership succession.
+- **Encumbrance Certificate (EC):** Obtain an updated Encumbrance Certificate from the Sub-Registrar's Office to verify that the property is free from mortgages, liens, or legal attachments.
+- **Khata / Patta / Mutation Records:** Confirm revenue records and ownership entries in municipal or revenue registers.
+- **Approvals and Clearances:** For apartments and developed plots, inspect building plan sanctions, layout approvals, Commencement Certificates (CC), and Occupancy Certificates (OC).
+- **Property Tax Receipts:** Ensure all municipal property taxes and utility bills have been cleared up to the date of transfer.
+
+## 2. Understanding Agreement to Sell and Sale Deed
+
+A standard transaction involves two primary legal instruments:
+- **Agreement to Sell:** Details the commercial terms, payment milestones, possession handover dates, and obligations of buyer and seller prior to registration.
+- **Sale Deed / Conveyance Deed:** The final legally binding document that officially transfers ownership title and possession from seller to buyer upon payment of full consideration.
+
+## 3. Calculating Stamp Duty and Registration Charges
+
+Every property registration requires the payment of statutory government fees:
+- **Stamp Duty:** A state revenue tax calculated on the transaction value or the government circle/guideline rate (whichever is higher). Stamp duty rates vary by state, gender of the buyer, and property location (urban vs. rural).
+- **Registration Fee:** An additional fee (typically 1% of property value or fixed state slabs) charged for the administrative processing and archiving of the deed.
+- **Payment Method:** Generally paid through authorized e-stamping portals, designated bank challans, or state treasury portals.
+
+## 4. Preparing Required Documentation
+
+Assemble all necessary identity and supporting records before scheduling an appointment:
+- Duly drafted Sale Deed on appropriate stamp paper or e-stamp certificate.
+- PAN Cards and Aadhaar Cards (or verified identity proofs) of buyer, seller, and two independent adult witnesses.
+- Passport-sized photographs of all participating parties and witnesses.
+- Original previous title documents and tax payment receipts.
+- Necessary statutory clearances or NOCs where applicable (e.g., society NOC or agricultural land clearances).
+
+## 5. The Sub-Registrar Office Procedure
+
+The formal execution and registration process typically involves:
+1. **Online Slot Booking:** Reserving an appointment slot on the state government's registration department portal.
+2. **Physical / Biometric Presence:** The buyer, seller, and two witnesses must be physically present before the jurisdictional Sub-Registrar.
+3. **Verification of Documents:** The Sub-Registrar verifies original identity proofs, property papers, and stamp duty payment receipts.
+4. **Biometric Capture & Signatures:** Biometric fingerprints, digital signatures, and photographs of all parties and witnesses are captured.
+5. **Official Execution & Admission:** The seller formally admits receipt of consideration and execution of the sale deed.
+
+## 6. Obtaining the Registered Deed and Post-Registration Steps
+
+After verification, the Sub-Registrar's Office assigns a unique registration number, affixes official seals, and digitizes the deed:
+- **Collection:** The original registered sale deed is typically issued within a few working days.
+- **Safe Storage:** Safely store the original deed and secure certified copies for record-keeping.
+- **Mutation of Property:** Apply for mutation in local municipal or revenue records (e.g., updating Khata/Patta) to ensure property tax assessments reflect the new owner's name.
+
+## 7. Importance of Professional Legal Assistance
+
+Engaging an experienced real estate advocate to review title deeds, draft the conveyance document, and oversee Sub-Registrar procedures protects buyers against title defects, undisclosed mortgages, and procedural invalidity.
+
+## Important Note
+
+Stamp duty rates, registration fees, portal mechanisms, and document requirements differ significantly across Indian states and union territories. This guide provides general educational awareness and does not represent specific legal advice.`,
+      createdBy: creator.id
+    }
+  ];
+
+  let createdGuidesCount = 0;
+  let updatedGuidesCount = 0;
+
+  for (const guideData of initialGuides) {
+    const existing = await prisma.guide.findFirst({
+      where: { title: guideData.title }
+    });
+
+    if (!existing) {
+      await prisma.guide.create({
+        data: guideData
+      });
+      createdGuidesCount++;
+    } else {
+      await prisma.guide.update({
+        where: { id: existing.id },
+        data: {
+          description: guideData.description,
+          createdBy: existing.createdBy || guideData.createdBy
+        }
+      });
+      updatedGuidesCount++;
+    }
+  }
+
+  console.log(`Guides seed finished: ${createdGuidesCount} created, ${updatedGuidesCount} updated.`);
+
+  // Idempotent Seeding of Updates
+  console.log('Seeding initial Updates (idempotent with detailed ~400-500 word content)...');
+  const initialUpdates = [
+    {
+      title: 'Important Changes in Consumer Law',
+      oldDescription: `Under the framework established by the Consumer Protection Act, 2019, Indian consumers gained substantial protections against unfair trade practices, misleading advertisements, and defective goods or deficient services. The statutory architecture introduced a robust three-tier adjudication mechanism comprising District, State, and National Consumer Disputes Redressal Commissions, along with central regulatory oversight through the Central Consumer Protection Authority (CCPA).
+
+To enhance consumer access and modernise dispute resolution, digital mechanisms such as the National Consumer Helpline (NCH) and the e-Daakhil electronic filing portal were progressively operationalised. These facilities allowed consumers to lodge grievances, file formal consumer complaints online, pay requisite court fees digitally, and track dispute proceedings without strictly requiring initial in-person registry visits. The existing Consumer Protection (E-Commerce) Rules, 2020 established baseline obligations for e-commerce entities, including country-of-origin declarations, basic grievance officer appointments, and clear refund protocols. Consumers relied upon these established mechanisms to seek product replacements, refunds, and damages before jurisdictional Consumer Commissions.`,
+      newDescription: `In September 2026, the Department of Consumer Affairs notified the Consumer Protection (E-Commerce) (Amendment) Rules, 2026 (published on 11 September 2026), introducing updated regulatory standards for online marketplaces, digital platforms, and e-commerce entities.
+
+These amendment rules reflect the evolving digital marketplace by reinforcing requirements around transparent seller disclosures, authentic product listing information, clear commercial terms, and strengthened consumer grievance-redressal mechanisms. For online shoppers, the updated framework emphasizes fair transaction practices, enhanced accountability for listed product descriptions, and prompt dispute handling by platform grievance officers.
+
+While these amendments refine e-commerce governance, consumers continue to be protected under the overarching Consumer Protection Act, 2019 and can approach District, State, and National Consumer Commissions through physical or digital (e-Daakhil) channels, including virtual hearings where available. In practical terms, online shoppers should exercise standard consumer diligence: verify seller profiles, carefully review cancellation and return terms before purchasing, and preserve all relevant transaction evidence—such as order confirmations, invoices, customer support communications, payment receipts, and delivery logs—when raising a dispute or seeking formal legal redressal.`,
+      createdBy: creator.id
+    },
+    {
+      title: 'New Digital Privacy Regulations',
+      oldDescription: `Prior to the operationalisation of dedicated procedural rules, personal data protection in India was primarily guided by Section 43A of the Information Technology Act, 2000 and the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011. While this early framework introduced baseline requirements for handling sensitive personal data and obtaining basic privacy consent, it was limited in scope and lacked comprehensive provisions for contemporary digital data processing ecosystems.
+
+The enactment of the Digital Personal Data Protection Act, 2023 (DPDP Act) marked a major milestone by establishing a statutory framework for processing digital personal data while recognising both the right of individuals (Data Principals) to protect their personal information and the legitimate need of organisations (Data Fiduciaries) to process data for lawful purposes. However, the comprehensive execution of the Act's principles—including detailed operational protocols, board procedures, and specific compliance mechanisms—remained contingent upon the notification and staged enforcement of formal statutory rules.`,
+      newDescription: `The Ministry of Electronics and Information Technology (MeitY) notified the Digital Personal Data Protection Rules, 2025 (published on 14 November 2025), providing the comprehensive operational and procedural framework required to implement the DPDP Act, 2023.
+
+The 2025 Rules specify the practical procedures through which organisations must ensure transparency, obtain informed and itemised consent, maintain robust security safeguards to prevent data breaches, and provide accessible notice to users. The Rules operationalise critical rights for Data Principals, including the right to access summaries of personal data processed, the right to correction and erasure, accessible grievance redressal mechanisms, and the right to nominate a representative in the event of death or incapacity.
+
+The framework also outlines the operational functioning of the Data Protection Board of India, which is tasked with conducting inquiries, investigating reported personal data breaches, and addressing regulatory non-compliance. In accordance with the official explanatory note and staged commencement timeline, different provisions and compliance obligations become enforceable progressively over specified phases rather than simultaneously on the publication date. For individuals and businesses alike, this updated framework marks a transition toward structured, accountable, and legally enforceable digital privacy standards across India.`,
+      createdBy: creator.id
+    },
+    {
+      title: 'Recent Developments in Property and Land-Record Rules',
+      oldDescription: `Traditionally, land administration and property documentation in India have been governed primarily at the State and Union Territory level, resulting in distinct regional revenue systems, local terminology, and state-specific procedural workflows. While the Registration Act, 1908 provides the overarching statutory basis for registering deeds and documents relating to immovable property, state governments administer local stamp acts, circle rates, Sub-Registrar offices, and revenue records.
+
+Under this established system, property ownership documentation typically involves distinct stages managed across different administrative bodies: executing and registering conveyance instruments (such as Sale Deeds) at the Sub-Registrar's Office, followed by applying for mutation (updating revenue records, Khata, or Patta) before municipal or revenue authorities. Because registration records, revenue maps, and municipal tax databases historically operated in separate administrative silos, property buyers and advocates have always had to conduct extensive physical due diligence—including obtaining 30-year Encumbrance Certificates (EC), verifying chain title deeds, and inspecting local revenue registers—to verify marketable ownership.`,
+      newDescription: `In September 2026, the Department of Land Resources announced the Digital India Land Records Modernization Programme (DILRMP) 3.0 (covering 2026–2031), representing the next phase in modernising and integrating India's land-record administration ecosystem.
+
+DILRMP 3.0 focuses on advancing GIS-enabled spatial mapping, standardising digital land parcels, integrating revenue records with registration databases, and enhancing the accessibility of digital land records for citizens, farmers, and property owners. These initiatives aim to reduce property disputes, streamline administrative verification, and improve public transparency across participating States and Union Territories.
+
+Importantly, DILRMP 3.0 represents an administrative and technological modernisation programme rather than a new nationwide property-registration statute. Because land and revenue administration remains a state subject, legal procedures, stamp duty rates, and registration requirements continue to be governed by respective State and Union Territory laws. Furthermore, digital land records and online portal entries serve as administrative records and do not by themselves automatically replace comprehensive title due diligence. Prospective property buyers must continue conducting formal title searches, verifying original title chains, checking encumbrance records at the jurisdictional Sub-Registrar Office, and confirming municipal mutation status before executing property transactions.`,
+      createdBy: creator.id
+    }
+  ];
+
+  let createdUpdatesCount = 0;
+  let updatedUpdatesCount = 0;
+
+  for (const updateData of initialUpdates) {
+    const existing = await prisma.update.findFirst({
+      where: { title: updateData.title }
+    });
+
+    if (!existing) {
+      await prisma.update.create({
+        data: updateData
+      });
+      createdUpdatesCount++;
+    } else {
+      await prisma.update.update({
+        where: { id: existing.id },
+        data: {
+          oldDescription: updateData.oldDescription,
+          newDescription: updateData.newDescription,
+          createdBy: existing.createdBy || updateData.createdBy
+        }
+      });
+      updatedUpdatesCount++;
+    }
+  }
+
+  console.log(`Updates seed finished: ${createdUpdatesCount} created, ${updatedUpdatesCount} updated.`);
+
   // Seed Demo Advocates (Idempotent)
   console.log('Seeding Demo Advocates...');
   const demoPasswordHash = await bcrypt.hash('123456789', 10);

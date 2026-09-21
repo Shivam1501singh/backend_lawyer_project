@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma.js';
 import { generateSecureOtp } from './otp.service.js';
 import { sendOtpSms } from './sms.service.js';
+import { computeEffectiveOnlineStatus } from '../utils/advocateStatus.js';
 
 /**
  * Search Advocates by Name or BAR ID
@@ -59,7 +60,10 @@ export const searchAdvocates = async ({ query, barId, currentAdvocateId, page = 
     state: advocate.state,
     pincode: advocate.pincode,
     status: advocate.status,
-    experienceYears: advocate.experienceYears
+    experienceYears: advocate.experienceYears,
+    callAvailability: advocate.callAvailability ?? false,
+    isOnline: computeEffectiveOnlineStatus(advocate.isOnline, advocate.lastSeenAt),
+    lastSeenAt: advocate.lastSeenAt
   }));
 
   const totalPages = Math.ceil(total / limitNum) || 0;
@@ -376,7 +380,10 @@ export const getTeamMates = async (advocateId) => {
       city: target.city,
       state: target.state,
       pincode: target.pincode,
-      status: target.status
+      status: target.status,
+      callAvailability: target.callAvailability ?? false,
+      isOnline: computeEffectiveOnlineStatus(target.isOnline, target.lastSeenAt),
+      lastSeenAt: target.lastSeenAt
     }));
 };
 

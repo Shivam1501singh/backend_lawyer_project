@@ -5859,6 +5859,408 @@ Normal Users, Advocates, and unauthenticated visitors cannot create, update, or 
 - Attempt `DELETE /api/content-creator/updates/<update_id>` as Advocate -> Verify `403 Forbidden`.
 - Attempt `GET /api/updates/00000000-0000-0000-0000-000000000000` -> Verify `404 Not Found`.
 
+---
+
+## Advocate Online/Offline Status
+
+The **Advocate Online/Offline Status** feature allows platform users to see in real-time whether an Advocate is actively online or offline. Rather than relying solely on explicit login and logout events (which fails if the app crashes, loses internet connectivity, or is force-closed), the backend implements a resilient **`isOnline` + `lastSeenAt` + Heartbeat Timeout** architecture.
+
+---
+
+### Architecture & Key Mechanisms
+
+1. **Heartbeat & Activity Tracking:**
+   - Every confirmed activity (successful login, heartbeat ping, or manual online toggle) updates:
+     - `isOnline = true`
+     - `lastSeenAt = current server time (UTC)`
+2. **Configurable Timeout:**
+   - Controlled via environment variable:
+     ```env
+     ADVOCATE_ONLINE_TIMEOUT_SECONDS=120
+     ```
+   - Defaults to **120 seconds** if not explicitly set.
+3. **Dynamic Effective Online Status Calculation:**
+   - When public users or clients query advocate profiles, directory lists, search results, saved lawyers, or liked lawyers, the backend computes:
+     $$\text{Effective Online} = \text{isOnline} \land (\text{current time} - \text{lastSeenAt} \le \text{timeout})$$
+   - If an advocate's heartbeat has lapsed beyond the configured timeout, the API dynamically returns `isOnline: false` without requiring continuous database background write jobs.
+4. **Safety & Access Control:**
+   - Blocked (`status: BLOCKED`), unapproved (`approvalStatus != APPROVED`), or pending-deletion (`deletionStatus: PENDING`) advocates remain excluded from user discovery regardless of their online status.
+
+---
+
+### Endpoints Overview
+
+| Method | Endpoint | Auth Required | Role | Description |
+|---|---|---|---|---|
+| `POST` | `/api/advocate/heartbeat` | Yes (JWT) | `ADVOCATE` | Updates advocate heartbeat (`isOnline = true`, `lastSeenAt = now`) |
+| `PATCH` | `/api/advocate/online-status` | Yes (JWT) | `ADVOCATE` | Explicitly toggles online/offline status |
+| `POST` | `/api/advocate/logout` | Yes (JWT) | `ADVOCATE` | Logs out advocate and sets `isOnline = false` |
+| `GET` | `/api/advocates` | Optional | Any | Directory list returning effective `isOnline` & `lastSeenAt` |
+| `GET` | `/api/advocates/:id` | Optional | Any | Public profile returning effective `isOnline` & `lastSeenAt` |
+| `GET` | `/api/saved-lawyers` | Yes (JWT) | `USER` | User's saved lawyers with effective online status |
+| `GET` | `/api/user/liked-advocates` | Yes (JWT) | `USER` | User's liked advocates with effective online status |
+
+---
+
+### API Details
+
+#### 1. Advocate Heartbeat
+- **URL:** `POST /api/advocate/heartbeat`
+- **Authentication:** `ADVOCATE` only (`Authorization: Bearer <token>`)
+- **Request Body:** None
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate status updated",
+    "data": {
+      "isOnline": true,
+      "lastSeenAt": "2026-09-21T10:30:00.000Z"
+    }
+  }
+  ```
+
+#### 2. Manual Change Online Status
+- **URL:** `PATCH /api/advocate/online-status`
+- **Authentication:** `ADVOCATE` only (`Authorization: Bearer <token>`)
+- **Request Body (`raw JSON`):**
+  ```json
+  {
+    "isOnline": true
+  }
+  ```
+  *(or `"isOnline": false` to switch offline)*
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate online status updated successfully",
+    "data": {
+      "isOnline": true,
+      "lastSeenAt": "2026-09-21T10:30:00.000Z"
+    }
+  }
+  ```
+
+---
+
+### Frontend Integration & Heartbeat Strategy
+
+1. **On Login:**
+   - Advocate logs in -> backend marks `isOnline: true`, `lastSeenAt = now`.
+   - Frontend starts a periodic timer (e.g., every **30–60 seconds**) to call:
+     ```http
+     POST /api/advocate/heartbeat
+     ```
+2. **On Manual Status Switch:**
+   - Advocate toggles the Online/Offline UI switch:
+     ```http
+     PATCH /api/advocate/online-status
+     { "isOnline": false }
+     ```
+3. **On Logout:**
+   - Advocate clicks logout -> frontend calls `POST /api/advocate/logout` and stops the heartbeat timer.
+4. **On Unexpected Disconnect / App Close:**
+   - If the app terminates without explicit logout, after **120 seconds** (default), all public endpoints will automatically report the advocate as `isOnline: false`.
+
+---
+
+### Postman Testing Guide
+
+#### Test 1 — Advocate Login
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/auth/advocate/login`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "email": "advocate@example.com",
+    "password": "your_password"
+  }
+  ```
+- **Verify:** Response returns `token`, and database status is updated to `isOnline = true` and `lastSeenAt = current server time`.
+
+#### Test 2 — Send Heartbeat
+- **Method:** `POST`
+- **URL:** `http://localhost:5000/api/advocate/heartbeat`
+- **Headers:** `Authorization: Bearer <advocate_token>`
+- **Verify (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate status updated",
+    "data": {
+      "isOnline": true,
+      "lastSeenAt": "..."
+    }
+  }
+  ```
+
+#### Test 3 — Explicit Switch Offline
+- **Method:** `PATCH`
+- **URL:** `http://localhost:5000/api/advocate/online-status`
+- **Headers:**
+  - `Authorization: Bearer <advocate_token>`
+  - `Content-Type: application/json`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "isOnline": false
+  }
+  ```
+- **Verify (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate online status updated successfully",
+    "data": {
+      "isOnline": false,
+      "lastSeenAt": "..."
+    }
+  }
+  ```
+
+#### Test 4 — Explicit Switch Online
+- **Method:** `PATCH`
+- **URL:** `http://localhost:5000/api/advocate/online-status`
+- **Headers:**
+  - `Authorization: Bearer <advocate_token>`
+  - `Content-Type: application/json`
+- **Body (`raw JSON`):**
+  ```json
+  {
+    "isOnline": true
+  }
+  ```
+- **Verify (200 OK):** Returns `isOnline: true`.
+
+#### Test 5 — Public Advocate Profile / Directory
+- **Method:** `GET`
+- **URL:** `http://localhost:5000/api/advocates/<advocate_id>`
+- **Verify:** Response contains `isOnline: true` and `lastSeenAt: "..."`.
+
+#### Test 6 — Heartbeat Timeout (Automatic Offline Detection)
+- Stop sending heartbeats for > 120 seconds.
+- Call `GET /api/advocates/<advocate_id>` or `GET /api/advocates`.
+- **Verify:** Response calculates and returns `"isOnline": false`.
+
+#### Test 7 — Authorization Checks
+- Attempt `POST /api/advocate/heartbeat` without a token -> Verify `401 Unauthorized`.
+- Attempt `POST /api/advocate/heartbeat` with a Normal User token -> Verify `403 Forbidden`.
+- Attempt `PATCH /api/advocate/online-status` with string `"true"` -> Verify `400 Bad Request` (Zod strict boolean validation).
+
+---
+
+## 45. Advocate Call Availability (Admin Approval Workflow)
+
+The **Call Availability** feature allows Admins to control whether an Advocate is authorized and available to receive direct calls from users. 
+
+### Key Principles & Business Logic
+1. **Admin Controlled Only:** Advocates cannot decide or update their own `callAvailability` during registration, profile updates, or via any advocate-facing API.
+2. **Default State:** When an Advocate registers and submits their profile for review, `callAvailability` defaults to `false`.
+3. **Approval Flow:** During the approval process, the Admin explicitly determines whether call availability should be enabled (`true`) or disabled (`false`).
+4. **Subsequent Modification:** The Admin can toggle `callAvailability` on/off at any time for an approved advocate without requiring the advocate to resubmit registration.
+5. **Rejection Safety:** If an Advocate is rejected, `callAvailability` is automatically reset to `false`.
+6. **Visibility vs. Call Availability:** `callAvailability` does **NOT** determine advocate directory visibility (visibility remains governed by `ACTIVE + APPROVED + not PENDING_DELETION`). An advocate with `callAvailability: false` is still discoverable if they satisfy normal visibility criteria.
+7. **Independence from Online/Offline:** `callAvailability` and `isOnline` are completely independent concepts:
+   - `isOnline`: Advocate is active in the application.
+   - `callAvailability`: Admin has enabled this advocate to accept calls.
+
+```text
+Advocate Registration
+        ↓
+Profile Completed
+        ↓
+Profile Submitted (callAvailability = false)
+        ↓
+Admin Receives Profile
+        ↓
+Admin Reviews Profile
+        ↓
+Admin Approves / Rejects:
+  - If Approved: Admin sets callAvailability = true OR false
+  - If Rejected: callAvailability = false
+        ↓
+Admin Can Change Availability Later (callAvailability = true/false)
+```
+
+---
+
+### Matrix of Online vs Call Availability
+
+| isOnline | callAvailability | Meaning                                           |
+| :--- | :--- | :--- |
+| `true` | `true` | Online and available for calls |
+| `true` | `false` | Online but not accepting calls |
+| `false` | `true` | Configured to accept calls, but currently offline |
+| `false` | `false` | Offline and not accepting calls |
+
+---
+
+### Admin Endpoints
+
+#### 1. Admin Approves Advocate (With Call Availability)
+- **Method:** `PATCH`
+- **URL:** `/api/admin/advocates/:advocateId/approve`
+- **Headers:** `Authorization: Bearer <admin_token>`
+- **Request Body:**
+  ```json
+  {
+    "approvalStatus": "APPROVED",
+    "callAvailability": true
+  }
+  ```
+  *(or `"callAvailability": false`)*
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate approved successfully",
+    "data": {
+      "id": "cm1234...",
+      "name": "Demo Advocate",
+      "email": "advocate@example.com",
+      "approvalStatus": "APPROVED",
+      "callAvailability": true
+    }
+  }
+  ```
+
+#### 2. Admin Toggles Call Availability (Dedicated Endpoint)
+- **Method:** `PATCH`
+- **URL:** `/api/admin/advocates/:advocateId/call-availability`
+- **Headers:** `Authorization: Bearer <admin_token>`
+- **Request Body:**
+  ```json
+  {
+    "callAvailability": true
+  }
+  ```
+- **Response (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Advocate call availability updated successfully",
+    "data": {
+      "id": "cm1234...",
+      "name": "Demo Advocate",
+      "callAvailability": true
+    }
+  }
+  ```
+
+#### 3. Admin Updates Advocate Status & Availability
+- **Method:** `PATCH`
+- **URL:** `/api/admin/advocates/:advocateId/status`
+- **Headers:** `Authorization: Bearer <admin_token>`
+- **Request Body:**
+  ```json
+  {
+    "status": "APPROVED",
+    "callAvailability": false
+  }
+  ```
+
+#### 4. Admin View Advocate / Pending List
+- **Method:** `GET`
+- **URL:** `/api/admin/advocates/pending` or `/api/admin/advocates` or `/api/admin/advocates/:advocateId`
+- **Response includes `callAvailability`:**
+  ```json
+  {
+    "id": "cm1234...",
+    "name": "Demo Advocate",
+    "email": "advocate@example.com",
+    "barCouncilId": "BC/123/2020",
+    "approvalStatus": "PENDING",
+    "callAvailability": false
+  }
+  ```
+
+---
+
+### Public & Discovery APIs Exposing `callAvailability`
+
+The `callAvailability` field is automatically included in all public advocate discovery and user-facing endpoints:
+- `GET /api/advocates` (Advocate Listing & Search)
+- `GET /api/advocates/:id` (Advocate Public Profile Details)
+- `GET /api/saved-lawyers` (Saved Advocates)
+- `GET /api/user/liked-advocates` (Liked Advocates)
+- `GET /api/advocates/team-mates` (Team Mates Listing)
+- `GET /api/advocate/profile` (Advocate Own Profile)
+- `GET /api/auth/me` (Auth Profile Verification)
+
+Example response snippet:
+```json
+{
+  "id": "cm1234...",
+  "name": "Advocate John Doe",
+  "approvalStatus": "APPROVED",
+  "isOnline": true,
+  "callAvailability": true
+}
+```
+
+---
+
+### Postman Testing Guide
+
+#### Test 1 — Advocate Registration
+1. Register a new Advocate and complete profile submission.
+2. Call `GET /api/admin/advocates/pending` with an Admin token.
+3. **Verify:**
+   - `"approvalStatus": "PENDING"`
+   - `"callAvailability": false`
+
+#### Test 2 — Admin Approves With Calls Enabled
+1. Admin sends `PATCH /api/admin/advocates/<advocate_id>/approve` with:
+   ```json
+   {
+     "approvalStatus": "APPROVED",
+     "callAvailability": true
+   }
+   ```
+2. **Verify (200 OK):**
+   - Response returns `"approvalStatus": "APPROVED"` and `"callAvailability": true`.
+
+#### Test 3 — Admin Approves With Calls Disabled
+1. Admin approves another Advocate via `PATCH /api/admin/advocates/<advocate_id>/approve`:
+   ```json
+   {
+     "approvalStatus": "APPROVED",
+     "callAvailability": false
+   }
+   ```
+2. **Verify (200 OK):**
+   - Response returns `"approvalStatus": "APPROVED"` and `"callAvailability": false`.
+
+#### Test 4 — Public Advocate API Verification
+1. Call `GET /api/advocates/<advocate_id>` or `GET /api/advocates`.
+2. **Verify:**
+   - `callAvailability` is returned in the JSON payload alongside `isOnline`.
+   - The advocate is visible regardless of whether `callAvailability` is `true` or `false` (as long as `approvalStatus: "APPROVED"`).
+
+#### Test 5 — Admin Modifies Availability for Approved Advocate
+1. Admin sends `PATCH /api/admin/advocates/<advocate_id>/call-availability`:
+   ```json
+   {
+     "callAvailability": false
+   }
+   ```
+2. Call public profile `GET /api/advocates/<advocate_id>` and verify `callAvailability: false`.
+3. Admin sends `PATCH /api/admin/advocates/<advocate_id>/call-availability`:
+   ```json
+   {
+     "callAvailability": true
+   }
+   ```
+4. Call public profile `GET /api/advocates/<advocate_id>` and verify `callAvailability: true`.
+
+#### Test 6 — Authorization & Security Checks
+1. Attempt `PATCH /api/admin/advocates/<advocate_id>/call-availability` with a Normal User token -> **Verify `403 Forbidden`**.
+2. Attempt `PATCH /api/admin/advocates/<advocate_id>/call-availability` with an Advocate token -> **Verify `403 Forbidden`**.
+3. Attempt `PUT /api/advocate/profile` as an Advocate with body `{ "callAvailability": true }` -> **Verify `400 Bad Request`** (Advocate cannot alter this field).
+4. Attempt `PATCH /api/admin/advocates/<advocate_id>/call-availability` with `"callAvailability": "true"` (string) -> **Verify `400 Bad Request`** (Zod strict boolean validation).
+
+
 
 
 

@@ -1,7 +1,13 @@
 import prisma from '../lib/prisma.js';
+import { signToken, sendTokenCookie, clearTokenCookie } from '../utils/jwt.js';
 import bcrypt from 'bcryptjs';
-import { signToken, sendTokenCookie } from '../utils/jwt.js';
+import { computeEffectiveOnlineStatus } from '../utils/advocateStatus.js';
 import { finalizeAdvocateDeletion } from '../services/advocateDeletion.service.js';
+import {
+  adminApproveAdvocateSchema,
+  adminUpdateAdvocateCallAvailabilitySchema,
+  adminUpdateAdvocateStatusSchema
+} from '../validators/admin.validator.js';
 
 /**
  * Admin Login
@@ -18,16 +24,14 @@ export const loginAdmin = async (req, res, next) => {
       });
     }
 
-    const normalizedEmail = String(email).toLowerCase().trim();
-
     const admin = await prisma.admin.findUnique({
-      where: { email: normalizedEmail }
+      where: { email: email.toLowerCase().trim() }
     });
 
-    if (!admin || !admin.isActive) {
+    if (!admin) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Invalid email or password.'
       });
     }
 
@@ -35,22 +39,21 @@ export const loginAdmin = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Invalid email or password.'
       });
     }
 
-    const token = signToken({ id: admin.id, type: 'admin', role: 'ADMIN' });
+    const token = signToken({ id: admin.id, type: 'admin' });
     sendTokenCookie(res, token);
 
     return res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: 'Admin login successful',
       token,
       admin: {
         id: admin.id,
-        email: admin.email,
         fullName: admin.fullName,
-        role: 'ADMIN'
+        email: admin.email
       }
     });
   } catch (error) {
@@ -59,32 +62,30 @@ export const loginAdmin = async (req, res, next) => {
 };
 
 /**
- * Create Content Creator Account (ADMIN only)
+ * Create Content Creator (ADMIN only)
  * POST /api/admin/content-creators
  */
 export const createContentCreator = async (req, res, next) => {
   try {
-    const { name, fullName, email, password, bio, image } = req.body || {};
-    const creatorName = name || fullName;
+    const { fullName, email, password } = req.body || {};
 
-    if (!creatorName || !email || !password) {
+    if (!fullName || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, and password are required.'
+        message: 'fullName, email, and password are required.'
       });
     }
 
-    const normalizedEmail = String(email).toLowerCase().trim();
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Check duplicate Content Creator
     const existing = await prisma.contentCreator.findUnique({
       where: { email: normalizedEmail }
     });
 
     if (existing) {
-      return res.status(409).json({
+      return res.status(400).json({
         success: false,
-        message: 'Content Creator already exists with this email.'
+        message: 'A content creator with this email already exists.'
       });
     }
 
@@ -92,26 +93,20 @@ export const createContentCreator = async (req, res, next) => {
 
     const creator = await prisma.contentCreator.create({
       data: {
-        fullName: creatorName,
+        fullName: fullName.trim(),
         email: normalizedEmail,
-        passwordHash,
-        bio: bio || null,
-        image: image || null,
-        isActive: true
+        passwordHash
       }
     });
 
     return res.status(201).json({
       success: true,
-      message: 'Content Creator account created successfully',
-      contentCreator: {
+      message: 'Content creator created successfully',
+      creator: {
         id: creator.id,
-        name: creator.fullName,
         fullName: creator.fullName,
         email: creator.email,
-        image: creator.image,
-        bio: creator.bio,
-        role: 'CONTENT_CREATOR',
+        isActive: creator.isActive,
         createdAt: creator.createdAt
       }
     });
@@ -121,29 +116,25 @@ export const createContentCreator = async (req, res, next) => {
 };
 
 /**
- * View Content Creators List (ADMIN only)
+ * List Content Creators (ADMIN only)
  * GET /api/admin/content-creators
  */
 export const listContentCreators = async (req, res, next) => {
   try {
     const creators = await prisma.contentCreator.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        isActive: true,
+        createdAt: true
+      }
     });
-
-    const safeCreators = creators.map(c => ({
-      id: c.id,
-      name: c.fullName,
-      fullName: c.fullName,
-      email: c.email,
-      image: c.image || null,
-      bio: c.bio || null,
-      role: 'CONTENT_CREATOR',
-      createdAt: c.createdAt
-    }));
 
     return res.status(200).json({
       success: true,
-      contentCreators: safeCreators
+      creators
     });
   } catch (error) {
     next(error);
@@ -151,7 +142,7 @@ export const listContentCreators = async (req, res, next) => {
 };
 
 /**
- * View Advocates List for Management (ADMIN only)
+ * List All Advocates for Admin Management
  * GET /api/admin/advocates
  */
 export const listAdvocates = async (req, res, next) => {
@@ -174,6 +165,7 @@ export const listAdvocates = async (req, res, next) => {
       status: adv.status,
       accountStatus: adv.status,
       approvalStatus: adv.approvalStatus,
+      callAvailability: adv.callAvailability ?? false,
       rejectionReason: adv.rejectionReason || null,
       submittedForApprovalAt: adv.submittedForApprovalAt || null,
       approvedAt: adv.approvedAt || null,
@@ -183,6 +175,8 @@ export const listAdvocates = async (req, res, next) => {
       state: adv.state,
       city: adv.city,
       pincode: adv.pincode,
+      isOnline: computeEffectiveOnlineStatus(adv.isOnline, adv.lastSeenAt),
+      lastSeenAt: adv.lastSeenAt,
       createdAt: adv.createdAt
     }));
 
@@ -225,6 +219,7 @@ export const listPendingAdvocates = async (req, res, next) => {
       pincode: adv.pincode,
       profileCompleted: true,
       approvalStatus: adv.approvalStatus,
+      callAvailability: adv.callAvailability ?? false,
       accountStatus: adv.status,
       submittedForApprovalAt: adv.submittedForApprovalAt,
       createdAt: adv.createdAt
@@ -274,6 +269,7 @@ export const getAdvocateReviewProfile = async (req, res, next) => {
       lawType: advocate.bestPracticeArea || (advocate.practiceAreas && advocate.practiceAreas.length > 0 ? advocate.practiceAreas[0] : null),
       experience: advocate.experienceYears,
       accountStatus: advocate.status,
+      callAvailability: advocate.callAvailability ?? false,
       likeCount: advocate._count?.likes ?? 0
     };
 
@@ -294,6 +290,9 @@ export const getAdvocateReviewProfile = async (req, res, next) => {
 export const approveAdvocate = async (req, res, next) => {
   try {
     const { advocateId } = req.params;
+    const validated = req.body && Object.keys(req.body).length > 0
+      ? adminApproveAdvocateSchema.parse(req.body)
+      : {};
 
     const advocate = await prisma.advocate.findUnique({
       where: { id: advocateId }
@@ -308,12 +307,16 @@ export const approveAdvocate = async (req, res, next) => {
 
     // On approval: approvalStatus = APPROVED, accountStatus = ACTIVE (unless intentionally blocked)
     const newStatus = advocate.status === 'BLOCKED' ? 'BLOCKED' : 'ACTIVE';
+    const newCallAvailability = validated.callAvailability !== undefined
+      ? validated.callAvailability
+      : advocate.callAvailability;
 
     const updated = await prisma.advocate.update({
       where: { id: advocateId },
       data: {
         approvalStatus: 'APPROVED',
         status: newStatus,
+        callAvailability: newCallAvailability,
         approvedAt: new Date(),
         approvedById: req.user?.id || null,
         rejectionReason: null
@@ -326,6 +329,7 @@ export const approveAdvocate = async (req, res, next) => {
       data: {
         id: updated.id,
         approvalStatus: updated.approvalStatus,
+        callAvailability: updated.callAvailability,
         status: updated.status,
         accountStatus: updated.status,
         approvedAt: updated.approvedAt
@@ -361,6 +365,7 @@ export const rejectAdvocate = async (req, res, next) => {
       where: { id: advocateId },
       data: {
         approvalStatus: 'REJECTED',
+        callAvailability: false,
         rejectedAt: new Date(),
         rejectedById: req.user?.id || null,
         rejectionReason: finalReason
@@ -373,6 +378,7 @@ export const rejectAdvocate = async (req, res, next) => {
       data: {
         id: updated.id,
         approvalStatus: updated.approvalStatus,
+        callAvailability: updated.callAvailability,
         status: updated.status,
         accountStatus: updated.status,
         rejectionReason: updated.rejectionReason,
@@ -385,19 +391,18 @@ export const rejectAdvocate = async (req, res, next) => {
 };
 
 /**
- * Block / Activate Advocate (ADMIN only)
+ * Block / Activate Advocate / Update Status (ADMIN only)
  * PATCH /api/admin/advocates/:advocateId/status
  */
 export const updateAdvocateStatus = async (req, res, next) => {
   try {
     const { advocateId } = req.params;
-    const { status } = req.body || {};
+    const validated = adminUpdateAdvocateStatusSchema.parse(req.body);
 
-    const allowedStatuses = ['ACTIVE', 'BLOCKED'];
-    if (!status || !allowedStatuses.includes(status)) {
+    if (!validated.status && validated.callAvailability === undefined) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Advocate status. Allowed values are 'ACTIVE' or 'BLOCKED'."
+        message: "Please provide 'status' ('ACTIVE'/'BLOCKED') or 'callAvailability'."
       });
     }
 
@@ -412,9 +417,17 @@ export const updateAdvocateStatus = async (req, res, next) => {
       });
     }
 
+    const updateData = {};
+    if (validated.status) {
+      updateData.status = validated.status;
+    }
+    if (validated.callAvailability !== undefined) {
+      updateData.callAvailability = validated.callAvailability;
+    }
+
     const updated = await prisma.advocate.update({
       where: { id: advocateId },
-      data: { status }
+      data: updateData
     });
 
     return res.status(200).json({
@@ -422,6 +435,49 @@ export const updateAdvocateStatus = async (req, res, next) => {
       message: 'Advocate status updated successfully',
       data: {
         id: updated.id,
+        status: updated.status,
+        callAvailability: updated.callAvailability
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Admin Update Advocate Call Availability
+ * PATCH /api/admin/advocates/:advocateId/call-availability
+ */
+export const updateAdvocateCallAvailability = async (req, res, next) => {
+  try {
+    const { advocateId } = req.params;
+    const validated = adminUpdateAdvocateCallAvailabilitySchema.parse(req.body);
+
+    const advocate = await prisma.advocate.findUnique({
+      where: { id: advocateId }
+    });
+
+    if (!advocate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Advocate not found'
+      });
+    }
+
+    const updated = await prisma.advocate.update({
+      where: { id: advocateId },
+      data: {
+        callAvailability: validated.callAvailability
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Advocate call availability updated successfully',
+      data: {
+        id: updated.id,
+        callAvailability: updated.callAvailability,
+        approvalStatus: updated.approvalStatus,
         status: updated.status
       }
     });

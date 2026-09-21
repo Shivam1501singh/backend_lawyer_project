@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { computeEffectiveOnlineStatus } from '../utils/advocateStatus.js';
 
 /**
  * Saves a lawyer for a user.
@@ -74,6 +75,9 @@ export const listSavedLawyers = async (userId) => {
         offlineVisitingFee: adv.offlineVisitingFee !== null ? Number(adv.offlineVisitingFee) : null,
         averageRating: adv.averageRating !== null ? Number(adv.averageRating) : null,
         totalReviews: adv.totalReviews,
+        callAvailability: adv.callAvailability ?? false,
+        isOnline: computeEffectiveOnlineStatus(adv.isOnline, adv.lastSeenAt),
+        lastSeenAt: adv.lastSeenAt,
         isSaved: true
       };
     });

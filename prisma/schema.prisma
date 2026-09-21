@@ -221,6 +221,9 @@ model Advocate {
   deletionStatus           AdvocateDeletionStatus @default(NONE)
   deletionRequestedAt      DateTime?
   scheduledDeletionAt      DateTime?
+  isOnline                 Boolean        @default(false)
+  lastSeenAt               DateTime?
+  callAvailability         Boolean        @default(false)
   createdAt                DateTime       @default(now())
   updatedAt                DateTime @updatedAt
 

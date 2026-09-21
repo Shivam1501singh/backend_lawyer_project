@@ -192,4 +192,11 @@ export const verifyAadhaarOtpSchema = z.object({
     .regex(/^\d{6}$/, { message: 'OTP must be exactly 6 numeric digits.' })
 });
 
+export const updateAdvocateOnlineStatusSchema = z.object({
+  isOnline: z.boolean({
+    required_error: 'isOnline is required.',
+    invalid_type_error: 'isOnline must be a boolean.'
+  })
+}).strict();
+
 

@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { computeEffectiveOnlineStatus } from '../utils/advocateStatus.js';
 
 /**
  * Normal User likes an Advocate.
@@ -136,6 +137,9 @@ export const getUserLikedAdvocates = async (userId) => {
         averageRating: adv.averageRating !== null ? Number(adv.averageRating) : null,
         totalReviews: adv.totalReviews,
         status: adv.status,
+        callAvailability: adv.callAvailability ?? false,
+        isOnline: computeEffectiveOnlineStatus(adv.isOnline, adv.lastSeenAt),
+        lastSeenAt: adv.lastSeenAt,
         likeCount: adv._count?.likes ?? 0,
         isLiked: true
       };

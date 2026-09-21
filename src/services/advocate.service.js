@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { getTeamMates } from './advocateTeam.service.js';
+import { computeEffectiveOnlineStatus } from '../utils/advocateStatus.js';
 
 // Hardcoded mapping of coordinates for the common Indian pincodes used in the seed data/locations
 const PINCODE_COORDINATES = {
@@ -189,6 +190,9 @@ export const listAdvocates = async ({
     pincode: true,
     latitude: true,
     longitude: true,
+    isOnline: true,
+    lastSeenAt: true,
+    callAvailability: true,
     _count: {
       select: { likes: true }
     }
@@ -284,6 +288,9 @@ export const listAdvocates = async ({
       cleanAdv.likeCount = _count?.likes ?? 0;
       cleanAdv.isSaved = savedLawyerIds.has(adv.id);
       cleanAdv.isLiked = likedAdvocateIds.has(adv.id);
+      cleanAdv.isOnline = computeEffectiveOnlineStatus(adv.isOnline, adv.lastSeenAt);
+      cleanAdv.lastSeenAt = adv.lastSeenAt;
+      cleanAdv.callAvailability = adv.callAvailability ?? false;
       return cleanAdv;
     });
 
@@ -332,6 +339,9 @@ export const listAdvocates = async ({
     cleanAdv.likeCount = _count?.likes ?? 0;
     cleanAdv.isSaved = savedLawyerIds.has(adv.id);
     cleanAdv.isLiked = likedAdvocateIds.has(adv.id);
+    cleanAdv.isOnline = computeEffectiveOnlineStatus(adv.isOnline, adv.lastSeenAt);
+    cleanAdv.lastSeenAt = adv.lastSeenAt;
+    cleanAdv.callAvailability = adv.callAvailability ?? false;
     return cleanAdv;
   });
 
@@ -423,6 +433,10 @@ export const getAdvocateDetailsPublic = async (id, currentUserId) => {
     averageRating: advocate.averageRating,
     totalReviews: advocate.totalReviews,
     status: advocate.status,
+    approvalStatus: advocate.approvalStatus,
+    callAvailability: advocate.callAvailability ?? false,
+    isOnline: computeEffectiveOnlineStatus(advocate.isOnline, advocate.lastSeenAt),
+    lastSeenAt: advocate.lastSeenAt,
     likeCount: advocate._count?.likes ?? 0,
     isSaved,
     isLiked,

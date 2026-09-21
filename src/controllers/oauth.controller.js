@@ -451,6 +451,16 @@ export const googleLoginCallbackHandler = (accountType) => {
         return res.redirect(loginError('account_inactive'));
       }
 
+      if (normalizedAccountType === 'ADVOCATE') {
+        await prisma.advocate.update({
+          where: { id: account.id },
+          data: {
+            isOnline: true,
+            lastSeenAt: new Date()
+          }
+        }).catch(() => {});
+      }
+
       const token = signToken({
         id: account.id,
         type: normalizedAccountType.toLowerCase(),

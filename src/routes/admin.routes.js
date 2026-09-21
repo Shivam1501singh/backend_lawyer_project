@@ -20,6 +20,7 @@ router.get('/advocates/:advocateId', requireAuth, requireRole('ADMIN'), generalL
 router.patch('/advocates/:advocateId/approve', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.approveAdvocate);
 router.patch('/advocates/:advocateId/reject', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.rejectAdvocate);
 router.patch('/advocates/:advocateId/status', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.updateAdvocateStatus);
+router.patch('/advocates/:advocateId/call-availability', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.updateAdvocateCallAvailability);
 router.patch('/advocates/:advocateId/cancel-deletion', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.cancelAdvocateDeletion);
 router.delete('/advocates/:advocateId/permanent', requireAuth, requireRole('ADMIN'), generalLimiter, adminController.permanentDeleteAdvocate);
 

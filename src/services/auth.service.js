@@ -514,16 +514,21 @@ export const verifyLoginOtpService = async ({ phone, accountType, otp }) => {
     account.deletionCancelled = true;
   }
 
-  if (accountType === 'ADVOCATE' && account.deletionStatus === 'PENDING') {
+  if (accountType === 'ADVOCATE') {
+    const updateData = {
+      isOnline: true,
+      lastSeenAt: new Date()
+    };
+    if (account.deletionStatus === 'PENDING') {
+      updateData.deletionStatus = 'NONE';
+      updateData.deletionRequestedAt = null;
+      updateData.scheduledDeletionAt = null;
+      account.deletionCancelled = true;
+    }
     account = await prisma.advocate.update({
       where: { id: account.id },
-      data: {
-        deletionStatus: 'NONE',
-        deletionRequestedAt: null,
-        scheduledDeletionAt: null
-      }
+      data: updateData
     });
-    account.deletionCancelled = true;
   }
 
   return account;
@@ -620,16 +625,21 @@ export const verifyLoginEmailOtpService = async ({ email, accountType, otp }) =>
     account.deletionCancelled = true;
   }
 
-  if (accountType === 'ADVOCATE' && account.deletionStatus === 'PENDING') {
+  if (accountType === 'ADVOCATE') {
+    const updateData = {
+      isOnline: true,
+      lastSeenAt: new Date()
+    };
+    if (account.deletionStatus === 'PENDING') {
+      updateData.deletionStatus = 'NONE';
+      updateData.deletionRequestedAt = null;
+      updateData.scheduledDeletionAt = null;
+      account.deletionCancelled = true;
+    }
     account = await prisma.advocate.update({
       where: { id: account.id },
-      data: {
-        deletionStatus: 'NONE',
-        deletionRequestedAt: null,
-        scheduledDeletionAt: null
-      }
+      data: updateData
     });
-    account.deletionCancelled = true;
   }
 
   return account;
@@ -664,17 +674,20 @@ export const verifyEmailPasswordLoginService = async ({ email, password }) => {
     throw new Error('Invalid email or password');
   }
 
+  const updateData = {
+    isOnline: true,
+    lastSeenAt: new Date()
+  };
   if (advocate.deletionStatus === 'PENDING') {
-    advocate = await prisma.advocate.update({
-      where: { id: advocate.id },
-      data: {
-        deletionStatus: 'NONE',
-        deletionRequestedAt: null,
-        scheduledDeletionAt: null
-      }
-    });
+    updateData.deletionStatus = 'NONE';
+    updateData.deletionRequestedAt = null;
+    updateData.scheduledDeletionAt = null;
     advocate.deletionCancelled = true;
   }
+  advocate = await prisma.advocate.update({
+    where: { id: advocate.id },
+    data: updateData
+  });
 
   return advocate;
 };
@@ -761,6 +774,7 @@ export const getCurrentUserProfile = async (id, accountType) => {
       offlineVisitingFee: profile.offlineVisitingFee !== null ? Number(profile.offlineVisitingFee) : null,
       status: profile.status,
       approvalStatus: profile.approvalStatus,
+      callAvailability: profile.callAvailability ?? false,
       deletionStatus: profile.deletionStatus,
       deletionRequestedAt: profile.deletionRequestedAt,
       scheduledDeletionAt: profile.scheduledDeletionAt

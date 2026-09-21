@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma.js';
 import { advocateProfileUpdateSchema } from '../validators/advocate.validator.js';
 import { uploadBufferToCloudinary, deleteFromCloudinary } from '../services/cloudinary.service.js';
+import { computeEffectiveOnlineStatus } from '../utils/advocateStatus.js';
 
 /**
  * Get the currently authenticated advocate's profile.
@@ -32,6 +33,9 @@ export const getProfile = async (req, res, next) => {
       success: true,
       advocate: {
         ...safeAdvocate,
+        isOnline: computeEffectiveOnlineStatus(advocate.isOnline, advocate.lastSeenAt),
+        lastSeenAt: advocate.lastSeenAt,
+        callAvailability: advocate.callAvailability ?? false,
         bio: advocate.about,
         accountStatus: advocate.status,
         approvalStatus: advocate.approvalStatus,

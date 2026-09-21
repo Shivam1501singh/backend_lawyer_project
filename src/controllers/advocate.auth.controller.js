@@ -3,6 +3,7 @@ import * as advocateValidator from '../validators/advocate.validator.js';
 import { signToken, sendTokenCookie, clearTokenCookie } from '../utils/jwt.js';
 import { uploadBufferToCloudinary } from '../services/cloudinary.service.js';
 import bcrypt from 'bcryptjs';
+import prisma from '../lib/prisma.js';
 
 export const startRegistration = async (req, res, next) => {
   try {
@@ -385,6 +386,15 @@ export const verifyAadhaarOtp = async (req, res, next) => {
 // Logout
 export const logout = async (req, res, next) => {
   try {
+    if (req.user && req.user.id) {
+      await prisma.advocate.update({
+        where: { id: req.user.id },
+        data: {
+          isOnline: false,
+          lastSeenAt: new Date()
+        }
+      }).catch(() => {});
+    }
     clearTokenCookie(res);
     return res.status(200).json({
       success: true,

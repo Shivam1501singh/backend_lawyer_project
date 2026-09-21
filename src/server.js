@@ -24,6 +24,7 @@ import updateRoutes from './routes/update.routes.js';
 import advocateResetRoutes from './routes/advocateReset.routes.js';
 import userRoutes from './routes/user.routes.js';
 import advocateDeletionRoutes from './routes/advocate.deletion.routes.js';
+import advocateStatusRoutes from './routes/advocate.status.routes.js';
 import { startAccountDeletionJob } from './services/accountDeletionJob.service.js';
 
 
@@ -92,6 +93,7 @@ app.use('/', updateRoutes);
 app.use('/', advocateResetRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/advocate', advocateDeletionRoutes);
+app.use('/api/advocate', advocateStatusRoutes);
 
 
 

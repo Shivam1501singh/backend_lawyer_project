@@ -21,6 +21,7 @@ import bnsRoutes from './routes/bns.routes.js';
 import userRightRoutes from './routes/userRight.routes.js';
 import guideRoutes from './routes/guide.routes.js';
 import updateRoutes from './routes/update.routes.js';
+import lawRoutes from './routes/law.routes.js';
 import advocateResetRoutes from './routes/advocateReset.routes.js';
 import userRoutes from './routes/user.routes.js';
 import advocateDeletionRoutes from './routes/advocate.deletion.routes.js';
@@ -90,6 +91,7 @@ app.use('/', bnsRoutes);
 app.use('/', userRightRoutes);
 app.use('/', guideRoutes);
 app.use('/', updateRoutes);
+app.use('/', lawRoutes);
 app.use('/', advocateResetRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/advocate', advocateDeletionRoutes);
@@ -121,3 +123,5 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   startAccountDeletionJob();
 });
+
+export default app;

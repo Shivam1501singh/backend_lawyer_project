@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { ipcSectionsData } from './ipcData.js';
+import { bnsSectionsData } from './bnsData.js';
 
 const prisma = new PrismaClient();
 
@@ -1691,6 +1692,44 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
     }
   }
   console.log(`IPC Sections seed finished: ${createdIPCCount} created, ${updatedIPCCount} updated.`);
+
+  // Seed BNS Sections from Bharatiya Nyaya Sanhita PDF (Idempotent)
+  console.log(`Seeding ${bnsSectionsData.length} BNS Sections from Bharatiya Nyaya Sanhita PDF...`);
+  let createdBNSCount = 0;
+  let updatedBNSCount = 0;
+
+  for (const bns of bnsSectionsData) {
+    const existing = await prisma.bNSSection.findUnique({
+      where: { sectionNo: bns.sectionNo }
+    });
+
+    if (!existing) {
+      await prisma.bNSSection.create({
+        data: {
+          sectionNo: bns.sectionNo,
+          heading: bns.heading,
+          paragraph: bns.paragraph,
+          explanation: bns.explanation,
+          content: bns.content,
+          createdBy: creator.id
+        }
+      });
+      createdBNSCount++;
+    } else {
+      await prisma.bNSSection.update({
+        where: { sectionNo: bns.sectionNo },
+        data: {
+          heading: bns.heading,
+          paragraph: bns.paragraph,
+          explanation: bns.explanation,
+          content: bns.content,
+          createdBy: creator.id
+        }
+      });
+      updatedBNSCount++;
+    }
+  }
+  console.log(`BNS Sections seed finished: ${createdBNSCount} created, ${updatedBNSCount} updated.`);
 
   // Seed Demo Advocates (Idempotent)
   console.log('Seeding Demo Advocates...');

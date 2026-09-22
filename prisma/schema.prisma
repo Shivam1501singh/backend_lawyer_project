@@ -513,6 +513,35 @@ model BNSSection {
   @@index([createdAt])
 }
 
+model BNSS {
+  id           String   @id @default(uuid())
+  sectionNo    String   @unique
+  heading      String
+  sectionText  String   @db.Text
+  explanation  String?  @db.Text
+  illustration String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([sectionNo])
+  @@index([createdAt])
+}
+
+model BSA {
+  id           String   @id @default(uuid())
+  sectionNo    String   @unique
+  heading      String
+  sectionText  String   @db.Text
+  explanation  String?  @db.Text
+  illustration String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([sectionNo])
+  @@index([createdAt])
+}
+
+
 
 
 model Blog {

@@ -119,6 +119,7 @@ model User {
   reviews         Review[]
   savedLawyers    SavedLawyer[]
   likedAdvocates  AdvocateLike[]
+  consultancyRequests ConsultancyRequest[]
 }
 
 model DeletedUser {
@@ -591,5 +592,35 @@ model ErrorLog {
   @@index([createdAt])
   @@index([statusCode])
   @@index([method])
+}
+
+enum ConsultancyCallType {
+  CALL
+  VIDEO_CALL
+}
+
+enum ConsultancyStatus {
+  PENDING
+  COMPLETED
+}
+
+model ConsultancyRequest {
+  id          String              @id @default(uuid())
+  userId      String
+  callType    ConsultancyCallType
+  duration    Int
+  price       Decimal             @db.Decimal(10, 2)
+  phoneNumber String
+  email       String
+  status      ConsultancyStatus   @default(PENDING)
+  completedAt DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 

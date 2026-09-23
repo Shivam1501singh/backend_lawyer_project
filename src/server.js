@@ -25,6 +25,7 @@ import advocateResetRoutes from './routes/advocateReset.routes.js';
 import userRoutes from './routes/user.routes.js';
 import advocateDeletionRoutes from './routes/advocate.deletion.routes.js';
 import advocateStatusRoutes from './routes/advocate.status.routes.js';
+import { userConsultancyRouter, adminConsultancyRouter } from './routes/consultancy.routes.js';
 import { startAccountDeletionJob } from './services/accountDeletionJob.service.js';
 
 
@@ -92,6 +93,8 @@ app.use('/', updateRoutes);
 app.use('/', lawRoutes);
 app.use('/', advocateResetRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/user/consultancy', userConsultancyRouter);
+app.use('/api/admin/consultancy', adminConsultancyRouter);
 app.use('/api/advocate', advocateDeletionRoutes);
 app.use('/api/advocate', advocateStatusRoutes);
 

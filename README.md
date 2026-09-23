@@ -6331,15 +6331,360 @@ updatedAt    DateTime                 updatedAt    DateTime
 2. Attempt `POST /api/content-creator/laws` as an Advocate -> **Verify `403 Forbidden`**.
 3. Attempt `POST /api/content-creator/laws` without token -> **Verify `401 Unauthorized`**.
 
+---
 
+# Consultancy Request API
 
+The **Consultancy Request** feature allows authenticated **Normal Users** to book a fixed-duration legal consultation call with Admin-managed support. The backend securely determines package pricing and manages requests in a FIFO (`createdAt ASC, id ASC`) queue for Administrators.
 
+---
 
+## 1. Consultancy Packages & Fixed Pricing
 
+The platform supports four fixed consultation packages. The backend strictly determines the price based on `callType` + `duration`. Clients cannot specify or manipulate pricing.
 
+| Call Type | Duration | Price (INR) | Description |
+| :--- | :---: | :---: | :--- |
+| `CALL` | 15 minutes | **₹199** | Standard voice consultation (15 mins) |
+| `CALL` | 30 minutes | **₹499** | Standard voice consultation (30 mins) |
+| `VIDEO_CALL` | 15 minutes | **₹499** | Video consultation call (15 mins) |
+| `VIDEO_CALL` | 30 minutes | **₹899** | Comprehensive video consultation call (30 mins) |
 
+> **Pricing Rule:**
+> - `CALL` + `15` = ₹199
+> - `CALL` + `30` = ₹499
+> - `VIDEO_CALL` + `15` = ₹499
+> - `VIDEO_CALL` + `30` = ₹899
+> 
+> Any client-supplied `price`, `userId`, or `status` in the request body is rejected with `400 Bad Request`.
 
+---
 
+## 2. Authentication & Authorization Matrix
 
+| Endpoint | Method | Role Required | Description |
+| :--- | :---: | :---: | :--- |
+| `/api/user/consultancy` | `POST` | `USER` | Submit a new consultancy request |
+| `/api/user/consultancy` | `GET` | `USER` | Get logged-in user's consultancy history |
+| `/api/user/consultancy/:id` | `GET` | `USER` | Get single consultancy request details |
+| `/api/admin/consultancy` | `GET` | `ADMIN` | List all consultancy requests with FIFO ordering |
+| `/api/admin/consultancy/:id/status` | `PATCH` | `ADMIN` | Mark a consultancy request as `COMPLETED` |
 
+- **Unauthenticated** users receive `401 Unauthorized`.
+- **Advocates** and **Content Creators** attempting to access User/Admin consultancy endpoints receive `403 Forbidden`.
+- **Normal Users** attempting to access Admin endpoints receive `403 Forbidden`.
+- Users cannot access requests belonging to other users (`404 Not Found`).
 
+---
+
+## 3. Status Lifecycle
+
+```text
+       [ User Submits Request ]
+                  │
+                  ▼
+              ┌─────────┐
+              │ PENDING │ ◄── (completedAt: null)
+              └────┬────┘
+                   │
+         [ Admin Marks Completed ]
+                   │
+                   ▼
+             ┌───────────┐
+             │ COMPLETED │ ◄── (completedAt: Current Server Timestamp)
+             └───────────┘
+```
+
+- Requests start as `PENDING` with `completedAt: null`.
+- Admins can transition requests from `PENDING` -> `COMPLETED`.
+- `COMPLETED` requests cannot be reverted to `PENDING`.
+
+---
+
+## 4. User API Specifications
+
+### 4.1. Submit Consultancy Request
+
+Create a new consultation request.
+
+- **Endpoint:** `POST /api/user/consultancy`
+- **Authentication:** `USER` (Bearer Token or `auth_token` Cookie)
+- **Headers:** `Content-Type: application/json`
+
+#### Request Body
+```json
+{
+  "callType": "CALL",
+  "duration": 15,
+  "phoneNumber": "9876543210",
+  "email": "user@example.com"
+}
+```
+
+#### Fields
+| Field | Type | Required | Allowed Values / Validation |
+| :--- | :---: | :---: | :--- |
+| `callType` | `String` | Yes | `"CALL"` or `"VIDEO_CALL"` |
+| `duration` | `Number` | Yes | `15` or `30` |
+| `phoneNumber` | `String` | Yes | Exactly 10 digits (`^\d{10}$`) |
+| `email` | `String` | Yes | Valid email format |
+
+#### Response (`201 Created`)
+```json
+{
+  "success": true,
+  "message": "Consultancy request submitted successfully",
+  "data": {
+    "id": "76495d46-a496-4144-8844-4860d5b4e315",
+    "userId": "3e9b11e2-b062-4318-97e3-36c538cb1b21",
+    "callType": "CALL",
+    "duration": 15,
+    "price": 199,
+    "phoneNumber": "9876543210",
+    "email": "user@example.com",
+    "status": "PENDING",
+    "completedAt": null,
+    "createdAt": "2026-09-23T10:45:00.000Z",
+    "updatedAt": "2026-09-23T10:45:00.000Z"
+  }
+}
+```
+
+---
+
+### 4.2. Get User Consultancy History
+
+Retrieve the authenticated user's own consultation requests.
+
+- **Endpoint:** `GET /api/user/consultancy`
+- **Authentication:** `USER`
+- **Query Parameters:**
+  - `page` (optional, default `1`): Page number.
+  - `limit` (optional, default `10`): Items per page.
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "76495d46-a496-4144-8844-4860d5b4e315",
+      "userId": "3e9b11e2-b062-4318-97e3-36c538cb1b21",
+      "callType": "CALL",
+      "duration": 15,
+      "price": 199,
+      "phoneNumber": "9876543210",
+      "email": "user@example.com",
+      "status": "PENDING",
+      "completedAt": null,
+      "createdAt": "2026-09-23T10:45:00.000Z",
+      "updatedAt": "2026-09-23T10:45:00.000Z"
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### 4.3. Get Single Consultancy Request
+
+Fetch full details of a specific request owned by the authenticated user.
+
+- **Endpoint:** `GET /api/user/consultancy/:id`
+- **Authentication:** `USER`
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": {
+    "id": "76495d46-a496-4144-8844-4860d5b4e315",
+    "userId": "3e9b11e2-b062-4318-97e3-36c538cb1b21",
+    "callType": "CALL",
+    "duration": 15,
+    "price": 199,
+    "phoneNumber": "9876543210",
+    "email": "user@example.com",
+    "status": "PENDING",
+    "completedAt": null,
+    "createdAt": "2026-09-23T10:45:00.000Z",
+    "updatedAt": "2026-09-23T10:45:00.000Z"
+  }
+}
+```
+
+---
+
+## 5. Admin API Specifications
+
+### 5.1. List Consultancy Requests (FIFO Queue)
+
+View all consultancy requests in the order received (**oldest first: `createdAt ASC, id ASC`**).
+
+- **Endpoint:** `GET /api/admin/consultancy`
+- **Authentication:** `ADMIN`
+- **Query Parameters:**
+  - `status` (optional): Filter by `"PENDING"` or `"COMPLETED"`.
+  - `page` (optional, default `1`): Page number.
+  - `limit` (optional, default `10`): Items per page.
+
+#### Example Request
+```http
+GET /api/admin/consultancy?status=PENDING&page=1&limit=10
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "76495d46-a496-4144-8844-4860d5b4e315",
+      "userId": "3e9b11e2-b062-4318-97e3-36c538cb1b21",
+      "callType": "CALL",
+      "duration": 15,
+      "price": 199,
+      "phoneNumber": "9876543210",
+      "email": "user@example.com",
+      "status": "PENDING",
+      "completedAt": null,
+      "createdAt": "2026-09-23T10:45:00.000Z",
+      "updatedAt": "2026-09-23T10:45:00.000Z",
+      "user": {
+        "id": "3e9b11e2-b062-4318-97e3-36c538cb1b21",
+        "fullName": "Shivam Singh",
+        "email": "user@example.com",
+        "phone": "9876543210"
+      }
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### 5.2. Mark Request as COMPLETED
+
+Mark a pending consultation as completed once the call/consultation is finished.
+
+- **Endpoint:** `PATCH /api/admin/consultancy/:id/status`
+- **Authentication:** `ADMIN`
+- **Headers:** `Content-Type: application/json`
+
+#### Request Body
+```json
+{
+  "status": "COMPLETED"
+}
+```
+
+#### Response (`200 OK`)
+```json
+{
+  "success": true,
+  "message": "Consultancy request marked as COMPLETED successfully",
+  "data": {
+    "id": "76495d46-a496-4144-8844-4860d5b4e315",
+    "userId": "3e9b11e2-b062-4318-97e3-36c538cb1b21",
+    "callType": "CALL",
+    "duration": 15,
+    "price": 199,
+    "phoneNumber": "9876543210",
+    "email": "user@example.com",
+    "status": "COMPLETED",
+    "completedAt": "2026-09-23T11:00:00.000Z",
+    "createdAt": "2026-09-23T10:45:00.000Z",
+    "updatedAt": "2026-09-23T11:00:00.000Z",
+    "user": {
+      "id": "3e9b11e2-b062-4318-97e3-36c538cb1b21",
+      "fullName": "Shivam Singh",
+      "email": "user@example.com",
+      "phone": "9876543210"
+    }
+  }
+}
+```
+
+---
+
+## 6. Error Handling
+
+| Scenario | HTTP Status | Response Example |
+| :--- | :---: | :--- |
+| **Invalid Call Type** | `400 Bad Request` | `{"success": false, "message": "Call type must be either 'CALL' or 'VIDEO_CALL'."}` |
+| **Invalid Duration** | `400 Bad Request` | `{"success": false, "message": "Duration must be either 15 or 30 minutes."}` |
+| **Client Injected Price / UserId** | `400 Bad Request` | `{"success": false, "message": "Unrecognized key(s) in object"}` |
+| **Invalid Email** | `400 Bad Request` | `{"success": false, "message": "Please enter a valid email address."}` |
+| **Invalid Phone Number** | `400 Bad Request` | `{"success": false, "message": "Phone number must be exactly 10 digits."}` |
+| **Invalid Admin Status Filter** | `400 Bad Request` | `{"success": false, "message": "Status filter must be either 'PENDING' or 'COMPLETED'."}` |
+| **Reverting Status to PENDING** | `400 Bad Request` | `{"success": false, "message": "Status must be 'COMPLETED'."}` |
+| **Request Not Found** | `404 Not Found` | `{"success": false, "message": "Consultancy request not found."}` |
+| **Cross-User Request Access** | `404 Not Found` | `{"success": false, "message": "Consultancy request not found."}` |
+| **Missing Authentication** | `401 Unauthorized` | `{"success": false, "message": "Authentication required. Please login."}` |
+| **Forbidden Role Access** | `403 Forbidden` | `{"success": false, "message": "Access forbidden. Insufficient permissions."}` |
+
+---
+
+## 7. Postman Testing Guide
+
+### Flow 1: User Experience
+1. **Login as Normal User:**
+   - Authenticate via `POST /api/auth/user/login/verify-otp` or `POST /api/auth/user/login/verify-email-otp`.
+   - Store the user `token`.
+2. **Book 15-Minute Normal Call:**
+   - `POST /api/user/consultancy` with `{"callType": "CALL", "duration": 15, "phoneNumber": "9876543210", "email": "user@example.com"}`.
+   - Verify `201 Created` with `"price": 199` and `"status": "PENDING"`.
+3. **Book 30-Minute Normal Call:**
+   - `POST /api/user/consultancy` with `{"callType": "CALL", "duration": 30, ...}`.
+   - Verify `201 Created` with `"price": 499"`.
+4. **Book 15-Minute Video Call:**
+   - `POST /api/user/consultancy` with `{"callType": "VIDEO_CALL", "duration": 15, ...}`.
+   - Verify `201 Created` with `"price": 499"`.
+5. **Book 30-Minute Video Call:**
+   - `POST /api/user/consultancy` with `{"callType": "VIDEO_CALL", "duration": 30, ...}`.
+   - Verify `201 Created` with `"price": 899"`.
+6. **View Consultation History:**
+   - `GET /api/user/consultancy?page=1&limit=10`.
+   - Verify list of requests created for this user.
+7. **View Single Request Details:**
+   - `GET /api/user/consultancy/<id>`.
+   - Verify matching request object.
+
+### Flow 2: Admin Queue & Completion
+8. **Login as Admin:**
+   - Authenticate via `POST /api/admin/login` (`email: "it2@techvunex.in"`, `password: "123456"`).
+   - Store the admin `token`.
+9. **View Pending Queue (FIFO):**
+   - `GET /api/admin/consultancy?status=PENDING`.
+   - Verify oldest pending request appears first in the list.
+10. **Mark Request as Completed:**
+    - `PATCH /api/admin/consultancy/<id>/status` with `{"status": "COMPLETED"}`.
+    - Verify `200 OK`, `"status": "COMPLETED"`, and `"completedAt"` is populated with an ISO timestamp.
+11. **View Completed Requests:**
+    - `GET /api/admin/consultancy?status=COMPLETED`.
+    - Verify request now appears under completed filter.
+
+### Flow 3: Security & Validation Tests
+12. **Price Injection Attempt:**
+    - `POST /api/user/consultancy` with `{"callType": "CALL", "duration": 15, "phoneNumber": "9876543210", "email": "user@example.com", "price": 50}`.
+    - Verify `400 Bad Request`.
+13. **Unauthenticated Access:**
+    - Send `POST /api/user/consultancy` without auth header/cookie -> Verify `401 Unauthorized`.
+14. **Cross-User Access:**
+    - Attempt `GET /api/user/consultancy/<other-user-request-id>` -> Verify `404 Not Found`.
+15. **User Access to Admin APIs:**
+    - Attempt `GET /api/admin/consultancy` with User token -> Verify `403 Forbidden`.
+16. **Advocate Access to User APIs:**
+    - Attempt `POST /api/user/consultancy` with Advocate token -> Verify `403 Forbidden`.

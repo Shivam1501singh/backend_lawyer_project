@@ -246,7 +246,7 @@ export const getAdvocateReviewProfile = async (req, res, next) => {
       where: { id: advocateId },
       include: {
         _count: {
-          select: { likes: true, reviews: true, caseConnections: true }
+          select: { likes: true, reviews: true }
         }
       }
     });

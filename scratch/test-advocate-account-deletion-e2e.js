@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import { requestAdvocateDeleteAccountOtp, verifyAdvocateDeleteAccountOtp, finalizeAdvocateDeletion } from '../src/services/advocateDeletion.service.js';
 import { verifyEmailPasswordLoginService } from '../src/services/auth.service.js';
 import { listAdvocates, getAdvocateDetailsPublic } from '../src/services/advocate.service.js';
-import { createCaseRequest } from '../src/services/caseRequest.service.js';
 import { createTeamRequest, searchAdvocates } from '../src/services/advocateTeam.service.js';
 
 async function runE2ETests() {
@@ -155,12 +154,6 @@ async function runE2ETests() {
       if (err.statusCode !== 404) throw err;
     }
 
-    try {
-      await createCaseRequest({ userId: testUser.id, advocateId: testAdvocate.id, note: 'test', description: 'test' });
-      throw new Error('Test 3 Failed: createCaseRequest should have thrown error!');
-    } catch (err) {
-      if (!err.message.includes('unavailable')) throw err;
-    }
 
     try {
       await createTeamRequest({ requesterId: targetAdvocate.id, targetAdvocateId: testAdvocate.id });

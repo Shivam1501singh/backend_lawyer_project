@@ -123,7 +123,7 @@ export const finalizeUserDeletion = async (userId) => {
       }
     });
 
-    // Delete User record (cascades to related tables like Review, SavedLawyer, AdvocateLike, CaseConnectionRequest, CaseConnection)
+    // Delete User record (cascades to related tables like Review, SavedLawyer, AdvocateLike)
     await tx.user.delete({
       where: { id: userId }
     });

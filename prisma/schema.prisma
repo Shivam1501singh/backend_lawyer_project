@@ -595,3 +595,51 @@ model ConsultancyRequest {
   @@index([createdAt])
 }
 
+model BearerAct {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  acts      Act[]
+
+  @@index([name])
+}
+
+model Act {
+  id          String       @id @default(uuid())
+  bearerActId String
+  heading     String
+  act         String
+  year        Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  bearerAct   BearerAct    @relation(fields: [bearerActId], references: [id], onDelete: Cascade)
+  sections    ActSection[]
+
+  @@index([bearerActId])
+  @@index([year])
+}
+
+model ActSection {
+  id              String   @id @default(uuid())
+  actId           String
+  section         String
+  chapterNo       Int
+  chapterName     String
+  title           String
+  description     String   @db.Text
+  metaData        String?  @db.Text
+  metaDescription String?  @db.Text
+  metaTitle       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  act             Act      @relation(fields: [actId], references: [id], onDelete: Cascade)
+
+  @@index([actId])
+  @@index([section])
+  @@index([chapterNo])
+}
+

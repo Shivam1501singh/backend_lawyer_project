@@ -6380,3 +6380,445 @@ Mark a pending consultation as completed once the call/consultation is finished.
     - Attempt `GET /api/admin/consultancy` with User token -> Verify `403 Forbidden`.
 16. **Advocate Access to User APIs:**
     - Attempt `POST /api/user/consultancy` with Advocate token -> Verify `403 Forbidden`.
+
+---
+
+# Bearer Acts Legal-Content API
+
+## 1. Overview & Hierarchy Architecture
+The Bearer Acts module provides a structured, three-level legal hierarchy specifically designed for the **Content Creator** role to manage, and for the general public to read:
+
+```text
+BearerAct (Top-level Legal Category)
+        ↓ (1 to many)
+Act (Individual Law / Act)
+        ↓ (1 to many)
+ActSection (Sections & Chapters)
+```
+
+- **Content Creator Write Operations**: Single unified endpoint (`POST /api/content-creator/bearer-acts`) to create and update all levels of the hierarchy.
+- **Public Read Access**: Full public access to read categories, acts, and sections without authentication.
+
+---
+
+## 2. Predefined Legal Categories
+The module comes pre-seeded with 13 official legal categories:
+1. Constitutional and Political
+2. Civil and Property
+3. Criminal
+4. Commercial and Business
+5. Taxation, Labour & Consumer Protection
+6. Personal
+7. Environment and Land
+8. Economic, Trade, & Market Regulatory
+9. Arbitration & Alternative Dispute Resolution (ADR)
+10. Insolvency, Banking, & Debt Recovery
+11. Foreign Exchange, Trade & Economic
+12. Intellectual Property Rights (IPR)
+13. Tech, Data & Cyber Laws
+
+---
+
+## 3. Content Creator Single Write API
+### Endpoint
+`POST /api/content-creator/bearer-acts`
+
+### Headers
+| Header | Value | Description |
+| :--- | :--- | :--- |
+| `Authorization` | `Bearer <creator_token>` | JWT token from Content Creator login |
+| `Content-Type` | `application/json` | JSON payload |
+
+### Authorization
+- **Allowed Role**: `CONTENT_CREATOR`
+- **Rejected**: Unauthenticated (`401`), `USER` (`403`), `ADVOCATE` (`403`), `ADMIN` (`403`).
+
+### Request Structure
+```json
+{
+  "type": "BEARER_ACT" | "ACT" | "SECTION",
+  "operation": "CREATE" | "UPDATE",
+  "data": { ... }
+}
+```
+
+### Operation Payloads & Examples
+
+#### 1. Create Bearer Act Category
+```json
+{
+  "type": "BEARER_ACT",
+  "operation": "CREATE",
+  "data": {
+    "name": "Criminal"
+  }
+}
+```
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Bearer Act category created successfully",
+  "data": {
+    "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+    "name": "Criminal",
+    "createdAt": "2026-09-23T18:30:00.000Z",
+    "updatedAt": "2026-09-23T18:30:00.000Z"
+  }
+}
+```
+
+#### 2. Update Bearer Act Category
+```json
+{
+  "type": "BEARER_ACT",
+  "operation": "UPDATE",
+  "data": {
+    "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+    "name": "Criminal Law & Procedure"
+  }
+}
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Bearer Act category updated successfully",
+  "data": {
+    "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+    "name": "Criminal Law & Procedure",
+    "createdAt": "2026-09-23T18:30:00.000Z",
+    "updatedAt": "2026-09-23T18:35:00.000Z"
+  }
+}
+```
+
+#### 3. Create Act under Bearer Act Category
+```json
+{
+  "type": "ACT",
+  "operation": "CREATE",
+  "data": {
+    "bearerActId": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+    "heading": "Indian Penal Code",
+    "act": "Indian Penal Code",
+    "year": 1860
+  }
+}
+```
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Act created successfully",
+  "data": {
+    "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "bearerActId": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+    "heading": "Indian Penal Code",
+    "act": "Indian Penal Code",
+    "year": 1860,
+    "createdAt": "2026-09-23T18:32:00.000Z",
+    "updatedAt": "2026-09-23T18:32:00.000Z"
+  }
+}
+```
+
+#### 4. Update Act
+```json
+{
+  "type": "ACT",
+  "operation": "UPDATE",
+  "data": {
+    "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "heading": "Indian Penal Code (IPC)",
+    "year": 1860
+  }
+}
+```
+
+#### 5. Create Section / Chapter under Act
+```json
+{
+  "type": "SECTION",
+  "operation": "CREATE",
+  "data": {
+    "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "section": "Section 1",
+    "chapterNo": 1,
+    "chapterName": "Introduction",
+    "title": "Title and extent of operation of the Code",
+    "description": "This Act shall be called the Indian Penal Code, and shall take effect throughout India.",
+    "metaData": "Chapter I Preliminary",
+    "metaDescription": "Indian Penal Code Section 1 title and jurisdiction details.",
+    "metaTitle": "Section 1 - Indian Penal Code"
+  }
+}
+```
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "Act section created successfully",
+  "data": {
+    "id": "94e82b71-79e5-4f40-a35f-3dcb295ad602",
+    "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "section": "Section 1",
+    "chapterNo": 1,
+    "chapterName": "Introduction",
+    "title": "Title and extent of operation of the Code",
+    "description": "This Act shall be called the Indian Penal Code, and shall take effect throughout India.",
+    "metaData": "Chapter I Preliminary",
+    "metaDescription": "Indian Penal Code Section 1 title and jurisdiction details.",
+    "metaTitle": "Section 1 - Indian Penal Code",
+    "createdAt": "2026-09-23T18:33:00.000Z",
+    "updatedAt": "2026-09-23T18:33:00.000Z"
+  }
+}
+```
+
+#### 6. Update Section / Chapter
+```json
+{
+  "type": "SECTION",
+  "operation": "UPDATE",
+  "data": {
+    "id": "94e82b71-79e5-4f40-a35f-3dcb295ad602",
+    "title": "Updated Section Title",
+    "description": "Updated legal description content"
+  }
+}
+```
+
+---
+
+## 4. Public Read APIs
+Public APIs require **no authentication token** and are accessible to anyone.
+
+### 1. Get All Bearer Act Categories
+```http
+GET /api/bearer-acts?page=1&limit=20
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+      "name": "Criminal",
+      "createdAt": "2026-09-23T18:30:00.000Z",
+      "updatedAt": "2026-09-23T18:30:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 13,
+    "totalPages": 1
+  }
+}
+```
+
+### 2. Get Single Bearer Act Category (with Related Acts)
+```http
+GET /api/bearer-acts/:id
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+    "name": "Criminal",
+    "createdAt": "2026-09-23T18:30:00.000Z",
+    "updatedAt": "2026-09-23T18:30:00.000Z",
+    "acts": [
+      {
+        "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+        "heading": "Indian Penal Code",
+        "act": "Indian Penal Code",
+        "year": 1860
+      }
+    ]
+  }
+}
+```
+
+### 3. Get Acts Under a Bearer Act Category
+```http
+GET /api/bearer-acts/:id/acts?page=1&limit=20
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "bearerActId": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+      "heading": "Indian Penal Code",
+      "act": "Indian Penal Code",
+      "year": 1860,
+      "createdAt": "2026-09-23T18:32:00.000Z",
+      "updatedAt": "2026-09-23T18:32:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+### 4. Get Single Act (with Sections)
+```http
+GET /api/acts/:id
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "bearerActId": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+    "heading": "Indian Penal Code",
+    "act": "Indian Penal Code",
+    "year": 1860,
+    "sections": [
+      {
+        "id": "94e82b71-79e5-4f40-a35f-3dcb295ad602",
+        "section": "Section 1",
+        "chapterNo": 1,
+        "chapterName": "Introduction",
+        "title": "Title and extent of operation of the Code",
+        "description": "This Act shall be called the Indian Penal Code...",
+        "metaData": "Chapter I Preliminary",
+        "metaDescription": "Indian Penal Code Section 1 title and jurisdiction details.",
+        "metaTitle": "Section 1 - Indian Penal Code"
+      }
+    ]
+  }
+}
+```
+
+### 5. Get Sections Under an Act
+```http
+GET /api/acts/:id/sections?page=1&limit=20
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "94e82b71-79e5-4f40-a35f-3dcb295ad602",
+      "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "section": "Section 1",
+      "chapterNo": 1,
+      "chapterName": "Introduction",
+      "title": "Title and extent of operation of the Code",
+      "description": "This Act shall be called the Indian Penal Code...",
+      "metaData": "Chapter I Preliminary",
+      "metaDescription": "Indian Penal Code Section 1 title and jurisdiction details.",
+      "metaTitle": "Section 1 - Indian Penal Code",
+      "createdAt": "2026-09-23T18:33:00.000Z",
+      "updatedAt": "2026-09-23T18:33:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+### 6. Get Single Section
+```http
+GET /api/sections/:id
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "94e82b71-79e5-4f40-a35f-3dcb295ad602",
+    "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "section": "Section 1",
+    "chapterNo": 1,
+    "chapterName": "Introduction",
+    "title": "Title and extent of operation of the Code",
+    "description": "This Act shall be called the Indian Penal Code...",
+    "metaData": "Chapter I Preliminary",
+    "metaDescription": "Indian Penal Code Section 1 title and jurisdiction details.",
+    "metaTitle": "Section 1 - Indian Penal Code",
+    "createdAt": "2026-09-23T18:33:00.000Z",
+    "updatedAt": "2026-09-23T18:33:00.000Z"
+  }
+}
+```
+
+---
+
+## 5. Postman Testing Guide
+
+### Content Creator Write Tests
+1. **Login as Content Creator:**
+   - `POST /api/content-creator/login` or `POST /api/auth/blog/login` with `{"email": "trainee6@techvunex.in", "password": "1234"}`.
+   - Save the returned `token`.
+2. **Create Bearer Act Category:**
+   - `POST /api/content-creator/bearer-acts` with `type: "BEARER_ACT", operation: "CREATE", data: { "name": "Custom Law Category" }`.
+   - Verify `201 Created`.
+3. **Create Act under Bearer Act:**
+   - `POST /api/content-creator/bearer-acts` with `type: "ACT", operation: "CREATE", data: { "bearerActId": "<id>", "heading": "Custom Act 2026", "act": "Custom Act", "year": 2026 }`.
+   - Verify `201 Created`.
+4. **Create Section under Act:**
+   - `POST /api/content-creator/bearer-acts` with `type: "SECTION", operation: "CREATE", data: { "actId": "<actId>", "section": "Section 1", "chapterNo": 1, "chapterName": "Intro", "title": "Overview", "description": "Legal text" }`.
+   - Verify `201 Created`.
+5. **Update Bearer Act Category:**
+   - `POST /api/content-creator/bearer-acts` with `type: "BEARER_ACT", operation: "UPDATE", data: { "id": "<id>", "name": "Updated Custom Law Category" }`.
+   - Verify `200 OK`.
+6. **Update Act:**
+   - `POST /api/content-creator/bearer-acts` with `type: "ACT", operation: "UPDATE", data: { "id": "<actId>", "heading": "Updated Act Heading" }`.
+   - Verify `200 OK`.
+7. **Update Section:**
+   - `POST /api/content-creator/bearer-acts` with `type: "SECTION", operation: "UPDATE", data: { "id": "<sectionId>", "title": "Updated Section Title" }`.
+   - Verify `200 OK`.
+8. **Try Invalid Parent IDs:**
+   - Create Act with invalid `bearerActId` (`"00000000-0000-0000-0000-000000000000"`) -> Verify `404 Not Found`.
+   - Create Section with invalid `actId` (`"00000000-0000-0000-0000-000000000000"`) -> Verify `404 Not Found`.
+9. **Try Invalid Entity Types:**
+   - `POST /api/content-creator/bearer-acts` with `type: "INVALID_TYPE"` -> Verify `400 Bad Request`.
+10. **Try Invalid Operations:**
+    - `POST /api/content-creator/bearer-acts` with `operation: "DELETE"` -> Verify `400 Bad Request`.
+11. **Verify Validation Errors:**
+    - Omit required `name`, negative `year`, missing required fields -> Verify `400 Bad Request`.
+
+### Public Read Tests (Without Authentication)
+12. **Get all Bearer Acts:**
+    - `GET /api/bearer-acts` -> Verify `200 OK` without `Authorization` header.
+13. **Get single Bearer Act:**
+    - `GET /api/bearer-acts/:id` -> Verify `200 OK` and related `acts` array.
+14. **Get Acts under Bearer Act:**
+    - `GET /api/bearer-acts/:id/acts` -> Verify `200 OK` and paginated acts.
+15. **Get single Act:**
+    - `GET /api/acts/:id` -> Verify `200 OK` and related `sections` array.
+16. **Get Sections under Act:**
+    - `GET /api/acts/:id/sections` -> Verify `200 OK` and paginated sections.
+17. **Get single Section:**
+    - `GET /api/sections/:id` -> Verify `200 OK`.
+
+### Authorization Tests
+18. **Unauthenticated Write:**
+    - `POST /api/content-creator/bearer-acts` without token -> Verify `401 Unauthorized`.
+19. **Write as Normal User:**
+    - `POST /api/content-creator/bearer-acts` with User token -> Verify `403 Forbidden`.
+20. **Write as Advocate:**
+    - `POST /api/content-creator/bearer-acts` with Advocate token -> Verify `403 Forbidden`.
+21. **Verify Unauthorized Users Cannot Modify:**
+    - Ensure only Content Creator can write.
+22. **Verify Public Read Remains Accessible:**
+    - Confirm unauthenticated users can freely read the legal database.

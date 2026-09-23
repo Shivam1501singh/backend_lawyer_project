@@ -1948,6 +1948,90 @@ async function seedAdvocateTeamMembers() {
   console.log(`\nNew teammate relationships created: ${newRecordsToCreate.length}`);
   console.log(`Existing relationships skipped: ${totalSkipped}`);
   console.log('\nAdvocate team seed completed successfully.\n');
+
+  // Idempotent Seeding of Predefined Bearer Act Categories
+  console.log('Seeding Bearer Act categories...');
+  const bearerActCategories = [
+    'Constitutional and Political',
+    'Civil and Property',
+    'Criminal',
+    'Commercial and Business',
+    'Taxation, Labour & Consumer Protection',
+    'Personal',
+    'Environment and Land',
+    'Economic, Trade, & Market Regulatory',
+    'Arbitration & Alternative Dispute Resolution (ADR)',
+    'Insolvency, Banking, & Debt Recovery',
+    'Foreign Exchange, Trade & Economic',
+    'Intellectual Property Rights (IPR)',
+    'Tech, Data & Cyber Laws'
+  ];
+
+  let newBearerActsCount = 0;
+  for (const name of bearerActCategories) {
+    const existing = await prisma.bearerAct.findUnique({
+      where: { name }
+    });
+
+    if (!existing) {
+      await prisma.bearerAct.create({
+        data: { name }
+      });
+      newBearerActsCount++;
+    }
+  }
+
+  console.log(`Bearer Act categories seeded. Created: ${newBearerActsCount}, Total checked: ${bearerActCategories.length}`);
+
+  // Seed 1 sample Act and Section under 'Criminal' category (Idempotent)
+  const criminalBearerAct = await prisma.bearerAct.findUnique({
+    where: { name: 'Criminal' }
+  });
+
+  if (criminalBearerAct) {
+    let sampleAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'Indian Penal Code'
+      }
+    });
+
+    if (!sampleAct) {
+      sampleAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'Indian Penal Code',
+          act: 'Indian Penal Code',
+          year: 1860
+        }
+      });
+      console.log('Sample Act seeded: Indian Penal Code');
+    }
+
+    const sampleSection = await prisma.actSection.findFirst({
+      where: {
+        actId: sampleAct.id,
+        section: 'Section 1'
+      }
+    });
+
+    if (!sampleSection) {
+      await prisma.actSection.create({
+        data: {
+          actId: sampleAct.id,
+          section: 'Section 1',
+          chapterNo: 1,
+          chapterName: 'Introduction',
+          title: 'Title and extent of operation of the Code',
+          description: 'This Act shall be called the Indian Penal Code, and shall take effect throughout India.',
+          metaData: 'Chapter I Preliminary',
+          metaDescription: 'Indian Penal Code Section 1 title and jurisdiction details.',
+          metaTitle: 'Section 1 - Indian Penal Code'
+        }
+      });
+      console.log('Sample ActSection seeded: Section 1');
+    }
+  }
 }
 
 main()

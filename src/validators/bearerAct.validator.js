@@ -145,3 +145,15 @@ export const paginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20)
 });
+
+// --- Search Query Schema ---
+export const searchBearerActQuerySchema = z.object({
+  q: z
+    .string({ required_error: 'Search query is required' })
+    .trim()
+    .min(1, 'Search query is required')
+    .min(2, 'Search query must be at least 2 characters'),
+  page: z.coerce.number({ invalid_type_error: 'Page must be an integer' }).int('Page must be an integer').min(1, 'Page must be at least 1').default(1),
+  limit: z.coerce.number({ invalid_type_error: 'Limit must be an integer' }).int('Limit must be an integer').min(1, 'Limit must be at least 1').max(100, 'Limit cannot exceed 100').default(20)
+});
+

@@ -516,3 +516,261 @@ export const getSingleSection = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Public: Global Search across Bearer Acts, Acts, and Sections
+ * GET /api/bearer-acts/search?q=<query>&page=1&limit=20
+ */
+export const searchGlobalBearerActs = async (req, res, next) => {
+  try {
+    const { q, page, limit } = validator.searchBearerActQuerySchema.parse(req.query);
+
+    const trimmedQuery = q.trim();
+    const numericQ = !isNaN(trimmedQuery) && Number.isInteger(Number(trimmedQuery)) ? parseInt(trimmedQuery, 10) : null;
+
+    const bearerActWhere = {
+      name: { contains: trimmedQuery, mode: 'insensitive' }
+    };
+
+    const actWhere = {
+      OR: [
+        { heading: { contains: trimmedQuery, mode: 'insensitive' } },
+        { act: { contains: trimmedQuery, mode: 'insensitive' } },
+        ...(numericQ !== null ? [{ year: numericQ }] : [])
+      ]
+    };
+
+    const sectionWhere = {
+      OR: [
+        { section: { contains: trimmedQuery, mode: 'insensitive' } },
+        { chapterName: { contains: trimmedQuery, mode: 'insensitive' } },
+        { title: { contains: trimmedQuery, mode: 'insensitive' } },
+        { description: { contains: trimmedQuery, mode: 'insensitive' } },
+        { metaData: { contains: trimmedQuery, mode: 'insensitive' } },
+        { metaDescription: { contains: trimmedQuery, mode: 'insensitive' } },
+        { metaTitle: { contains: trimmedQuery, mode: 'insensitive' } },
+        ...(numericQ !== null ? [{ chapterNo: numericQ }] : [])
+      ]
+    };
+
+    const [bearerActCount, actCount, sectionCount] = await prisma.$transaction([
+      prisma.bearerAct.count({ where: bearerActWhere }),
+      prisma.act.count({ where: actWhere }),
+      prisma.actSection.count({ where: sectionWhere })
+    ]);
+
+    const total = bearerActCount + actCount + sectionCount;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const skip = (page - 1) * limit;
+
+    const results = [];
+    let currentSkip = skip;
+    let currentLimit = limit;
+
+    // 1. Bearer Act Matches
+    if (currentLimit > 0 && currentSkip < bearerActCount) {
+      const take = Math.min(currentLimit, bearerActCount - currentSkip);
+      const bearerActs = await prisma.bearerAct.findMany({
+        where: bearerActWhere,
+        skip: currentSkip,
+        take,
+        orderBy: { name: 'asc' }
+      });
+      for (const b of bearerActs) {
+        results.push({
+          type: 'BEARER_ACT',
+          bearerAct: {
+            id: b.id,
+            name: b.name,
+            createdAt: b.createdAt,
+            updatedAt: b.updatedAt
+          }
+        });
+      }
+      currentLimit -= bearerActs.length;
+      currentSkip = 0;
+    } else if (currentSkip >= bearerActCount) {
+      currentSkip -= bearerActCount;
+    }
+
+    // 2. Act Matches
+    if (currentLimit > 0 && currentSkip < actCount) {
+      const take = Math.min(currentLimit, actCount - currentSkip);
+      const acts = await prisma.act.findMany({
+        where: actWhere,
+        skip: currentSkip,
+        take,
+        orderBy: { year: 'asc' },
+        include: {
+          bearerAct: true
+        }
+      });
+      for (const a of acts) {
+        results.push({
+          type: 'ACT',
+          bearerAct: {
+            id: a.bearerAct.id,
+            name: a.bearerAct.name
+          },
+          act: {
+            id: a.id,
+            bearerActId: a.bearerActId,
+            heading: a.heading,
+            act: a.act,
+            year: a.year,
+            createdAt: a.createdAt,
+            updatedAt: a.updatedAt
+          }
+        });
+      }
+      currentLimit -= acts.length;
+      currentSkip = 0;
+    } else if (currentSkip >= actCount) {
+      currentSkip -= actCount;
+    }
+
+    // 3. Section Matches
+    if (currentLimit > 0 && currentSkip < sectionCount) {
+      const take = Math.min(currentLimit, sectionCount - currentSkip);
+      const sections = await prisma.actSection.findMany({
+        where: sectionWhere,
+        skip: currentSkip,
+        take,
+        orderBy: [
+          { chapterNo: 'asc' },
+          { section: 'asc' }
+        ],
+        include: {
+          act: {
+            include: {
+              bearerAct: true
+            }
+          }
+        }
+      });
+      for (const s of sections) {
+        results.push({
+          type: 'SECTION',
+          bearerAct: {
+            id: s.act.bearerAct.id,
+            name: s.act.bearerAct.name
+          },
+          act: {
+            id: s.act.id,
+            bearerActId: s.act.bearerActId,
+            heading: s.act.heading,
+            act: s.act.act,
+            year: s.act.year
+          },
+          section: {
+            id: s.id,
+            actId: s.actId,
+            section: s.section,
+            chapterNo: s.chapterNo,
+            chapterName: s.chapterName,
+            title: s.title,
+            description: s.description,
+            metaData: s.metaData,
+            metaDescription: s.metaDescription,
+            metaTitle: s.metaTitle,
+            createdAt: s.createdAt,
+            updatedAt: s.updatedAt
+          }
+        });
+      }
+      currentLimit -= sections.length;
+      currentSkip = 0;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: results,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Public: Act-Specific Search within Sections of a Selected Act
+ * GET /api/acts/:actId/search?q=<query>&page=1&limit=20
+ */
+export const searchActSections = async (req, res, next) => {
+  try {
+    const { actId } = req.params;
+    const { q, page, limit } = validator.searchBearerActQuerySchema.parse(req.query);
+
+    const act = await prisma.act.findUnique({
+      where: { id: actId }
+    });
+
+    if (!act) {
+      return res.status(404).json({
+        success: false,
+        message: 'Act not found'
+      });
+    }
+
+    const trimmedQuery = q.trim();
+    const numericQ = !isNaN(trimmedQuery) && Number.isInteger(Number(trimmedQuery)) ? parseInt(trimmedQuery, 10) : null;
+
+    const where = {
+      actId: act.id,
+      OR: [
+        { section: { contains: trimmedQuery, mode: 'insensitive' } },
+        { chapterName: { contains: trimmedQuery, mode: 'insensitive' } },
+        { title: { contains: trimmedQuery, mode: 'insensitive' } },
+        { description: { contains: trimmedQuery, mode: 'insensitive' } },
+        { metaData: { contains: trimmedQuery, mode: 'insensitive' } },
+        { metaDescription: { contains: trimmedQuery, mode: 'insensitive' } },
+        { metaTitle: { contains: trimmedQuery, mode: 'insensitive' } },
+        ...(numericQ !== null ? [{ chapterNo: numericQ }] : [])
+      ]
+    };
+
+    const skip = (page - 1) * limit;
+
+    const [sections, total] = await prisma.$transaction([
+      prisma.actSection.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [
+          { chapterNo: 'asc' },
+          { section: 'asc' }
+        ]
+      }),
+      prisma.actSection.count({ where })
+    ]);
+
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        act: {
+          id: act.id,
+          heading: act.heading,
+          act: act.act,
+          year: act.year
+        },
+        results: sections
+      },
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

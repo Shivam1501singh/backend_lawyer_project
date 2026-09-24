@@ -18,6 +18,12 @@ router.post(
 );
 
 /**
+ * Public Search Endpoints (No Authentication Required)
+ */
+router.get('/api/bearer-acts/search', generalLimiter, bearerActController.searchGlobalBearerActs);
+router.get('/api/acts/:actId/search', generalLimiter, bearerActController.searchActSections);
+
+/**
  * Public Read Endpoints (No Authentication Required)
  */
 router.get('/api/bearer-acts', generalLimiter, bearerActController.getBearerActs);

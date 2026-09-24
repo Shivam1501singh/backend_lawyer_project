@@ -6763,7 +6763,248 @@ GET /api/sections/:id
 
 ---
 
-## 5. Postman Testing Guide
+## 5. Bearer Acts Search API
+
+The Bearer Acts module provides **two public search modes** allowing citizens, advocates, and content creators to search legal content across the hierarchy without requiring authentication:
+
+```text
+1. Global Search      → Searches across all Bearer Acts, Acts, and Sections/Chapters
+2. Act-Specific Search → Searches strictly inside the Sections/Chapters of one selected Act
+```
+
+### Key Search Capabilities
+- **Public Access**: Completely open and read-only. No JWT token or login required.
+- **Database-Level Execution**: Parameterized Prisma / PostgreSQL queries with zero in-memory dumping.
+- **Case-Insensitive Matching**: Matches uppercase, lowercase, and mixed-case queries identically (`criminal` = `Criminal` = `CRIMINAL`).
+- **Partial Term Search**: Substring matching (`crimin` matches `Criminal`, `proper` matches `property`).
+- **Hierarchy Preservation**: Every search result returns its parent chain (`BearerAct` → `Act` → `Section`) so the client immediately knows where the result belongs.
+- **Deterministic Result Prioritization**:
+  1. `BEARER_ACT` matches (by `name`)
+  2. `ACT` matches (by `heading`, `act`, `year`)
+  3. `SECTION` matches (by `section`, `chapterName`, `title`, `description`, `metaData`, `metaDescription`, `metaTitle`)
+- **Pagination**: Database-level `page` and `limit` support with complete pagination metadata (`page`, `limit`, `total`, `totalPages`).
+- **Validation**: Minimum 2 characters required; empty and whitespace-only queries are rejected with HTTP 400.
+
+---
+
+### 1. Global Bearer Act Search
+Searches across the entire Bearer Act legal database (Categories, Acts, and Sections).
+
+```http
+GET /api/bearer-acts/search?q=<query>&page=1&limit=20
+```
+
+#### Query Parameters
+| Parameter | Type | Required | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `q` | `string` | **Yes** | — | Search term (min 2 non-whitespace characters) |
+| `page` | `integer` | No | `1` | Page number (min 1) |
+| `limit` | `integer` | No | `20` | Items per page (min 1, max 100) |
+
+#### Search Scope & Fields
+- **BearerAct**: `name`
+- **Act**: `heading`, `act`, `year`
+- **ActSection**: `section`, `chapterNo`, `chapterName`, `title`, `description`, `metaData`, `metaDescription`, `metaTitle`
+
+#### Example Request
+```http
+GET /api/bearer-acts/search?q=criminal&page=1&limit=20
+```
+
+#### Example Response (200 OK)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "type": "BEARER_ACT",
+      "bearerAct": {
+        "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+        "name": "Criminal",
+        "createdAt": "2026-09-23T18:30:00.000Z",
+        "updatedAt": "2026-09-23T18:30:00.000Z"
+      }
+    },
+    {
+      "type": "ACT",
+      "bearerAct": {
+        "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+        "name": "Criminal"
+      },
+      "act": {
+        "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+        "bearerActId": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+        "heading": "Indian Penal Code",
+        "act": "Indian Penal Code",
+        "year": 1860,
+        "createdAt": "2026-09-23T18:32:00.000Z",
+        "updatedAt": "2026-09-23T18:32:00.000Z"
+      }
+    },
+    {
+      "type": "SECTION",
+      "bearerAct": {
+        "id": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+        "name": "Criminal"
+      },
+      "act": {
+        "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+        "bearerActId": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+        "heading": "Indian Penal Code",
+        "act": "Indian Penal Code",
+        "year": 1860
+      },
+      "section": {
+        "id": "94e82b71-79e5-4f40-a35f-3dcb295ad602",
+        "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+        "section": "Section 1",
+        "chapterNo": 1,
+        "chapterName": "Introduction",
+        "title": "Title and extent of operation of the Code",
+        "description": "This Act shall be called the Indian Penal Code, and shall take effect throughout India.",
+        "metaData": "Chapter I Preliminary",
+        "metaDescription": "Indian Penal Code Section 1 title and jurisdiction details.",
+        "metaTitle": "Section 1 - Indian Penal Code",
+        "createdAt": "2026-09-23T18:33:00.000Z",
+        "updatedAt": "2026-09-23T18:33:00.000Z"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 3,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### 2. Act-Specific Search
+Searches strictly within the Sections and Chapters belonging to one specified Act (`WHERE ActSection.actId = :actId`). It never leaks or returns sections from other Acts.
+
+```http
+GET /api/acts/:actId/search?q=<query>&page=1&limit=20
+```
+
+#### Path Parameters
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `actId` | `string` (UUID) | **Yes** | ID of the target Act |
+
+#### Query Parameters
+| Parameter | Type | Required | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `q` | `string` | **Yes** | — | Search term (min 2 non-whitespace characters) |
+| `page` | `integer` | No | `1` | Page number (min 1) |
+| `limit` | `integer` | No | `20` | Items per page (min 1, max 100) |
+
+#### Search Scope & Fields
+Searches ONLY within `ActSection` records where `actId = :actId`:
+- `section`
+- `chapterNo`
+- `chapterName`
+- `title`
+- `description`
+- `metaData`
+- `metaDescription`
+- `metaTitle`
+
+#### Example Request
+```http
+GET /api/acts/27b7de9c-d477-4b71-9257-2e1d71057c72/search?q=property&page=1&limit=20
+```
+
+#### Example Response (200 OK)
+```json
+{
+  "success": true,
+  "data": {
+    "act": {
+      "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "heading": "Indian Penal Code",
+      "act": "Indian Penal Code",
+      "year": 1860
+    },
+    "results": [
+      {
+        "id": "94e82b71-79e5-4f40-a35f-3dcb295ad602",
+        "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+        "section": "Section 420",
+        "chapterNo": 17,
+        "chapterName": "Offences Against Property",
+        "title": "Cheating and dishonestly inducing delivery of property",
+        "description": "Whoever cheats and thereby dishonestly induces the person deceived to deliver any property...",
+        "metaData": "property fraud cheating",
+        "metaDescription": "Punishment for cheating under IPC",
+        "metaTitle": "Section 420 IPC",
+        "createdAt": "2026-09-23T18:33:00.000Z",
+        "updatedAt": "2026-09-23T18:33:00.000Z"
+      }
+    ]
+  },
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### 3. Error Responses
+
+#### Missing or Empty Query (`400 Bad Request`)
+```http
+GET /api/bearer-acts/search?q=
+```
+```json
+{
+  "success": false,
+  "message": "Search query is required",
+  "errors": [
+    {
+      "field": "q",
+      "message": "Search query is required"
+    }
+  ]
+}
+```
+
+#### Query Too Short (`400 Bad Request`)
+```http
+GET /api/bearer-acts/search?q=a
+```
+```json
+{
+  "success": false,
+  "message": "Search query must be at least 2 characters",
+  "errors": [
+    {
+      "field": "q",
+      "message": "Search query must be at least 2 characters"
+    }
+  ]
+}
+```
+
+#### Non-Existent Act ID on Act-Specific Search (`404 Not Found`)
+```http
+GET /api/acts/00000000-0000-0000-0000-000000000000/search?q=property
+```
+```json
+{
+  "success": false,
+  "message": "Act not found"
+}
+```
+
+---
+
+## 6. Postman Testing Guide
 
 ### Content Creator Write Tests
 1. **Login as Content Creator:**
@@ -6811,14 +7052,34 @@ GET /api/sections/:id
 17. **Get single Section:**
     - `GET /api/sections/:id` -> Verify `200 OK`.
 
-### Authorization Tests
-18. **Unauthenticated Write:**
-    - `POST /api/content-creator/bearer-acts` without token -> Verify `401 Unauthorized`.
-19. **Write as Normal User:**
-    - `POST /api/content-creator/bearer-acts` with User token -> Verify `403 Forbidden`.
-20. **Write as Advocate:**
-    - `POST /api/content-creator/bearer-acts` with Advocate token -> Verify `403 Forbidden`.
-21. **Verify Unauthorized Users Cannot Modify:**
-    - Ensure only Content Creator can write.
-22. **Verify Public Read Remains Accessible:**
-    - Confirm unauthenticated users can freely read the legal database.
+### Global Search Tests
+18. **Search by Bearer Act name:**
+    - `GET /api/bearer-acts/search?q=Criminal` -> Returns matching Bearer Act entity with `type: "BEARER_ACT"`.
+19. **Search by partial Bearer Act name:**
+    - `GET /api/bearer-acts/search?q=crimin` -> Matches `Criminal` category.
+20. **Search by Act heading / name / year:**
+    - `GET /api/bearer-acts/search?q=Penal` -> Returns matching Act with `type: "ACT"` and parent `bearerAct`.
+    - `GET /api/bearer-acts/search?q=1860` -> Returns matching Act by year.
+21. **Search by Section number / chapter / title / description / metadata:**
+    - `GET /api/bearer-acts/search?q=Section%201` -> Matches Section with `type: "SECTION"` and full parent chain.
+    - `GET /api/bearer-acts/search?q=Introduction` -> Matches Chapter name.
+    - `GET /api/bearer-acts/search?q=extent` -> Matches Section title.
+    - `GET /api/bearer-acts/search?q=throughout` -> Matches Section description.
+22. **Verify Case-Insensitivity & Pagination:**
+    - `GET /api/bearer-acts/search?q=CRIMINAL` returns identical results to `q=criminal`.
+    - `GET /api/bearer-acts/search?q=criminal&page=1&limit=2` returns paginated slice with `totalPages`.
+23. **Verify Empty and Short Query Rejections:**
+    - `GET /api/bearer-acts/search?q=` -> Returns `400 Bad Request` (`Search query is required`).
+    - `GET /api/bearer-acts/search?q=a` -> Returns `400 Bad Request` (`Search query must be at least 2 characters`).
+
+### Act-Specific Search Tests
+24. **Search Sections inside specific Act & verify Act isolation:**
+    - `GET /api/acts/:actId/search?q=property` -> Returns only sections belonging to `:actId`.
+    - Confirm sections from other Acts are never returned.
+    - `GET /api/acts/00000000-0000-0000-0000-000000000000/search?q=property` -> Returns `404 Not Found` (`Act not found`).
+
+### Authorization Verification
+25. **Public Access Verification:**
+    - Perform both global search `GET /api/bearer-acts/search?q=...` and act-specific search `GET /api/acts/:actId/search?q=...` without any `Authorization` header.
+    - Confirm both endpoints execute publicly and return HTTP 200 responses.
+

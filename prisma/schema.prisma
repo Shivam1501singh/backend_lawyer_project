@@ -466,6 +466,7 @@ model Update {
 model IPCSection {
   id              String         @id @default(uuid())
   sectionNo       String         @unique
+  sectionOrder    Float          @default(0)
   heading         String
   paragraph       String         @db.Text
   explanation     String?        @db.Text
@@ -479,6 +480,7 @@ model IPCSection {
 
   creator         ContentCreator @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 
+  @@index([sectionOrder])
   @@index([sectionNo])
   @@index([createdBy])
   @@index([createdAt])
@@ -487,6 +489,7 @@ model IPCSection {
 model BNSSection {
   id              String         @id @default(uuid())
   sectionNo       String         @unique
+  sectionOrder    Float          @default(0)
   heading         String
   paragraph       String         @db.Text
   explanation     String?        @db.Text
@@ -500,6 +503,7 @@ model BNSSection {
 
   creator         ContentCreator @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 
+  @@index([sectionOrder])
   @@index([sectionNo])
   @@index([createdBy])
   @@index([createdAt])

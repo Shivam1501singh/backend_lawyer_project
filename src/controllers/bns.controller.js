@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import * as bnsValidator from '../validators/bns.validator.js';
+import { calculateSectionOrder } from '../utils/sectionOrder.js';
 
 export const mapPublicBNSResponse = (section, includeContent = true) => {
   if (!section) return null;
@@ -51,6 +52,7 @@ export const createBNSSection = async (req, res, next) => {
     const created = await prisma.bNSSection.create({
       data: {
         sectionNo: validated.sectionNo,
+        sectionOrder: calculateSectionOrder(validated.sectionNo),
         heading: validated.heading,
         paragraph: validated.paragraph,
         explanation: validated.explanation,
@@ -122,7 +124,10 @@ export const editBNSSection = async (req, res, next) => {
     }
 
     const updateData = {};
-    if (validated.sectionNo !== undefined) updateData.sectionNo = validated.sectionNo;
+    if (validated.sectionNo !== undefined) {
+      updateData.sectionNo = validated.sectionNo;
+      updateData.sectionOrder = calculateSectionOrder(validated.sectionNo);
+    }
     if (validated.heading !== undefined) updateData.heading = validated.heading;
     if (validated.paragraph !== undefined) updateData.paragraph = validated.paragraph;
     if (validated.explanation !== undefined) updateData.explanation = validated.explanation;
@@ -194,7 +199,7 @@ export const getBNSSections = async (req, res, next) => {
       prisma.bNSSection.findMany({
         skip,
         take: limit,
-        orderBy: { sectionNo: 'asc' }
+        orderBy: { sectionOrder: 'asc' }
       }),
       prisma.bNSSection.count()
     ]);
@@ -239,7 +244,7 @@ export const searchBNSSections = async (req, res, next) => {
 
     const allMatches = await prisma.bNSSection.findMany({
       where,
-      orderBy: { sectionNo: 'asc' }
+      orderBy: { sectionOrder: 'asc' }
     });
 
     const lowerQ = trimmedQuery.toLowerCase();
@@ -264,7 +269,7 @@ export const searchBNSSections = async (req, res, next) => {
       const rankA = getRank(a);
       const rankB = getRank(b);
       if (rankA !== rankB) return rankA - rankB;
-      return 0;
+      return a.sectionOrder - b.sectionOrder;
     });
 
     const total = sortedMatches.length;

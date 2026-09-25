@@ -4,6 +4,8 @@ import { ipcSectionsData } from './ipcData.js';
 import { bnsSectionsData } from './bnsData.js';
 import { bnsBearerActSections } from './bnsBearerActData.js';
 import { bnssBearerActSections } from './bnssBearerActData.js';
+import { bsaBearerActSections } from './bsaBearerActData.js';
+import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
 
@@ -1671,6 +1673,7 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
       await prisma.iPCSection.create({
         data: {
           sectionNo: ipc.sectionNo,
+          sectionOrder: calculateSectionOrder(ipc.sectionNo),
           heading: ipc.heading,
           paragraph: ipc.paragraph,
           explanation: ipc.explanation,
@@ -1683,6 +1686,7 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
       await prisma.iPCSection.update({
         where: { sectionNo: ipc.sectionNo },
         data: {
+          sectionOrder: calculateSectionOrder(ipc.sectionNo),
           heading: ipc.heading,
           paragraph: ipc.paragraph,
           explanation: ipc.explanation,
@@ -1709,6 +1713,7 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
       await prisma.bNSSection.create({
         data: {
           sectionNo: bns.sectionNo,
+          sectionOrder: calculateSectionOrder(bns.sectionNo),
           heading: bns.heading,
           paragraph: bns.paragraph,
           explanation: bns.explanation,
@@ -1721,6 +1726,7 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
       await prisma.bNSSection.update({
         where: { sectionNo: bns.sectionNo },
         data: {
+          sectionOrder: calculateSectionOrder(bns.sectionNo),
           heading: bns.heading,
           paragraph: bns.paragraph,
           explanation: bns.explanation,
@@ -2256,6 +2262,115 @@ async function seedBearerActs() {
     }
 
     console.log(`BNSS Bearer Act Sections seeded: ${createdBnssSectionCount} created, ${updatedBnssSectionCount} updated across 39 chapters (Total: ${bnssBearerActSections.length}).`);
+
+    // Seed The Bharatiya Sakshya Adhiniyam, 2023 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding The Bharatiya Sakshya Adhiniyam, 2023 Act and Chapters/Sections under Criminal...');
+    let bsaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'The Bharatiya Sakshya Adhiniyam, 2023'
+      }
+    });
+
+    if (!bsaAct) {
+      bsaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'Bharatiya Sakshya Adhiniyam',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!bsaAct) {
+      bsaAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'The Bharatiya Sakshya Adhiniyam, 2023',
+          act: 'The Bharatiya Sakshya Adhiniyam, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act created: The Bharatiya Sakshya Adhiniyam, 2023');
+    } else {
+      bsaAct = await prisma.act.update({
+        where: { id: bsaAct.id },
+        data: {
+          heading: 'The Bharatiya Sakshya Adhiniyam, 2023',
+          act: 'The Bharatiya Sakshya Adhiniyam, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act synchronized: The Bharatiya Sakshya Adhiniyam, 2023');
+    }
+
+    const existingBsaSections = await prisma.actSection.findMany({
+      where: { actId: bsaAct.id }
+    });
+    const bsaSectionMap = new Map(existingBsaSections.map(s => [s.section, s]));
+
+    let createdBsaSectionCount = 0;
+    let updatedBsaSectionCount = 0;
+
+    const bsaToCreate = [];
+    const bsaToUpdate = [];
+
+    for (const item of bsaBearerActSections) {
+      const existing = bsaSectionMap.get(item.section);
+      if (!existing) {
+        bsaToCreate.push({
+          actId: bsaAct.id,
+          section: item.section,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        bsaToUpdate.push({
+          id: existing.id,
+          data: {
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (bsaToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: bsaToCreate
+      });
+      createdBsaSectionCount = bsaToCreate.length;
+    }
+
+    if (bsaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < bsaToUpdate.length; i += updateChunkSize) {
+        const chunk = bsaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedBsaSectionCount = bsaToUpdate.length;
+    }
+
+    console.log(`BSA Bearer Act Sections seeded: ${createdBsaSectionCount} created, ${updatedBsaSectionCount} updated across 12 chapters (Total: ${bsaBearerActSections.length}).`);
   }
 }
 

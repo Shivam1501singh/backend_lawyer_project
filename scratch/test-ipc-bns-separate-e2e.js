@@ -187,23 +187,35 @@ async function runE2ETests() {
     }
 
     // Test 7: Public IPC List & Single View (GET /api/ipc & GET /api/ipc/:ipcId)
-    console.log('\n[Test 7] Public user fetches IPC list...');
+    console.log('\n[Test 7] Public user fetches IPC list and single view...');
     const resListIPC = await clientPublic.get('/api/ipc?page=1&limit=15');
     console.log('Public IPC count:', resListIPC.data.pagination.total);
-    if (!resListIPC.data.success || !resListIPC.data.data.some(s => s.id === ipc302Id)) {
-      throw new Error('Test 7 Failed: IPC list did not return IPC 302');
+    if (!resListIPC.data.success || resListIPC.data.data.length !== 15 || resListIPC.data.data[0].sectionNo !== '1') {
+      throw new Error('Test 7 Failed: IPC list did not return first 15 sections in ascending order');
     }
+
+    const resSingleIPC = await clientPublic.get(`/api/ipc/${ipc302Id}`);
+    if (!resSingleIPC.data.success || resSingleIPC.data.data.sectionNo !== '302') {
+      throw new Error('Test 7 Failed: Single IPC section fetch failed');
+    }
+
     // Ensure BNS 302 is NOT in IPC list!
     if (resListIPC.data.data.some(s => s.id === bns302Id)) {
       throw new Error('Test 7 Failed: IPC list contained BNS section record!');
     }
 
-    console.log('\n[Test 7b] Public user fetches BNS list...');
+    console.log('\n[Test 7b] Public user fetches BNS list and single view...');
     const resListBNS = await clientPublic.get('/api/bns?page=1&limit=15');
     console.log('Public BNS count:', resListBNS.data.pagination.total);
-    if (!resListBNS.data.success || !resListBNS.data.data.some(s => s.id === bns302Id)) {
-      throw new Error('Test 7b Failed: BNS list did not return BNS 302');
+    if (!resListBNS.data.success || resListBNS.data.data.length !== 15 || resListBNS.data.data[0].sectionNo !== '1') {
+      throw new Error('Test 7b Failed: BNS list did not return first 15 sections in ascending order');
     }
+
+    const resSingleBNS = await clientPublic.get(`/api/bns/${bns302Id}`);
+    if (!resSingleBNS.data.success || resSingleBNS.data.data.sectionNo !== '302') {
+      throw new Error('Test 7b Failed: Single BNS section fetch failed');
+    }
+
     // Ensure IPC 302 is NOT in BNS list!
     if (resListBNS.data.data.some(s => s.id === ipc302Id)) {
       throw new Error('Test 7b Failed: BNS list contained IPC section record!');

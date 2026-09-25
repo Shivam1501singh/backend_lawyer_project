@@ -3717,6 +3717,7 @@ Authorization: Bearer <content_creator_jwt_token>
 ```http
 GET /api/ipc?page=1&limit=15
 ```
+*Note: IPC sections are always returned in ascending legal section order (1, 2, 3, ..., 9, 10, 11, 29, 29A, 30, ...).*
 
 #### Single IPC Section View
 ```http
@@ -3730,7 +3731,7 @@ GET /api/ipc/search?q=murder&page=1&limit=15
 ```http
 GET /api/ipc/search?q=302
 ```
-*Note: Searches exclusively within the `IPCSection` database table.*
+*Note: Searches exclusively within the `IPCSection` database table and maintains legal section ascending order.*
 
 ---
 
@@ -3740,6 +3741,7 @@ GET /api/ipc/search?q=302
 ```http
 GET /api/bns?page=1&limit=15
 ```
+*Note: BNS sections are always returned in ascending legal section order (1, 2, 3, ..., 9, 10, 11, 20, 100, ...).*
 
 #### Single BNS Section View
 ```http
@@ -3753,7 +3755,7 @@ GET /api/bns/search?q=murder&page=1&limit=15
 ```http
 GET /api/bns/search?q=103
 ```
-*Note: Searches exclusively within the `BNSSection` database table.*
+*Note: Searches exclusively within the `BNSSection` database table and maintains legal section ascending order.*
 
 ---
 

@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { ipcSectionsData } from './ipcData.js';
 import { bnsSectionsData } from './bnsData.js';
+import { bnsBearerActSections } from './bnsBearerActData.js';
+import { bnssBearerActSections } from './bnssBearerActData.js';
 
 const prisma = new PrismaClient();
 
@@ -1849,6 +1851,9 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
   // 6. Seed Advocate Team Members for All Existing Advocates
   //await seedAdvocateTeamMembers();
 
+  // 7. Seed Bearer Act Categories, Acts, and Sections (IPC + BNS)
+  await seedBearerActs();
+
   console.log('Database seeding successfully finished!');
 }
 
@@ -1948,7 +1953,9 @@ async function seedAdvocateTeamMembers() {
   console.log(`\nNew teammate relationships created: ${newRecordsToCreate.length}`);
   console.log(`Existing relationships skipped: ${totalSkipped}`);
   console.log('\nAdvocate team seed completed successfully.\n');
+}
 
+async function seedBearerActs() {
   // Idempotent Seeding of Predefined Bearer Act Categories
   console.log('Seeding Bearer Act categories...');
   const bearerActCategories = [
@@ -2031,6 +2038,224 @@ async function seedAdvocateTeamMembers() {
       });
       console.log('Sample ActSection seeded: Section 1');
     }
+
+    // Seed The Bharatiya Nyaya Sanhita, 2023 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding The Bharatiya Nyaya Sanhita, 2023 Act and Chapters/Sections under Criminal...');
+    let bnsAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'The Bharatiya Nyaya Sanhita, 2023'
+      }
+    });
+
+    if (!bnsAct) {
+      bnsAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'Bharatiya Nyaya Sanhita',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!bnsAct) {
+      bnsAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'The Bharatiya Nyaya Sanhita, 2023',
+          act: 'The Bharatiya Nyaya Sanhita, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act created: The Bharatiya Nyaya Sanhita, 2023');
+    } else {
+      bnsAct = await prisma.act.update({
+        where: { id: bnsAct.id },
+        data: {
+          heading: 'The Bharatiya Nyaya Sanhita, 2023',
+          act: 'The Bharatiya Nyaya Sanhita, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act synchronized: The Bharatiya Nyaya Sanhita, 2023');
+    }
+
+    const existingBnsSections = await prisma.actSection.findMany({
+      where: { actId: bnsAct.id }
+    });
+    const bnsSectionMap = new Map(existingBnsSections.map(s => [s.section, s]));
+
+    let createdBnsSectionCount = 0;
+    let updatedBnsSectionCount = 0;
+
+    const toCreate = [];
+    const toUpdate = [];
+
+    for (const item of bnsBearerActSections) {
+      const existing = bnsSectionMap.get(item.section);
+      if (!existing) {
+        toCreate.push({
+          actId: bnsAct.id,
+          section: item.section,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        toUpdate.push({
+          id: existing.id,
+          data: {
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (toCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: toCreate
+      });
+      createdBnsSectionCount = toCreate.length;
+    }
+
+    if (toUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < toUpdate.length; i += updateChunkSize) {
+        const chunk = toUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedBnsSectionCount = toUpdate.length;
+    }
+
+    console.log(`BNS Bearer Act Sections seeded: ${createdBnsSectionCount} created, ${updatedBnsSectionCount} updated across 20 chapters (Total: ${bnsBearerActSections.length}).`);
+
+    // Seed The Bharatiya Nagarik Suraksha Sanhita, 2023 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding The Bharatiya Nagarik Suraksha Sanhita, 2023 Act and Chapters/Sections under Criminal...');
+    let bnssAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'The Bharatiya Nagarik Suraksha Sanhita, 2023'
+      }
+    });
+
+    if (!bnssAct) {
+      bnssAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'Bharatiya Nagarik Suraksha Sanhita',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!bnssAct) {
+      bnssAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'The Bharatiya Nagarik Suraksha Sanhita, 2023',
+          act: 'The Bharatiya Nagarik Suraksha Sanhita, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act created: The Bharatiya Nagarik Suraksha Sanhita, 2023');
+    } else {
+      bnssAct = await prisma.act.update({
+        where: { id: bnssAct.id },
+        data: {
+          heading: 'The Bharatiya Nagarik Suraksha Sanhita, 2023',
+          act: 'The Bharatiya Nagarik Suraksha Sanhita, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act synchronized: The Bharatiya Nagarik Suraksha Sanhita, 2023');
+    }
+
+    const existingBnssSections = await prisma.actSection.findMany({
+      where: { actId: bnssAct.id }
+    });
+    const bnssSectionMap = new Map(existingBnssSections.map(s => [s.section, s]));
+
+    let createdBnssSectionCount = 0;
+    let updatedBnssSectionCount = 0;
+
+    const bnssToCreate = [];
+    const bnssToUpdate = [];
+
+    for (const item of bnssBearerActSections) {
+      const existing = bnssSectionMap.get(item.section);
+      if (!existing) {
+        bnssToCreate.push({
+          actId: bnssAct.id,
+          section: item.section,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        bnssToUpdate.push({
+          id: existing.id,
+          data: {
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (bnssToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: bnssToCreate
+      });
+      createdBnssSectionCount = bnssToCreate.length;
+    }
+
+    if (bnssToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < bnssToUpdate.length; i += updateChunkSize) {
+        const chunk = bnssToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedBnssSectionCount = bnssToUpdate.length;
+    }
+
+    console.log(`BNSS Bearer Act Sections seeded: ${createdBnssSectionCount} created, ${updatedBnssSectionCount} updated across 39 chapters (Total: ${bnssBearerActSections.length}).`);
   }
 }
 

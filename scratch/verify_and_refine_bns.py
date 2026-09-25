@@ -47,7 +47,7 @@ def refine_headings(headings_dict):
     return cleaned
 
 def run():
-    with open('/Users/admin/Desktop/lawyer_project/backend_lawyer_project/scratch/bns_cleaned.json') as f:
+    with open('/Users/admin/Desktop/lawyer_project/backend_lawyer_project/scratch/bns_extracted.json') as f:
         data = json.load(f)
 
     # Let's inspect and fix any known spillover headings in data

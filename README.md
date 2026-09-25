@@ -6417,6 +6417,10 @@ The module comes pre-seeded with 13 official legal categories:
 12. Intellectual Property Rights (IPR)
 13. Tech, Data & Cyber Laws
 
+Pre-seeded Acts:
+- **Bharatiya Nyaya Sanhita (BNS)**: Seeded under `Criminal → The Bharatiya Nyaya Sanhita, 2023` (Chapters I to XX, Sections 1 to 358) sourced directly from the official gazette PDF.
+- **Indian Penal Code (IPC)**: Seeded under `Criminal → Indian Penal Code`.
+
 ---
 
 ## 3. Content Creator Single Write API

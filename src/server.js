@@ -49,7 +49,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://vakeel-setu-seven.vercel.app/',
+    'https://vakeel-setu-seven.vercel.app',
     process.env.WEB_CLIENT_URL,
     process.env.CLIENT_URL
   ].filter(Boolean),

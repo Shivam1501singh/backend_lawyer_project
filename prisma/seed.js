@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { ipcSectionsData } from './ipcData.js';
 import { bnsSectionsData } from './bnsData.js';
+import { ipcBearerActSections } from './ipcBearerActData.js';
 import { bnsBearerActSections } from './bnsBearerActData.js';
 import { bnssBearerActSections } from './bnssBearerActData.js';
 import { bsaBearerActSections } from './bsaBearerActData.js';
@@ -1664,29 +1665,31 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
   let createdIPCCount = 0;
   let updatedIPCCount = 0;
 
+  const existingIpcStandalone = await prisma.iPCSection.findMany();
+  const ipcStandaloneMap = new Map(existingIpcStandalone.map(s => [s.sectionNo, s]));
+
+  const ipcStandToCreate = [];
+  const ipcStandToUpdate = [];
+
   for (const ipc of ipcSectionsData) {
-    const existing = await prisma.iPCSection.findUnique({
-      where: { sectionNo: ipc.sectionNo }
-    });
+    const existing = ipcStandaloneMap.get(ipc.sectionNo);
+    const sectionOrder = calculateSectionOrder(ipc.sectionNo);
 
     if (!existing) {
-      await prisma.iPCSection.create({
-        data: {
-          sectionNo: ipc.sectionNo,
-          sectionOrder: calculateSectionOrder(ipc.sectionNo),
-          heading: ipc.heading,
-          paragraph: ipc.paragraph,
-          explanation: ipc.explanation,
-          content: ipc.content,
-          createdBy: creator.id
-        }
+      ipcStandToCreate.push({
+        sectionNo: ipc.sectionNo,
+        sectionOrder,
+        heading: ipc.heading,
+        paragraph: ipc.paragraph,
+        explanation: ipc.explanation,
+        content: ipc.content,
+        createdBy: creator.id
       });
-      createdIPCCount++;
     } else {
-      await prisma.iPCSection.update({
-        where: { sectionNo: ipc.sectionNo },
+      ipcStandToUpdate.push({
+        id: existing.id,
         data: {
-          sectionOrder: calculateSectionOrder(ipc.sectionNo),
+          sectionOrder,
           heading: ipc.heading,
           paragraph: ipc.paragraph,
           explanation: ipc.explanation,
@@ -1694,9 +1697,32 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
           createdBy: creator.id
         }
       });
-      updatedIPCCount++;
     }
   }
+
+  if (ipcStandToCreate.length > 0) {
+    await prisma.iPCSection.createMany({
+      data: ipcStandToCreate
+    });
+    createdIPCCount = ipcStandToCreate.length;
+  }
+
+  if (ipcStandToUpdate.length > 0) {
+    const updateChunkSize = 25;
+    for (let i = 0; i < ipcStandToUpdate.length; i += updateChunkSize) {
+      const chunk = ipcStandToUpdate.slice(i, i + updateChunkSize);
+      await Promise.all(
+        chunk.map(u =>
+          prisma.iPCSection.update({
+            where: { id: u.id },
+            data: u.data
+          })
+        )
+      );
+    }
+    updatedIPCCount = ipcStandToUpdate.length;
+  }
+
   console.log(`IPC Sections seed finished: ${createdIPCCount} created, ${updatedIPCCount} updated.`);
 
   // Seed BNS Sections from Bharatiya Nyaya Sanhita PDF (Idempotent)
@@ -1704,29 +1730,31 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
   let createdBNSCount = 0;
   let updatedBNSCount = 0;
 
+  const existingBnsStandalone = await prisma.bNSSection.findMany();
+  const bnsStandaloneMap = new Map(existingBnsStandalone.map(s => [s.sectionNo, s]));
+
+  const bnsStandToCreate = [];
+  const bnsStandToUpdate = [];
+
   for (const bns of bnsSectionsData) {
-    const existing = await prisma.bNSSection.findUnique({
-      where: { sectionNo: bns.sectionNo }
-    });
+    const existing = bnsStandaloneMap.get(bns.sectionNo);
+    const sectionOrder = calculateSectionOrder(bns.sectionNo);
 
     if (!existing) {
-      await prisma.bNSSection.create({
-        data: {
-          sectionNo: bns.sectionNo,
-          sectionOrder: calculateSectionOrder(bns.sectionNo),
-          heading: bns.heading,
-          paragraph: bns.paragraph,
-          explanation: bns.explanation,
-          content: bns.content,
-          createdBy: creator.id
-        }
+      bnsStandToCreate.push({
+        sectionNo: bns.sectionNo,
+        sectionOrder,
+        heading: bns.heading,
+        paragraph: bns.paragraph,
+        explanation: bns.explanation,
+        content: bns.content,
+        createdBy: creator.id
       });
-      createdBNSCount++;
     } else {
-      await prisma.bNSSection.update({
-        where: { sectionNo: bns.sectionNo },
+      bnsStandToUpdate.push({
+        id: existing.id,
         data: {
-          sectionOrder: calculateSectionOrder(bns.sectionNo),
+          sectionOrder,
           heading: bns.heading,
           paragraph: bns.paragraph,
           explanation: bns.explanation,
@@ -1734,9 +1762,32 @@ Importantly, DILRMP 3.0 represents an administrative and technological modernisa
           createdBy: creator.id
         }
       });
-      updatedBNSCount++;
     }
   }
+
+  if (bnsStandToCreate.length > 0) {
+    await prisma.bNSSection.createMany({
+      data: bnsStandToCreate
+    });
+    createdBNSCount = bnsStandToCreate.length;
+  }
+
+  if (bnsStandToUpdate.length > 0) {
+    const updateChunkSize = 25;
+    for (let i = 0; i < bnsStandToUpdate.length; i += updateChunkSize) {
+      const chunk = bnsStandToUpdate.slice(i, i + updateChunkSize);
+      await Promise.all(
+        chunk.map(u =>
+          prisma.bNSSection.update({
+            where: { id: u.id },
+            data: u.data
+          })
+        )
+      );
+    }
+    updatedBNSCount = bnsStandToUpdate.length;
+  }
+
   console.log(`BNS Sections seed finished: ${createdBNSCount} created, ${updatedBNSCount} updated.`);
 
   // Seed Demo Advocates (Idempotent)
@@ -1996,54 +2047,122 @@ async function seedBearerActs() {
 
   console.log(`Bearer Act categories seeded. Created: ${newBearerActsCount}, Total checked: ${bearerActCategories.length}`);
 
-  // Seed 1 sample Act and Section under 'Criminal' category (Idempotent)
   const criminalBearerAct = await prisma.bearerAct.findUnique({
     where: { name: 'Criminal' }
   });
 
   if (criminalBearerAct) {
-    let sampleAct = await prisma.act.findFirst({
+    // Seed THE INDIAN PENAL CODE under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE INDIAN PENAL CODE Act and Chapters/Sections under Criminal...');
+    let ipcAct = await prisma.act.findFirst({
       where: {
         bearerActId: criminalBearerAct.id,
-        heading: 'Indian Penal Code'
+        heading: 'THE INDIAN PENAL CODE'
       }
     });
 
-    if (!sampleAct) {
-      sampleAct = await prisma.act.create({
+    if (!ipcAct) {
+      ipcAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'Indian Penal Code',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!ipcAct) {
+      ipcAct = await prisma.act.create({
         data: {
           bearerActId: criminalBearerAct.id,
-          heading: 'Indian Penal Code',
-          act: 'Indian Penal Code',
+          heading: 'THE INDIAN PENAL CODE',
+          act: 'THE INDIAN PENAL CODE',
           year: 1860
         }
       });
-      console.log('Sample Act seeded: Indian Penal Code');
-    }
-
-    const sampleSection = await prisma.actSection.findFirst({
-      where: {
-        actId: sampleAct.id,
-        section: 'Section 1'
-      }
-    });
-
-    if (!sampleSection) {
-      await prisma.actSection.create({
+      console.log('Act created: THE INDIAN PENAL CODE');
+    } else {
+      ipcAct = await prisma.act.update({
+        where: { id: ipcAct.id },
         data: {
-          actId: sampleAct.id,
-          section: 'Section 1',
-          chapterNo: 1,
-          chapterName: 'Introduction',
-          title: 'Title and extent of operation of the Code',
-          description: 'This Act shall be called the Indian Penal Code, and shall take effect throughout India.',
-          metaData: 'Chapter I Preliminary',
-          metaDescription: 'Indian Penal Code Section 1 title and jurisdiction details.',
-          metaTitle: 'Section 1 - Indian Penal Code'
+          heading: 'THE INDIAN PENAL CODE',
+          act: 'THE INDIAN PENAL CODE',
+          year: 1860
         }
       });
-      console.log('Sample ActSection seeded: Section 1');
+      console.log('Act synchronized: THE INDIAN PENAL CODE');
     }
+
+    const existingIpcActSections = await prisma.actSection.findMany({
+      where: { actId: ipcAct.id }
+    });
+    const ipcSectionMap = new Map(existingIpcActSections.map(s => [s.section, s]));
+
+    let createdIpcSectionCount = 0;
+    let updatedIpcSectionCount = 0;
+
+    const ipcToCreate = [];
+    const ipcToUpdate = [];
+
+    for (const item of ipcBearerActSections) {
+      const existing = ipcSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        ipcToCreate.push({
+          actId: ipcAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        ipcToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (ipcToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: ipcToCreate
+      });
+      createdIpcSectionCount = ipcToCreate.length;
+    }
+
+    if (ipcToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < ipcToUpdate.length; i += updateChunkSize) {
+        const chunk = ipcToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedIpcSectionCount = ipcToUpdate.length;
+    }
+
+    console.log(`IPC Bearer Act Sections seeded: ${createdIpcSectionCount} created, ${updatedIpcSectionCount} updated across 26 chapters (Total: ${ipcBearerActSections.length}).`);
 
     // Seed The Bharatiya Nyaya Sanhita, 2023 under Criminal BearerAct (Idempotent & Transaction-safe)
     console.log('Seeding The Bharatiya Nyaya Sanhita, 2023 Act and Chapters/Sections under Criminal...');
@@ -2101,10 +2220,12 @@ async function seedBearerActs() {
 
     for (const item of bnsBearerActSections) {
       const existing = bnsSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
       if (!existing) {
         toCreate.push({
           actId: bnsAct.id,
           section: item.section,
+          sectionOrder: sectionOrder,
           chapterNo: item.chapterNo,
           chapterName: item.chapterName,
           title: item.title,
@@ -2117,6 +2238,7 @@ async function seedBearerActs() {
         toUpdate.push({
           id: existing.id,
           data: {
+            sectionOrder: sectionOrder,
             chapterNo: item.chapterNo,
             chapterName: item.chapterName,
             title: item.title,
@@ -2210,10 +2332,12 @@ async function seedBearerActs() {
 
     for (const item of bnssBearerActSections) {
       const existing = bnssSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
       if (!existing) {
         bnssToCreate.push({
           actId: bnssAct.id,
           section: item.section,
+          sectionOrder: sectionOrder,
           chapterNo: item.chapterNo,
           chapterName: item.chapterName,
           title: item.title,
@@ -2226,6 +2350,7 @@ async function seedBearerActs() {
         bnssToUpdate.push({
           id: existing.id,
           data: {
+            sectionOrder: sectionOrder,
             chapterNo: item.chapterNo,
             chapterName: item.chapterName,
             title: item.title,
@@ -2319,10 +2444,12 @@ async function seedBearerActs() {
 
     for (const item of bsaBearerActSections) {
       const existing = bsaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
       if (!existing) {
         bsaToCreate.push({
           actId: bsaAct.id,
           section: item.section,
+          sectionOrder: sectionOrder,
           chapterNo: item.chapterNo,
           chapterName: item.chapterName,
           title: item.title,
@@ -2335,6 +2462,7 @@ async function seedBearerActs() {
         bsaToUpdate.push({
           id: existing.id,
           data: {
+            sectionOrder: sectionOrder,
             chapterNo: item.chapterNo,
             chapterName: item.chapterName,
             title: item.title,

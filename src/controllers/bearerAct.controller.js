@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import * as validator from '../validators/bearerAct.validator.js';
+import { calculateSectionOrder } from '../utils/sectionOrder.js';
 
 /**
  * Single Content Creator Write Endpoint
@@ -203,6 +204,7 @@ export const contentCreatorWriteHandler = async (req, res, next) => {
           data: {
             actId: validated.actId,
             section: validated.section,
+            sectionOrder: calculateSectionOrder(validated.section),
             chapterNo: validated.chapterNo,
             chapterName: validated.chapterName,
             title: validated.title,
@@ -249,7 +251,10 @@ export const contentCreatorWriteHandler = async (req, res, next) => {
 
         const updateData = {};
         if (validated.actId !== undefined) updateData.actId = validated.actId;
-        if (validated.section !== undefined) updateData.section = validated.section;
+        if (validated.section !== undefined) {
+          updateData.section = validated.section;
+          updateData.sectionOrder = calculateSectionOrder(validated.section);
+        }
         if (validated.chapterNo !== undefined) updateData.chapterNo = validated.chapterNo;
         if (validated.chapterName !== undefined) updateData.chapterName = validated.chapterName;
         if (validated.title !== undefined) updateData.title = validated.title;
@@ -413,7 +418,7 @@ export const getSingleAct = async (req, res, next) => {
         sections: {
           orderBy: [
             { chapterNo: 'asc' },
-            { section: 'asc' }
+            { sectionOrder: 'asc' }
           ]
         }
       }
@@ -464,7 +469,7 @@ export const getSectionsByAct = async (req, res, next) => {
         take: limit,
         orderBy: [
           { chapterNo: 'asc' },
-          { section: 'asc' }
+          { sectionOrder: 'asc' }
         ]
       }),
       prisma.actSection.count({
@@ -638,7 +643,7 @@ export const searchGlobalBearerActs = async (req, res, next) => {
         take,
         orderBy: [
           { chapterNo: 'asc' },
-          { section: 'asc' }
+          { sectionOrder: 'asc' }
         ],
         include: {
           act: {
@@ -743,7 +748,7 @@ export const searchActSections = async (req, res, next) => {
         take: limit,
         orderBy: [
           { chapterNo: 'asc' },
-          { section: 'asc' }
+          { sectionOrder: 'asc' }
         ]
       }),
       prisma.actSection.count({ where })

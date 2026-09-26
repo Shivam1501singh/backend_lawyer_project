@@ -12,6 +12,11 @@ import { poshBearerActSections } from './poshBearerActData.js';
 import { ndpsBearerActSections } from './ndpsBearerActData.js';
 import { uapaBearerActSections } from './uapaBearerActData.js';
 import { dowryBearerActSections } from './dowryBearerActData.js';
+import { armsBearerActSections } from './armsBearerActData.js';
+import { armsAmendmentBearerActSections } from './armsAmendmentBearerActData.js';
+import { corruptionBearerActSections } from './corruptionBearerActData.js';
+import { corruptionAmendmentBearerActSections } from './corruptionAmendmentBearerActData.js';
+import { crpcBearerActSections } from './crpcBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -3177,6 +3182,570 @@ async function seedBearerActs() {
     }
 
     console.log(`Dowry Prohibition Bearer Act Sections seeded: ${createdDowrySectionCount} created, ${updatedDowrySectionCount} updated (Total: ${dowryBearerActSections.length}).`);
+
+    // Seed THE ARMS ACT, 1959 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE ARMS ACT, 1959 Act and Sections under Criminal...');
+    let armsAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE ARMS ACT, 1959'
+      }
+    });
+
+    if (!armsAct) {
+      armsAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'ARMS ACT',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!armsAct) {
+      armsAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE ARMS ACT, 1959',
+          act: 'THE ARMS ACT, 1959',
+          year: 1959
+        }
+      });
+      console.log('Act created: THE ARMS ACT, 1959');
+    } else {
+      armsAct = await prisma.act.update({
+        where: { id: armsAct.id },
+        data: {
+          heading: 'THE ARMS ACT, 1959',
+          act: 'THE ARMS ACT, 1959',
+          year: 1959
+        }
+      });
+      console.log('Act synchronized: THE ARMS ACT, 1959');
+    }
+
+    const existingArmsSections = await prisma.actSection.findMany({
+      where: { actId: armsAct.id }
+    });
+    const armsSectionMap = new Map(existingArmsSections.map(s => [s.section, s]));
+
+    let createdArmsSectionCount = 0;
+    let updatedArmsSectionCount = 0;
+
+    const armsToCreate = [];
+    const armsToUpdate = [];
+
+    for (const item of armsBearerActSections) {
+      const existing = armsSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        armsToCreate.push({
+          actId: armsAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        armsToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (armsToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: armsToCreate
+      });
+      createdArmsSectionCount = armsToCreate.length;
+    }
+
+    if (armsToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < armsToUpdate.length; i += updateChunkSize) {
+        const chunk = armsToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedArmsSectionCount = armsToUpdate.length;
+    }
+
+    console.log(`Arms Act Bearer Act Sections seeded: ${createdArmsSectionCount} created, ${updatedArmsSectionCount} updated across 6 chapters (Total: ${armsBearerActSections.length}).`);
+
+    // Seed THE ARMS (AMENDMENT) ACT, 2019 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE ARMS (AMENDMENT) ACT, 2019 Act and Sections under Criminal...');
+    let armsAmendmentAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE ARMS (AMENDMENT) ACT, 2019'
+      }
+    });
+
+    if (!armsAmendmentAct) {
+      armsAmendmentAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'ARMS (AMENDMENT) ACT',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!armsAmendmentAct) {
+      armsAmendmentAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE ARMS (AMENDMENT) ACT, 2019',
+          act: 'THE ARMS (AMENDMENT) ACT, 2019',
+          year: 2019
+        }
+      });
+      console.log('Act created: THE ARMS (AMENDMENT) ACT, 2019');
+    } else {
+      armsAmendmentAct = await prisma.act.update({
+        where: { id: armsAmendmentAct.id },
+        data: {
+          heading: 'THE ARMS (AMENDMENT) ACT, 2019',
+          act: 'THE ARMS (AMENDMENT) ACT, 2019',
+          year: 2019
+        }
+      });
+      console.log('Act synchronized: THE ARMS (AMENDMENT) ACT, 2019');
+    }
+
+    const existingArmsAmendmentSections = await prisma.actSection.findMany({
+      where: { actId: armsAmendmentAct.id }
+    });
+    const armsAmendmentSectionMap = new Map(existingArmsAmendmentSections.map(s => [s.section, s]));
+
+    let createdArmsAmendmentSectionCount = 0;
+    let updatedArmsAmendmentSectionCount = 0;
+
+    const armsAmendmentToCreate = [];
+    const armsAmendmentToUpdate = [];
+
+    for (const item of armsAmendmentBearerActSections) {
+      const existing = armsAmendmentSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        armsAmendmentToCreate.push({
+          actId: armsAmendmentAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        armsAmendmentToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (armsAmendmentToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: armsAmendmentToCreate
+      });
+      createdArmsAmendmentSectionCount = armsAmendmentToCreate.length;
+    }
+
+    if (armsAmendmentToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < armsAmendmentToUpdate.length; i += updateChunkSize) {
+        const chunk = armsAmendmentToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedArmsAmendmentSectionCount = armsAmendmentToUpdate.length;
+    }
+
+    console.log(`Arms Amendment Act Bearer Act Sections seeded: ${createdArmsAmendmentSectionCount} created, ${updatedArmsAmendmentSectionCount} updated (Total: ${armsAmendmentBearerActSections.length}).`);
+
+    // Seed THE PREVENTION OF CORRUPTION ACT, 1988 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE PREVENTION OF CORRUPTION ACT, 1988 Act and Sections under Criminal...');
+    let corruptionAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE PREVENTION OF CORRUPTION ACT, 1988'
+      }
+    });
+
+    if (!corruptionAct) {
+      corruptionAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'PREVENTION OF CORRUPTION ACT, 1988',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!corruptionAct) {
+      corruptionAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE PREVENTION OF CORRUPTION ACT, 1988',
+          act: 'THE PREVENTION OF CORRUPTION ACT, 1988',
+          year: 1988
+        }
+      });
+      console.log('Act created: THE PREVENTION OF CORRUPTION ACT, 1988');
+    } else {
+      corruptionAct = await prisma.act.update({
+        where: { id: corruptionAct.id },
+        data: {
+          heading: 'THE PREVENTION OF CORRUPTION ACT, 1988',
+          act: 'THE PREVENTION OF CORRUPTION ACT, 1988',
+          year: 1988
+        }
+      });
+      console.log('Act synchronized: THE PREVENTION OF CORRUPTION ACT, 1988');
+    }
+
+    const existingCorruptionSections = await prisma.actSection.findMany({
+      where: { actId: corruptionAct.id }
+    });
+    const corruptionSectionMap = new Map(existingCorruptionSections.map(s => [s.section, s]));
+
+    let createdCorruptionSectionCount = 0;
+    let updatedCorruptionSectionCount = 0;
+
+    const corruptionToCreate = [];
+    const corruptionToUpdate = [];
+
+    for (const item of corruptionBearerActSections) {
+      const existing = corruptionSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        corruptionToCreate.push({
+          actId: corruptionAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        corruptionToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (corruptionToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: corruptionToCreate
+      });
+      createdCorruptionSectionCount = corruptionToCreate.length;
+    }
+
+    if (corruptionToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < corruptionToUpdate.length; i += updateChunkSize) {
+        const chunk = corruptionToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedCorruptionSectionCount = corruptionToUpdate.length;
+    }
+
+    console.log(`Corruption Act Bearer Act Sections seeded: ${createdCorruptionSectionCount} created, ${updatedCorruptionSectionCount} updated across 6 chapters (Total: ${corruptionBearerActSections.length}).`);
+
+    // Seed THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018 Act and Sections under Criminal...');
+    let corruptionAmendmentAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018'
+      }
+    });
+
+    if (!corruptionAmendmentAct) {
+      corruptionAmendmentAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'PREVENTION OF CORRUPTION (AMENDMENT) ACT',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!corruptionAmendmentAct) {
+      corruptionAmendmentAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018',
+          act: 'THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018',
+          year: 2018
+        }
+      });
+      console.log('Act created: THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018');
+    } else {
+      corruptionAmendmentAct = await prisma.act.update({
+        where: { id: corruptionAmendmentAct.id },
+        data: {
+          heading: 'THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018',
+          act: 'THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018',
+          year: 2018
+        }
+      });
+      console.log('Act synchronized: THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018');
+    }
+
+    const existingCorruptionAmendmentSections = await prisma.actSection.findMany({
+      where: { actId: corruptionAmendmentAct.id }
+    });
+    const corruptionAmendmentSectionMap = new Map(existingCorruptionAmendmentSections.map(s => [s.section, s]));
+
+    let createdCorruptionAmendmentSectionCount = 0;
+    let updatedCorruptionAmendmentSectionCount = 0;
+
+    const corruptionAmendmentToCreate = [];
+    const corruptionAmendmentToUpdate = [];
+
+    for (const item of corruptionAmendmentBearerActSections) {
+      const existing = corruptionAmendmentSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        corruptionAmendmentToCreate.push({
+          actId: corruptionAmendmentAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        corruptionAmendmentToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (corruptionAmendmentToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: corruptionAmendmentToCreate
+      });
+      createdCorruptionAmendmentSectionCount = corruptionAmendmentToCreate.length;
+    }
+
+    if (corruptionAmendmentToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < corruptionAmendmentToUpdate.length; i += updateChunkSize) {
+        const chunk = corruptionAmendmentToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedCorruptionAmendmentSectionCount = corruptionAmendmentToUpdate.length;
+    }
+
+    console.log(`Corruption Amendment Act Bearer Act Sections seeded: ${createdCorruptionAmendmentSectionCount} created, ${updatedCorruptionAmendmentSectionCount} updated (Total: ${corruptionAmendmentBearerActSections.length}).`);
+
+    // Seed THE CODE OF CRIMINAL PROCEDURE, 1973 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE CODE OF CRIMINAL PROCEDURE, 1973 Act and Sections under Criminal...');
+    let crpcAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE CODE OF CRIMINAL PROCEDURE, 1973'
+      }
+    });
+
+    if (!crpcAct) {
+      crpcAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'CODE OF CRIMINAL PROCEDURE, 1973',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!crpcAct) {
+      crpcAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE CODE OF CRIMINAL PROCEDURE, 1973',
+          act: 'THE CODE OF CRIMINAL PROCEDURE, 1973',
+          year: 1973
+        }
+      });
+      console.log('Act created: THE CODE OF CRIMINAL PROCEDURE, 1973');
+    } else {
+      crpcAct = await prisma.act.update({
+        where: { id: crpcAct.id },
+        data: {
+          heading: 'THE CODE OF CRIMINAL PROCEDURE, 1973',
+          act: 'THE CODE OF CRIMINAL PROCEDURE, 1973',
+          year: 1973
+        }
+      });
+      console.log('Act synchronized: THE CODE OF CRIMINAL PROCEDURE, 1973');
+    }
+
+    const existingCrpcSections = await prisma.actSection.findMany({
+      where: { actId: crpcAct.id }
+    });
+    const crpcSectionMap = new Map(existingCrpcSections.map(s => [s.section, s]));
+
+    let createdCrpcSectionCount = 0;
+    let updatedCrpcSectionCount = 0;
+
+    const crpcToCreate = [];
+    const crpcToUpdate = [];
+
+    for (const item of crpcBearerActSections) {
+      const existing = crpcSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        crpcToCreate.push({
+          actId: crpcAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        crpcToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (crpcToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < crpcToCreate.length; i += insertChunkSize) {
+        const chunk = crpcToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdCrpcSectionCount = crpcToCreate.length;
+    }
+
+    if (crpcToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < crpcToUpdate.length; i += updateChunkSize) {
+        const chunk = crpcToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedCrpcSectionCount = crpcToUpdate.length;
+    }
+
+    console.log(`CrPC Bearer Act Sections seeded: ${createdCrpcSectionCount} created, ${updatedCrpcSectionCount} updated across 39 chapters (Total: ${crpcBearerActSections.length}).`);
   }
 }
 

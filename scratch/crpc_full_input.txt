@@ -1,0 +1,910 @@
+<USER_REQUEST>
+# Antigravity Prompt — Add THE CODE OF CRIMINAL PROCEDURE, 1973
+
+You are working on the existing Advocate/Lawyer project backend.
+
+I need to add the following Act inside the **existing BearerAct → Criminal** category:
+
+**THE CODE OF CRIMINAL PROCEDURE, 1973**
+
+The attached PDF contains the complete chapter and section structure for this Act.
+
+**Use the attached PDF as the sole source of truth for all legal content.**
+
+Do not invent, rewrite, summarize, supplement, or assume any legal content from your own knowledge.
+
+---
+
+# 1. Inspect the Existing Implementation First
+
+Before making any changes, inspect the current implementation thoroughly.
+
+Check:
+
+* Existing Prisma schema.
+* Existing `BearerAct` model.
+* Existing `Act` model.
+* Existing `ActSection` model.
+* Existing `Criminal` BearerAct record.
+* Existing Act seed files.
+* Existing ActSection seed implementation.
+* Existing chapter/section ordering implementation.
+* Existing generic legal-content APIs.
+* Existing legal-content search APIs.
+* Existing Zod validation.
+* Existing authentication and Content Creator authorization.
+* Existing database migration conventions.
+* Existing README.
+* Existing Postman/API documentation.
+
+**Do not redesign the existing architecture.**
+
+Use the already implemented generic hierarchy:
+
+```text
+BearerAct
+    ↓
+Act
+    ↓
+ActSection
+```
+
+Do not create a separate model specifically for the Code of Criminal Procedure.
+
+---
+
+# 2. Existing BearerAct — Criminal
+
+There is already an existing BearerAct row:
+
+```text
+Criminal
+```
+
+Reuse this existing BearerAct.
+
+**Do NOT create another `Criminal` BearerAct.**
+
+First find the existing Criminal record using the project's existing lookup/unique strategy.
+
+The required relationship is:
+
+```text
+Criminal
+    └── THE CODE OF CRIMINAL PROCEDURE, 1973
+```
+
+---
+
+# 3. Create the Act
+
+Add the following Act under the existing `Criminal` BearerAct:
+
+```text
+THE CODE OF CRIMINAL PROCEDURE, 1973
+```
+
+Use the existing generic `Act` model.
+
+Populate the existing Act fields according to the current schema and the attached PDF.
+
+If the existing schema contains fields such as:
+
+```text
+heading
+act
+year
+bearerActId
+```
+
+use the existing project convention for those fields.
+
+Do NOT create models such as:
+
+```text
+CodeOfCriminalProcedure
+CrPCSection
+CrPCChapter
+CriminalProcedureSection
+```
+
+The Act must use the existing generic:
+
+```text
+BearerAct → Act → ActSection
+```
+
+architecture.
+
+---
+
+# 4. Attached PDF Is the Sole Source of Truth
+
+The attached PDF is the **only authoritative source** for the legal content of this Act.
+
+Read the PDF carefully and use it to populate the database.
+
+Extract, where present:
+
+* Act information
+* Chapter numbers
+* Chapter names
+* Section numbers
+* Section titles
+* Section descriptions/content
+* Metadata
+* Meta title
+* Meta description
+* Any other fields supported by the existing `ActSection` schema
+
+### Critical Rule
+
+Do NOT:
+
+* Invent legal content.
+* Generate missing sections from your own knowledge.
+* Use external websites to supplement the PDF.
+* Rewrite legal provisions.
+* Modernize the wording.
+* Summarize legal provisions.
+* Add sections not present in the PDF.
+* Remove sections present in the PDF.
+* Invent chapter numbers.
+* Invent chapter names.
+* Invent section numbers.
+* Invent section titles.
+
+If a field exists in the database but the PDF does not provide a value, follow the existing project's nullable/default convention.
+
+---
+
+# 5. Important: Preserve the Exact PDF Structure
+
+The Code of Criminal Procedure contains a structured hierarchy of chapters and sections.
+
+Do not assume the structure from another source.
+
+Use the attached PDF to determine exactly:
+
+```text
+Chapter Number
+Chapter Name
+Section Number
+Section Title
+Section Content
+```
+
+For every section, preserve its relationship with the appropriate chapter.
+
+The expected structure is:
+
+```text
+Criminal
+└── THE CODE OF CRIMINAL PROCEDURE, 1973
+    ├── Chapter ...
+    │   ├── Section ...
+    │   ├── Section ...
+    │   └── ...
+    │
+    ├── Chapter ...
+    │   ├── Section ...
+    │   └── ...
+    │
+    └── Remaining chapters
+        └── Sections
+```
+
+The exact chapter and section structure must come from the attached PDF.
+
+---
+
+# 6. Chapter Handling
+
+Use the existing `ActSection` fields:
+
+```text
+chapterNo
+chapterName
+```
+
+to represent chapter information.
+
+Do NOT create a separate Chapter model unless the current project already has one and its existing architecture requires it.
+
+Every section must contain the correct:
+
+```text
+chapterNo
+chapterName
+```
+
+from the PDF.
+
+If a section is outside a numbered chapter or the PDF uses a special structural convention, follow the PDF and the existing schema's convention rather than inventing one.
+
+---
+
+# 7. Section Data
+
+For every section contained in the PDF, create an `ActSection` linked to:
+
+```text
+actId = THE CODE OF CRIMINAL PROCEDURE, 1973
+```
+
+Populate the existing fields, where applicable:
+
+```text
+section
+chapterNo
+chapterName
+title
+description
+metaData
+metaDescription
+metaTitle
+```
+
+Only use fields that already exist in the current schema.
+
+### Important
+
+The section data must come from the PDF.
+
+Do not generate descriptions or metadata from your own knowledge if the PDF does not contain them.
+
+Follow the existing project's handling of optional fields.
+
+---
+
+# 8. Preserve Section Numbers Exactly
+
+Do not alter the section numbering found in the PDF.
+
+If the PDF contains sections such as:
+
+```text
+1
+2
+3
+...
+10
+11
+...
+```
+
+store them according to the existing schema without changing their legal numbering.
+
+If the PDF contains subsection references or other legal numbering, preserve them as part of the appropriate existing content field rather than creating an artificial numbering system.
+
+Do not:
+
+* Renumber sections.
+* Merge sections.
+* Split sections.
+* Skip sections.
+* Add sections from another version of the Code.
+
+---
+
+# 9. Section Ordering
+
+Use the existing section-ordering implementation already present in the project.
+
+Sections must be returned in proper numeric order.
+
+For example:
+
+```text
+1
+2
+3
+4
+5
+...
+9
+10
+11
+12
+```
+
+NOT:
+
+```text
+1
+10
+11
+12
+2
+3
+```
+
+Inspect the existing ordering implementation used for the existing IPC/BNS and generic `ActSection` data.
+
+Reuse that implementation.
+
+Do not create another special ordering system for this Act.
+
+---
+
+# 10. Idempotent Seeding
+
+The seed must be fully idempotent.
+
+Running:
+
+```bash
+npx prisma db seed
+```
+
+multiple times must not create duplicate data.
+
+### BearerAct
+
+Find and reuse:
+
+```text
+Criminal
+```
+
+Never create another Criminal BearerAct.
+
+### Act
+
+Before creating:
+
+```text
+THE CODE OF CRIMINAL PROCEDURE, 1973
+```
+
+check whether it already exists under Criminal.
+
+If it exists:
+
+* Reuse the existing Act.
+* Do not create another copy.
+
+### Sections
+
+Check existing sections before inserting.
+
+Only create missing sections.
+
+Follow the project's existing seed/upsert conventions.
+
+---
+
+# 11. Preserve Existing Acts
+
+Do NOT modify or delete existing Acts under Criminal.
+
+In particular, preserve existing Acts such as:
+
+```text
+THE INDIAN PENAL CODE
+THE INDIAN EVIDENCE ACT, 1872
+THE PREVENTION OF MONEY-LAUNDERING ACT, 2002
+THE PREVENTION OF CORRUPTION ACT, 1988
+THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018
+THE ARMS ACT, 1959
+THE ARMS (AMENDMENT) ACT, 2019
+```
+
+and all other existing legal data.
+
+The Code of Criminal Procedure must be a separate `Act` record.
+
+Do not merge it with any existing Act.
+
+---
+
+# 12. Important: Do Not Confuse This With Existing IPC/BNS Data
+
+The project already contains separate existing datasets:
+
+```text
+IPCSection
+BNSSection
+```
+
+These are independent from the generic:
+
+```text
+ActSection
+```
+
+model.
+
+Do NOT:
+
+* Modify `IPCSection`.
+* Modify `BNSSection`.
+* Copy IPC sections into this Act.
+* Copy BNS sections into this Act.
+* Merge IPC/BNS with ActSection.
+* Link IPCSection to this Act.
+* Link BNSSection to this Act.
+* Change existing IPC APIs.
+* Change existing BNS APIs.
+
+The new Code of Criminal Procedure must exist only within:
+
+```text
+BearerAct
+    ↓
+Act
+    ↓
+ActSection
+```
+
+---
+
+# 13. Generic APIs
+
+Do NOT create CrPC-specific APIs.
+
+The new Act must work automatically through the existing generic APIs.
+
+Verify:
+
+```http
+GET /api/bearer-acts
+GET /api/bearer-acts/:id
+GET /api/bearer-acts/:id/acts
+GET /api/acts/:id
+GET /api/acts/:id/sections
+GET /api/sections/:id
+```
+
+The expected hierarchy should be retrievable as:
+
+```text
+Criminal
+    ↓
+THE CODE OF CRIMINAL PROCEDURE, 1973
+    ↓
+Chapters
+    ↓
+Sections
+```
+
+Use the existing response format.
+
+---
+
+# 14. Generic Search Compatibility
+
+The existing generic legal search must automatically support this Act.
+
+Test:
+
+```http
+GET /api/bearer-acts/search?q=criminal
+```
+
+and relevant searches such as:
+
+```text
+Code of Criminal Procedure
+1973
+chapter name
+section number
+section title
+```
+
+Use the existing generic search implementation.
+
+Do NOT create:
+
+```http
+GET /api/crpc/search
+```
+
+or any CrPC-specific search endpoint.
+
+---
+
+# 15. Act-Specific Section Search
+
+If the existing generic project already supports:
+
+```http
+GET /api/acts/:actId/search?q=<query>
+```
+
+verify that the new Code of Criminal Procedure works with it.
+
+The search must only return sections belonging to this Act.
+
+Do not create a separate CrPC search implementation.
+
+---
+
+# 16. Content Creator Compatibility
+
+The existing Content Creator role must continue to work with this generic legal-content module.
+
+Use the existing:
+
+* Authentication
+* Role authorization
+* Zod validation
+* Generic legal-content APIs
+
+Do not create a separate Content Creator API for the Code of Criminal Procedure.
+
+Do not modify unrelated Content Creator functionality.
+
+---
+
+# 17. Validation
+
+Use the existing Zod validation architecture.
+
+Validate:
+
+* Criminal BearerAct exists.
+* Act exists when reusing/updating.
+* Section belongs to the correct Act.
+* Required fields follow the existing schema.
+* IDs are valid.
+* Chapter/section values follow existing conventions.
+
+Do not introduce a new validation framework.
+
+---
+
+# 18. Transaction Safety
+
+Use the existing Prisma transaction conventions.
+
+Where appropriate, create/reconcile:
+
+```text
+Act
++
+ActSections
+```
+
+inside a transaction.
+
+If seeding fails, avoid leaving a partially inserted Act/section dataset.
+
+Do not modify unrelated data if an error occurs.
+
+---
+
+# 19. Database Migration Safety
+
+First determine whether a schema change is actually required.
+
+### If no schema change is required
+
+Do NOT create a migration.
+
+Only add the new seed data using the existing schema.
+
+### If a schema change is genuinely required
+
+Create a new Prisma migration.
+
+Do NOT:
+
+* Edit an already-applied historical migration.
+* Drop existing tables.
+* Delete existing legal data.
+* Reset the database.
+* Change unrelated schema structures.
+
+After schema changes, follow the project's normal Prisma workflow, including:
+
+```bash
+npx prisma generate
+```
+
+and the appropriate migration command.
+
+---
+
+# 20. Database Verification
+
+After seeding, verify:
+
+```text
+Criminal
+└── THE CODE OF CRIMINAL PROCEDURE, 1973
+    ├── Chapter ...
+    │   ├── Section ...
+    │   ├── Section ...
+    │   └── ...
+    │
+    ├── Chapter ...
+    │   ├── Section ...
+    │   └── ...
+    │
+    └── All remaining chapters and sections
+        exactly according to the attached PDF
+```
+
+Verify:
+
+* Correct Act exists.
+* Correct BearerAct relationship exists.
+* Correct chapters exist.
+* Correct sections exist.
+* Correct chapter numbers exist.
+* Correct chapter names exist.
+* Correct section numbers exist.
+* Correct section titles exist.
+* Correct content/descriptions exist according to the PDF.
+* No duplicate records exist.
+
+---
+
+# 21. API Testing
+
+First retrieve Acts under Criminal:
+
+```http
+GET /api/bearer-acts/:criminalId/acts
+```
+
+Confirm:
+
+```text
+THE CODE OF CRIMINAL PROCEDURE, 1973
+```
+
+is returned.
+
+Then retrieve sections:
+
+```http
+GET /api/acts/:actId/sections
+```
+
+Confirm:
+
+* All required PDF sections are returned.
+* Correct chapter information is returned.
+* Sections are in numeric order.
+* No duplicate sections are returned.
+
+Test an individual section:
+
+```http
+GET /api/sections/:sectionId
+```
+
+Confirm it belongs to:
+
+```text
+THE CODE OF CRIMINAL PROCEDURE, 1973
+```
+
+---
+
+# 22. Search Testing
+
+Test the global search:
+
+```http
+GET /api/bearer-acts/search?q=criminal
+```
+
+Confirm the Code of Criminal Procedure can be found.
+
+Also test:
+
+```text
+Code of Criminal Procedure
+1973
+chapter name
+section number
+section title
+```
+
+If the existing Act-specific search exists, test:
+
+```http
+GET /api/acts/:actId/search?q=<query>
+```
+
+Confirm only sections belonging to this Act are returned.
+
+---
+
+# 23. Seed Re-run Testing
+
+Run:
+
+```bash
+npx prisma db seed
+```
+
+multiple times.
+
+Confirm:
+
+```text
+No duplicate Criminal BearerAct
+No duplicate THE CODE OF CRIMINAL PROCEDURE, 1973
+No duplicate ActSections
+No existing Act deleted
+No existing legal data modified unexpectedly
+```
+
+---
+
+# 24. README / Postman Documentation
+
+Update the existing README/Postman documentation where required.
+
+Document the new hierarchy:
+
+```text
+Criminal
+└── THE CODE OF CRIMINAL PROCEDURE, 1973
+    └── Chapters
+        └── Sections
+```
+
+Use the existing generic APIs.
+
+Do NOT create new APIs only for documentation.
+
+---
+
+# 25. Final Verification Checklist
+
+Before completing the implementation, verify:
+
+* [ ] Existing `Criminal` BearerAct is reused.
+* [ ] `THE CODE OF CRIMINAL PROCEDURE, 1973` is added under Criminal.
+* [ ] Attached PDF is the sole source of truth.
+* [ ] All chapters in the PDF are included.
+* [ ] All sections in the PDF are included.
+* [ ] Chapter numbers match the PDF.
+* [ ] Chapter names match the PDF.
+* [ ] Section numbers match the PDF.
+* [ ] Section titles match the PDF.
+* [ ] Section content/descriptions match the PDF.
+* [ ] Existing `ActSection` schema is used.
+* [ ] Numeric section ordering works correctly.
+* [ ] Seed is idempotent.
+* [ ] Duplicate Act creation is prevented.
+* [ ] Duplicate section creation is prevented.
+* [ ] Existing Criminal data is preserved.
+* [ ] Existing Acts are preserved.
+* [ ] Existing ActSections are preserved.
+* [ ] `IPCSection` is untouched.
+* [ ] `BNSSection` is untouched.
+* [ ] Generic BearerAct APIs work.
+* [ ] Generic Act APIs work.
+* [ ] Generic ActSection APIs work.
+* [ ] Generic legal search works.
+* [ ] Act-specific generic search works if already implemented.
+* [ ] Content Creator functionality remains intact.
+* [ ] No CrPC-specific Prisma model was created.
+* [ ] No CrPC-specific API was created.
+* [ ] No destructive migration was introduced.
+* [ ] No unrelated functionality was changed.
+
+---
+
+# 26. Critical Do-Not-Do Rules
+
+**DO NOT:**
+
+1. Create another `Criminal` BearerAct.
+2. Create a `CrPC`-specific Prisma model.
+3. Create a separate Chapter model only for this Act.
+4. Create a CrPC-specific API.
+5. Create a CrPC-specific search API.
+6. Invent legal content.
+7. Use external sources instead of the attached PDF.
+8. Add sections not present in the PDF.
+9. Remove sections present in the PDF.
+10. Renumber sections.
+11. Merge sections.
+12. Copy IPC data into this Act.
+13. Copy BNS data into this Act.
+14. Modify existing `IPCSection`.
+15. Modify existing `BNSSection`.
+16. Delete existing legal data.
+17. Reset or truncate the database.
+18. Modify already-applied historical migrations.
+19. Break existing generic legal APIs.
+20. Break existing legal search.
+21. Change unrelated project functionality.
+
+---
+
+# 27. Expected Final Structure
+
+The final database hierarchy should look like:
+
+```text
+BearerAct
+│
+├── Criminal
+│   │
+│   ├── THE INDIAN PENAL CODE
+│   │   └── Existing Chapters / Sections
+│   │
+│   ├── THE INDIAN EVIDENCE ACT, 1872
+│   │   └── Existing Chapters / Sections
+│   │
+│   ├── THE PREVENTION OF CORRUPTION ACT, 1988
+│   │   └── Existing Chapters / Sections
+│   │
+│   ├── THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018
+│   │   └── Existing Chapters / Sections
+│   │
+│   ├── THE ARMS ACT, 1959
+│   │   └── Existing Chapters / Sections
+│   │
+│   ├── THE ARMS (AMENDMENT) ACT, 2019
+│   │   └── Existing Chapters / Sections
+│   │
+│   └── THE CODE OF CRIMINAL PROCEDURE, 1973
+│       │
+│       ├── Chapter ...
+│       │   ├── Section ...
+│       │   ├── Section ...
+│       │   └── ...
+│       │
+│       ├── Chapter ...
+│       │   ├── Section ...
+│       │   └── ...
+│       │
+│       └── All remaining chapters and sections
+│           exactly according to the attached PDF
+│
+└── Other BearerActs
+```
+
+Keep **THE CODE OF CRIMINAL PROCEDURE, 1973** as a completely separate `Act` record.
+
+Do not merge its sections with IPC, BNS, or any other existing Act.
+
+---
+
+# 28. Final Implementation Report
+
+After completing the implementation, provide a concise report containing:
+
+1. Existing Criminal BearerAct ID used.
+2. New Act ID for `THE CODE OF CRIMINAL PROCEDURE, 1973`.
+3. Number of chapters added.
+4. Number of sections added.
+5. Number of existing records reused.
+6. Number of new records created.
+7. Confirmation that the seed is idempotent.
+8. APIs tested.
+9. Search tests performed.
+10. Confirmation that IPCSection was not modified.
+11. Confirmation that BNSSection was not modified.
+12. Confirmation that other existing Criminal Acts were preserved.
+13. Migration details, if a migration was required.
+14. Any issues encountered while reading or mapping the attached PDF.
+
+**Most important:** inspect the existing implementation first, reuse the existing `BearerAct → Act → ActSection` architecture, use the attached PDF as the sole source of truth, preserve the exact chapter/section structure from the PDF, preserve all existing data, and do not redesign or break any unrelated functionality.
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-26T15:48:45+05:30.
+
+The user's current state is as follows:
+Active Document: /Users/admin/Desktop/lawyer_project/backend_lawyer_project/src/server.js (LANGUAGE_JAVASCRIPT)
+Cursor is on line: 55
+Other open documents:
+- /Users/admin/Desktop/lawyer_project/backend_lawyer_project/src/server.js (LANGUAGE_JAVASCRIPT)
+- /Users/admin/Desktop/lawyer_project/backend_lawyer_project/README.md (LANGUAGE_MARKDOWN)
+- /Users/admin/Desktop/lawyer_project/backend_lawyer_project/scratch/generate_evidence_data.py (LANGUAGE_PYTHON)
+- /Users/admin/Desktop/lawyer_project/backend_lawyer_project/scratch/parse_evidence_act.py (LANGUAGE_PYTHON)
+- /Users/admin/Desktop/lawyer_project/backend_lawyer_project/scratch/test_arms_amendment.js (LANGUAGE_JAVASCRIPT)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from None to Gemini 3.7 Flash (Medium). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

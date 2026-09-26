@@ -1,0 +1,611 @@
+import json
+import os
+
+sections_data = [
+    # CHAPTER I: PRELIMINARY
+    {
+        "section": "Section 1",
+        "sectionNo": "1",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Short title, extent and commencement",
+        "description": "(1) This Act may be called the Arms Act, 1959.\n(2) It extends to the whole of India.\n(3) It shall come into force on such date as the Central Government may, by notification in the Official Gazette, appoint.",
+        "metaData": "Chapter I PRELIMINARY",
+        "metaDescription": "THE ARMS ACT, 1959 Section 1 - Short title, extent and commencement",
+        "metaTitle": "Section 1 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 2",
+        "sectionNo": "2",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Definitions and interpretation",
+        "description": "(1) In this Act, unless the context otherwise requires,―\n(a) “acquisition”, with its grammatical variations and cognate expressions, includes hiring, borrowing, or accepting as a gift;\n(b) “ammunition” means ammunition for any firearm, and includes—\n(i) rockets, bombs, grenades, shells [and other missiles,]\n(ii) articles designed for torpedo service and submarine mining,\n(iii) other articles containing, or designed or adapted to contain, explosive, fulminating or fissionable material or noxious liquid, gas or other such thing, whether capable of use with firearms or not,\n(iv) charges for firearms and accessories for such charges,\n(v) fuses and friction tubes,\n(vi) parts of, and machinery for manufacturing, ammunition, and\n(vii) such ingredients of ammunition as the Central Government may, by notification in the Official Gazette, specify in this behalf;\n(c) “arms” means articles of any description designed or adapted as weapons for offence or defence, and includes firearms, sharpedged and other deadly weapons, and parts of, and machinery for manufacturing, arms, but does not include articles designed solely for domestic or agricultural uses such as a lathi or an ordinary walking stick and weapons incapable of being used otherwise than as toys or of being converted into serviceable weapons;\n(d) “district magistrate”, in relation to any area for which a Commissioner of Police has been appointed, means the Commissioner of Police thereof and includes any such Deputy Commissioner of Police, exercising jurisdiction over the whole or any part of such area, as may be specified by the State Government in this behalf in relation to such area or part;\n(e) “firearms” means arms of any description designed or adapted to discharge a projectile or projectiles of any kind by the action of any explosive or other forms of energy, and includes—\n(i) artillery, hand-grenades, riot-pistols or weapons of any kind designed or adapted for the discharge of any noxious liquid, gas or other such thing,\n(ii) accessories for any such firearm designed or adapted to diminish the noise or flash caused by the firing thereof,\n(iii) parts of, and machinery for manufacturing, firearms, and\n(iv) carriages, platforms and appliances for mounting, transporting and serving artillery;\n(f) “licensing authority” means an officer or authority empowered to grant or renew licences under rules made under this Act, and includes the Government;\n(ff) “magistrate” means an Executive Magistrate under the Code of Criminal Procedure, 1973 (2 of 1974);\n(g) “prescribed” means prescribed by rules made under this Act;\n(h) “prohibited ammunition” means any ammunition containing, or designed or adapted to contain, any noxious liquid, gas or other such thing, and includes rockets, bombs, grenades, shells, [missiles,] articles designed for torpedo service and submarine mining and such other articles as the Central Government may, by notification in the Official Gazette, specify to be prohibited ammunition;\n(i) “prohibited arms” means—\n(i) firearms so designed or adapted that, if pressure is applied to the trigger, missiles continue to be discharged until pressure is removed from the trigger or the magazine containing the missiles is empty, or\n(ii) weapons of any description designed or adapted for the discharge of any noxious liquid, gas or other such thing,\nand includes artillery, anti-aircraft and anti-tank firearms and such other arms as the Central Government may, by notification in the Official Gazette, specify to be prohibited arms;\n(j) “public servant” has the same meaning as in section 21 of the Indian Penal Code (45 of 1860);\n(k) “transfer”, with its grammatical variations and cognate expressions, includes letting on hire, lending, giving and parting with possession.\n(2) For the purposes of this Act, the length of the barrel of a firearm shall be measured from the muzzle to the point at which the charge is exploded on firing.\n(3) Any reference in this Act to any law which is not in force in any area shall, in relation to that area, be construed as a reference to the corresponding law, if any, in force in that area.\n(4) Any reference in this Act to any officer or authority shall, in relation to any area in which there is no officer or authority with the same designation, be construed as a reference to such officer or authority as may be specified by the Central Government by notification in the Official Gazette.",
+        "metaData": "Chapter I PRELIMINARY",
+        "metaDescription": "THE ARMS ACT, 1959 Section 2 - Definitions and interpretation",
+        "metaTitle": "Section 2 - THE ARMS ACT, 1959"
+    },
+
+    # CHAPTER II: ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION
+    {
+        "section": "Section 3",
+        "sectionNo": "3",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Licence for acquisition and possession of firearms and ammunition",
+        "description": "(1) No person shall acquire, have in his possession, or carry any firearm or ammunition unless he holds in this behalf a licence issued in accordance with the provisions of this Act and the rules made thereunder:\nProvided that a person may, without himself holding a licence, carry any firearm or ammunition in the presence, or under the written authority, of the holder of the licence for repair or for renewal of the licence or for use by such holder.\n(2) Notwithstanding anything contained in sub-section (1), no person, other than a person referred to in sub-section (3), shall acquire, have in his possession or carry, at any time, more than three firearms:\nProvided that a person who has in his possession more firearms than three at the commencement of the Arms (Amendment) Act, 1983 (25 of 1983), may retain with him any three of such firearms and shall deposit, within ninety days from such commencement, the remaining firearms with the officer in charge of the nearest police station or, subject to the conditions prescribed for the purposes of sub-section (1) of section 21, with a licensed dealer or, where such person is a member of the armed forces of the Union, in a unit armoury referred to in that sub-section.\n(3) Nothing contained in sub-section (2) shall apply to any dealer in firearms or to any member of a rifle club or rifle association licensed or recognised by the Central Government using a point 22 bore rifle or an air rifle for target practice.\n(4) The provisions of sub-sections (2) to (6) (both inclusive) of section 21 shall apply in relation to any deposit of firearms under the proviso to sub-section (2) as they apply in relation to the deposit of any arm or ammunition under sub-section (1) of that section.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 3 - Licence for acquisition and possession of firearms and ammunition",
+        "metaTitle": "Section 3 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 4",
+        "sectionNo": "4",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Licence for acquisition and possession of arms of specified description in certain cases",
+        "description": "If the Central Government is of opinion that having regard to the circumstances prevailing in any area it is necessary or expedient in the public interest that the acquisition, possession or carrying of arms other than firearms should also be regulated, it may, by notification in the Official Gazette, direct that this section shall apply to the area specified in the notification, and thereupon no person shall acquire, have in his possession or carry in that area arms of such class or description as may be specified in that notification unless he holds in this behalf a licence issued in accordance with the provisions of this Act and the rules made thereunder.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 4 - Licence for acquisition and possession of arms of specified description in certain cases",
+        "metaTitle": "Section 4 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 5",
+        "sectionNo": "5",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Licence for manufacture, sale, etc., of arms and ammunition",
+        "description": "(1) No person shall—\n(a) [use, manufacture] sell, transfer, convert, repair, test or prove, or\n(b) expose or offer for sale or transfer or have in his possession for sale, transfer, conversion, repair, test or proof,\nany firearm or any other arms of such class or description as may be prescribed or any ammunition, unless he holds in this behalf a licence issued in accordance with the provisions of this Act and the rules made thereunder:\n(2) Notwithstanding anything contained in sub-section (1), a person may, without holding a licence in this behalf, sell or transfer any arms or ammunition which he lawfully possesses for his own private use to another person who is entitled by virtue of this Act or any other law for the time being in force to have, or is not prohibited by this Act or such other law from having in his possession such arms or ammunition:\nProvided that no firearm or ammunition in respect of which a licence is required under section 3 and no arms in respect of which a licence is required under section 4 shall be so sold or transferred by any person unless—\n(a) he has informed in writing the district magistrate having jurisdiction or the officer in charge of the nearest police station of his intention to sell or transfer such firearms, ammunition or other arms and the name and address of the person to whom he intends to sell or transfer such firearms, ammunition or the other arms, and\n(b) a period of not less than forty-five days has expired after the giving of such information.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 5 - Licence for manufacture, sale, etc., of arms and ammunition",
+        "metaTitle": "Section 5 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 6",
+        "sectionNo": "6",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Licence for the shortening of guns or conversion of imitation firearms into firearms",
+        "description": "No person shall shorten the barrel of a firearm or convert an imitation firearm into a firearm unless he holds in this behalf a licence issued in accordance with the provisions of this Act and the rules made thereunder.\nExplanation.―In this section, the expression “imitation firearm” means anything which has the appearance of being a firearm, whether it is capable of discharging any shot, bullet or other missile or not.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 6 - Licence for the shortening of guns or conversion of imitation firearms into firearms",
+        "metaTitle": "Section 6 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 7",
+        "sectionNo": "7",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Prohibition of acquisition or possession, or of manufacture or sale of prohibited arms or prohibited ammunition",
+        "description": "No person shall―\n(a) acquire, have in his possession or carry; or\n(b) [use, manufacture] sell, transfer, convert, repair, test or prove; or\n(c) expose or offer for sale or transfer or have in his possession for sale, transfer, conversion, repair, test or proof;\nany prohibited arms or prohibited ammunition unless he has been specially authorised by the Central Government in this behalf.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 7 - Prohibition of acquisition or possession, or of manufacture or sale of prohibited arms or prohibited ammunition",
+        "metaTitle": "Section 7 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 8",
+        "sectionNo": "8",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Prohibition of sale or transfer of firearms not bearing identification marks",
+        "description": "(1) No person shall obliterate, remove, alter or forge any name, number or other identification mark stamped or otherwise shown on a firearm.\n(2) No person shall sell or transfer any firearm which does not bear the name of the maker, manufacturer’s number or other identification mark stamped or otherwise shown thereon in a manner approved by the Central Government.\n(3) Whenever any person has in his possession any firearm without such name, number or other identification mark or on which such name, number or other identification mark has been obliterated, removed, altered or forged, it shall be presumed unless the contrary is proved, that he has obliterated, removed, altered or forged that name, number or other identification mark:\nProvided that in relation to a person who has in his possession at the commencement of this Act any firearm without such name, number or other identification mark stamped or otherwise shown thereon, the provisions of this sub-section shall not take effect until after the expiration of one year from such commencement.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 8 - Prohibition of sale or transfer of firearms not bearing identification marks",
+        "metaTitle": "Section 8 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 9",
+        "sectionNo": "9",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Prohibition of acquisition or possession by, or of sale or transfer to, young persons and certain other persons of firearms, etc.",
+        "description": "(1) Notwithstanding anything in the foregoing provisions of this Act,―\n(a) no person,―\n(i) who has not completed the age of [twenty-one years], or\n(ii) who has been sentenced on conviction of any offence involving violence or moral turpitude to imprisonment for [any term], at any time during a period of five years after the expiration of the sentence, or\n(iii) who has been ordered to execute under Chapter VIII of the [Code of Criminal Procedure, 1973 (2 of 1974),] a bond for keeping the peace or for good behaviour, at any time during the term of the bond,\nshall acquire, have in his possession or carry any firearm or ammunition;\n(b) no person shall sell or transfer any firearm or ammunition to, or convert, repair, test or prove any firearm or ammunition for, any other person whom he knows, or has reason to believe—\n(i) to be prohibited under clause (a) from acquiring, having in his possession or carrying any firearm or ammunition, or\n(ii) to be of unsound mind at the time of such sale or transfer, or such conversion, repair, test or proof.\n(2) Notwithstanding anything in sub-clause (i) of clause (a) of sub-section (1), a person who has attained the prescribed age-limit may use under prescribed conditions such firearms as may be prescribed in the course of his training in the use of such firearms:\nProvided that different age-limits may be prescribed in relation to different types of firearms.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 9 - Prohibition of acquisition or possession by, or of sale or transfer to, young persons and certain other persons of firearms, etc.",
+        "metaTitle": "Section 9 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 10",
+        "sectionNo": "10",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Licence for import and export of arms, etc.",
+        "description": "(1) No person shall bring into, or take out of, India by sea, land or air any arms or ammunition unless he holds in this behalf a licence issued in accordance with the provisions of this Act and the rules made thereunder:\nProvided that—\n(a) a person who is entitled by virtue of this Act or any other law for the time being in force to have, or is not prohibited by this Act or such other law from having, in his possession any arms or ammunition, may without a licence in this behalf bring into, or take out of, India such arms or ammunition in reasonable quantities for his own private use;\n(b) a person being a bona fide tourist belonging to any such country as the Central Government may, by notification in the Official Gazette, specify, who is not prohibited by the laws of that country from having in his possession any arms or ammunition, may, without a licence under this section but in accordance with such conditions as may be prescribed, bring with him into India arms and ammunition in reasonable quantities for use by him for purposes only of sport and for no other purpose;\nExplanation.―For purposes of clause (b) of this proviso, the word “tourist” means a person who not being a citizen of India visits India for a period not exceeding six months with no other object than recreation, sight-seeing, or participation in a representative capacity in meetings convened by the Central Government or in international conferences, associations or other bodies.\n(2) Notwithstanding anything contained in the proviso to sub-section (1), where the [Commissioner of Customs] or any other officer empowered by the Central Government in this behalf has any doubt as to the applicability of clause (a) or clause (b) of that proviso to any person who claims that such clause is applicable to him, or as to the reasonableness of the quantities of arms or ammunition in the possession of any person referred to in such clause, or as to the use to which such arms or ammunition may be put by such person, may detain the arms or ammunition in the possession of such person until he receives the orders of the Central Government in relation thereto.\n(3) Arms and ammunition taken from one part of India to another by sea or air or across any intervening territory not forming part of India, are taken out of, and brought into, India within the meaning of this section.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 10 - Licence for import and export of arms, etc.",
+        "metaTitle": "Section 10 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 11",
+        "sectionNo": "11",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Power to prohibit import or export of arms, etc.",
+        "description": "The Central Government may, by notification in the Official Gazette, prohibit the bringing into, or the taking out of, India, arms or ammunition of such classes and descriptions as may be specified in the notification.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 11 - Power to prohibit import or export of arms, etc.",
+        "metaTitle": "Section 11 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 12",
+        "sectionNo": "12",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "title": "Power to restrict or prohibit transport of arms",
+        "description": "(1) The Central Government may, by notification in the Official Gazette,―\n(a) direct that no person shall transport over India or any part thereof arms or ammunition of such classes and descriptions as may be specified in the notification unless he holds in this behalf a licence issued in accordance with the provisions of this Act and the rules made thereunder; or\n(b) prohibit such transport altogether.\n(2) Arms or ammunition trans-shipped at a seaport or an airport in India are transported within the meaning of this section.",
+        "metaData": "Chapter II ACQUISITION, POSSESSION, MANUFACTURE, SALE, IMPORT, EXPORT AND TRANSPORT OF ARMS AND AMMUNITION",
+        "metaDescription": "THE ARMS ACT, 1959 Section 12 - Power to restrict or prohibit transport of arms",
+        "metaTitle": "Section 12 - THE ARMS ACT, 1959"
+    },
+
+    # CHAPTER III: PROVISIONS RELATING TO LICENCES
+    {
+        "section": "Section 13",
+        "sectionNo": "13",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PROVISIONS RELATING TO LICENCES",
+        "title": "Grant of licences",
+        "description": "(1) An application for the grant of a licence under Chapter II shall be made to the licensing authority and shall be in such form, contain such particulars and be accompanied by such fee, if any, as may be prescribed.\n(2) On receipt of an application, the licensing authority shall call for the report of the officer in charge of the nearest police station on that application, and such officer shall send his report within the prescribed time.\n(2A) The licensing authority, after such inquiry, if any, as it may consider necessary, and after considering the report received under sub-section (2), shall, subject to the other provisions of this Chapter, by order in writing either grant the licence or refuse to grant the same:\nProvided that where the officer in charge of the nearest police station does not send his report on the application within the prescribed time, the licensing authority may, if it deems fit, make such order, after the expiry of the prescribed time, without further waiting for that report.\n(3) The licensing authority shall grant—\n(a) a licence under section 3 where the licence is required―\n(i) by a citizen of India in respect of a smooth bore gun having a barrel of not less than twenty inches in length to be used for protection or sport or in respect of a muzzle loading gun to be used for bona fide crop protection:\nProvided that where having regard to the circumstances of any case, the licensing authority is satisfied that a muzzle loading gun will not be sufficient for crop protection, the licensing authority may grant a licence in respect of any other smooth bore gun as aforesaid for such protection, or\n(ii) in respect of a point 22 bore rifle or an air rifle to be used for target practice by a member of a rifle club or rifle association licensed or recognised by the Central Government;\n(b) a licence under section 3 in any other case or a licence under section 4, section 5, section 6, section 10 or section 12, if the licensing authority is satisfied that the person by whom the licence is required has a good reason for obtaining the same.",
+        "metaData": "Chapter III PROVISIONS RELATING TO LICENCES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 13 - Grant of licences",
+        "metaTitle": "Section 13 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 14",
+        "sectionNo": "14",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PROVISIONS RELATING TO LICENCES",
+        "title": "Refusal of licences",
+        "description": "(1) Notwithstanding anything in section 13, the licensing authority shall refuse to grant―\n(a) a licence under section 3, section 4 or section 5 where such licence is required in respect of any prohibited arms or prohibited ammunition;\n(b) a licence in any other case under Chapter II,―\n(i) where such licence is required by a person whom the licensing authority has reason to believe—\n(1) to be prohibited by this Act or by any other law for the time being in force from acquiring, having in his possession or carrying any arms or ammunition, or\n(2) to be of unsound mind, or\n(3) to be for any reason unfit for a licence under this Act; or\n(ii) where the licensing authority deems it necessary for the security of the public peace or for public safety to refuse to grant such licence.\n(2) The licensing authority shall not refuse to grant any licence to any person merely on the ground that such person does not own or possess sufficient property.\n(3) Where the licensing authority refuses to grant a licence to any person it shall record in writing the reasons for such refusal and furnish to that person on demand a brief statement of the same unless in any case the licensing authority is of the opinion that it will not be in the public interest to furnish such statement.",
+        "metaData": "Chapter III PROVISIONS RELATING TO LICENCES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 14 - Refusal of licences",
+        "metaTitle": "Section 14 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 15",
+        "sectionNo": "15",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PROVISIONS RELATING TO LICENCES",
+        "title": "Duration and renewal of licence",
+        "description": "(1) A licence under section 3 shall, unless revoked earlier, continue in force for a period of three years from the date on which it is granted:\nProvided that such a licence may be granted for a shorter period if the person by whom the licence is required so desires or if the licensing authority for reasons to be recorded in writing considers in any case that the licence should be granted for a shorter period.\n(2) A licence under any other provision of Chapter II shall, unless revoked earlier, continue in force for such period from the date on which it is granted as the licensing authority may in each case determine.\n(3) Every licence shall, unless the licensing authority for reasons to be recorded in writing otherwise decides in any case, be renewable for the same period for which the licence was originally granted and shall be so renewable from time to time, and the provisions of sections 13 and 14 shall apply to the renewal of a licence as they apply to the grant thereof.",
+        "metaData": "Chapter III PROVISIONS RELATING TO LICENCES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 15 - Duration and renewal of licence",
+        "metaTitle": "Section 15 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 16",
+        "sectionNo": "16",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PROVISIONS RELATING TO LICENCES",
+        "title": "Fees, etc., for licence",
+        "description": "The fees on payment of which, the conditions subject to which and the form in which a licence shall be granted or renewed shall be such as may be prescribed:\nProvided that different fees, different conditions and different forms may be prescribed for different types of licences:\nProvided further that a licence may contain in addition to prescribed conditions such other conditions as may be considered necessary by the licensing authority in any particular case.",
+        "metaData": "Chapter III PROVISIONS RELATING TO LICENCES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 16 - Fees, etc., for licence",
+        "metaTitle": "Section 16 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 17",
+        "sectionNo": "17",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PROVISIONS RELATING TO LICENCES",
+        "title": "Variation, suspension and revocation of licences",
+        "description": "(1) The licensing authority may vary the conditions subject to which a licence has been granted except such of them as have been prescribed and may for that purpose require the licence-holder by notice in writing to deliver-up the licence to it within such time as may specified in the notice.\n(2) The licensing authority may, on the application of the holder of a licence, also vary the conditions of the licence except such of them as have been prescribed.\n(3) The licensing authority may by order in writing suspend a licence for such period as it thinks fit or revoke a licence,―\n(a) if the licensing authority is satisfied that the holder of the licence is prohibited by this Act or by any other law for the time being in force, from acquiring, having in his possession or carrying any arms or ammunition, or is of unsound mind, or is for any reason unfit for a licence under this Act; or\n(b) if the licensing authority deems it necessary for the security of the public peace or for public safety to suspend or revoke the licence; or\n(c) if the licence was obtained by the suppression of material information or on the basis of wrong information provided by the holder of the licence or any other person on his behalf at the time of applying for it; or\n(d) if any of the conditions of the licence has been contravened; or\n(e) if the holder of the licence has failed to comply with a notice under sub-section (1) requiring him to deliver-up the licence.\n(4) The licensing authority may also revoke a licence on the application of the holder thereof.\n(5) Where the licensing authority makes an order varying a licence under sub-section (1) or an order suspending or revoking a licence under sub-section (3), it shall record in writing the reasons therefor and furnish to the holder of the licence on demand a brief statement of the same unless in any case the licensing authority is of the opinion that it will not be in the public interest to furnish such statement.\n(6) The authority to whom the licensing authority is subordinate may by order in writing suspend or revoke a licence on any ground on which it may be suspended or revoked by the licensing authority; and the foregoing provisions of this section shall, as far as may be, apply in relation to the suspension or revocation of a licence by such authority.\n(7) A court convicting the holder of a licence of any offence under this Act or the rules made thereunder may also suspend or revoke the licence:\nProvided that if the conviction is set aside on appeal or otherwise, the suspension or revocation shall become void.\n(8) An order of suspension or revocation under sub-section (7) may also be made by an appellate court or by the High Court when exercising its powers of revision.\n(9) The Central Government may, by order in the Official Gazette, suspend or revoke or direct any licensing authority to suspend or revoke all or any licences granted under this Act throughout India or any part thereof.\n(10) On the suspension or revocation of a licence under this section the holder thereof shall without delay surrender the licence to the authority by whom it has been suspended or revoked or to such other authority as may be specified in this behalf in the order of suspension or revocation.",
+        "metaData": "Chapter III PROVISIONS RELATING TO LICENCES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 17 - Variation, suspension and revocation of licences",
+        "metaTitle": "Section 17 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 18",
+        "sectionNo": "18",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PROVISIONS RELATING TO LICENCES",
+        "title": "Appeals",
+        "description": "(1) Any person aggrieved by an order of the licensing authority refusing to grant a licence or varying the conditions of a licence or by an order of the licensing authority or the authority to whom the licensing authority is subordinate, suspending or revoking a licence may prefer an appeal against that order to such authority (hereinafter referred to as the appellate authority) and within such period as may be prescribed:\nProvided that no appeal shall lie against any order made by, or under the direction of, the Government.\n(2) No appeal shall be admitted if it is preferred after the expiry of the period prescribed therefor:\nProvided that an appeal may be admitted after the expiry of the period prescribed therefor if the appellant satisfies the appellate authority that he had sufficient cause for not preferring the appeal within that period.\n(3) The period prescribed for an appeal shall be computed in accordance with the provisions of the Indian Limitation Act, 1908 (9 of 1908), with respect to the computation of periods of limitation thereunder.\n(4) Every appeal under this section shall be made by a petition in writing and shall be accompanied by a brief statement of the reasons for the order appealed against where such statement has been furnished to the appellant and by such fee as may be prescribed.\n(5) In disposing of an appeal the appellate authority shall follow such procedure as may be prescribed:\nProvided that no appeal shall be disposed of unless the appellant has been given a reasonable opportunity of being heard.\n(6) The order appealed against shall, unless the appellate authority conditionally or unconditionally directs otherwise, be in force pending the disposal of the appeal against such order.\n(7) Every order of the appellate authority confirming, modifying or reversing the order appealed against shall be final.",
+        "metaData": "Chapter III PROVISIONS RELATING TO LICENCES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 18 - Appeals",
+        "metaTitle": "Section 18 - THE ARMS ACT, 1959"
+    },
+
+    # CHAPTER IV: POWERS AND PROCEDURE
+    {
+        "section": "Section 19",
+        "sectionNo": "19",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Power to demand production of licence, etc.",
+        "description": "(1) Any police officer or any other officer specially empowered in this behalf by the Central Government may demand the production of his licence from any person who is carrying any arms or ammunition.\n(2) If the person upon whom a demand is made refuses or fails to produce the licence or to show that he is entitled by virtue of this Act or any other law for the time being in force to carry such arms or ammunition without a licence, the officer concerned may require him to give his name and address and if such officer considers it necessary, seize from that person the arms or ammunition which he is carrying.\n(3) If that person refuses to give his name and address or if the officer concerned suspects that person of giving a false name or address or of intending to abscond, such officer may arrest him without warrant.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 19 - Power to demand production of licence, etc.",
+        "metaTitle": "Section 19 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 20",
+        "sectionNo": "20",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Arrest of persons conveying arms, etc., under suspicious circumstances",
+        "description": "Where any person is found carrying or conveying any arms or ammunition whether covered by a licence or not, in such manner or under such circumstances as to afford just grounds of suspicion that the same are or is being carried by him with intent to use them, or that the same may be used, for any unlawful purpose, any magistrate, any police officer or any other public servant or any person employed or working upon a railway, aircraft, vessel, vehicle or any other means of conveyance, may arrest him without warrant and seize from him such arms or ammunition.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 20 - Arrest of persons conveying arms, etc., under suspicious circumstances",
+        "metaTitle": "Section 20 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 21",
+        "sectionNo": "21",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Deposit of arms, etc., on possession ceasing to be lawful",
+        "description": "(1) Any person having in his possession any arms or ammunition the possession whereof has, in consequence of the expiration of the duration of a licence or of the suspension or revocation of a licence or by the issue of a notification under section 4 or by any reason whatever, ceased to be lawful, shall without unnecessary delay deposit the same either with the officer in charge of the nearest police station or subject to such conditions as may be prescribed, with a licensed dealer or where such person is a member of the armed forces of the Union, in a unit armoury.\nExplanation.―In this sub-section “unit armoury” includes an armoury in a ship or establishment of the Indian Navy.\n(2) Where arms or ammunition have or has been deposited under sub-section (1), the depositor or in the case of his death, his legal representative, shall, at any time before the expiry of such period as may be prescribed, be entitled—\n(a) to receive back anything so deposited on his becoming entitled by virtue of this Act or any other law for the time being in force to have the same in his possession, or\n(b) to dispose, or authorise the disposal, of anything so deposited by sale or otherwise to any person entitled by virtue of this Act or any other law for the time being in force to have, or not prohibited by this Act or such other law from having, the same in his possession and to receive the proceeds of any such disposal:\nProvided that nothing in this sub-section shall be deemed to authorise the return or disposal of anything of which confiscation has been directed under section 32.\n(3) All things deposited and not received back or disposed of under sub-section (2) within the period therein referred to shall be forfeited to Government by order of the district magistrate:\nProvided that in the case of suspension of a licence no such forfeiture shall be ordered in respect of a thing covered by the licence during the period of suspension.\n(4) Before making an order under sub-section (3) the district magistrate shall, by notice in writing to be served upon the depositor or in the case of his death, upon his legal representative, in the prescribed manner, require him to show cause within thirty days from the service of the notice why the things specified in the notice should not be forfeited.\n(5) After considering the cause, if any, shown by the depositor or, as the case may be, his legal representative, the district magistrate shall pass such order as he thinks fit.\n(6) The Government may at any time return to the depositor or his legal representative things forfeited to it or the proceeds of disposal thereof wholly or in part.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 21 - Deposit of arms, etc., on possession ceasing to be lawful",
+        "metaTitle": "Section 21 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 22",
+        "sectionNo": "22",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Search and seizure by magistrate",
+        "description": "(1) Whenever any magistrate has reason to believe—\n(a) that any person residing within the local limits of his jurisdiction has in his possession any arms or ammunition for any unlawful purpose, or\n(b) that such person cannot be left in the possession of any arms or ammunition without danger to the public peace or safety,\nthe magistrate may, after having recorded the reasons for his belief, cause a search to be made of the house or premises occupied by such person or in which the magistrate has reason to believe that such arms or ammunition are or is to be found and may have such arms or ammunition, if any, seized and detain the same in safe custody for such period as he thinks necessary, although that person may be entitled by virtue of this Act or any other law for the time being in force to have the same in his possession.\n(2) Every search under this section shall be conducted by or in the presence of a magistrate or by or in the presence of some officer specially empowered in this behalf by the Central Government.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 22 - Search and seizure by magistrate",
+        "metaTitle": "Section 22 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 23",
+        "sectionNo": "23",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Search of vessels, vehicles for arms, etc.",
+        "description": "Any magistrate, any police officer or any other officer specially empowered in this behalf by the Central Government, may for the purpose of ascertaining whether any contravention of this Act or the rules made thereunder is being or is likely to be committed, stop and search any vessel, vehicle or other means of conveyance and seize any arms or ammunition that may be found therein along with such vessel, vehicle or other means of conveyance.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 23 - Search of vessels, vehicles for arms, etc.",
+        "metaTitle": "Section 23 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 24",
+        "sectionNo": "24",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Seizure and detention under orders of the Central Government",
+        "description": "The Central Government may at any time order the seizure of any arms or ammunition in the possession of any person, notwithstanding that such person is entitled by virtue of this Act or any other law for the time being in force to have the same in his possession, and may detain the same for such period as it thinks necessary for the public peace and safety.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 24 - Seizure and detention under orders of the Central Government",
+        "metaTitle": "Section 24 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 24A",
+        "sectionNo": "24A",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Prohibition as to possession of notified arms in disturbed areas, etc.",
+        "description": "(1) Where the Central Government is satisfied that there is extensive disturbance of public peace and tranquility or imminent danger of such disturbance in any area and that for the prevention of offences involving the use of arms in such area, it is necessary or expedient so to do, it may by notification in the Official Gazette―\n(a) specify the limits of such area;\n(b) direct that before the commencement of the period specified in the notification (which period shall be a period commencing from a date not earlier than the fourth day after the date of publication of the notification in the Official Gazette), every person having in his possession in such area any arms of such description as may be specified in the notification (the arms so specified being hereafter in this section referred to as notified arms), shall deposit the same before such commencement in accordance with the provisions of section 21 and for this purpose the possession by such person of any notified arms shall, notwithstanding anything contained in any other provision of this Act (except section 41) or in any other law for the time being in force, as from the date of publication of such notification in the Official Gazette be deemed to have ceased to be lawful;\n(c) declare that as from the commencement of, and until the expiry of, the period specified in the notification, it shall not be lawful for any person to have in his possession in such area any notified arms;\n(d) authorise any such officer subordinate to the Central Government or a State Government as may be specified in the notification,―\n(i) to search at any time during the period specified in the notification any person in, or passing through, or any premises in, or any animal or vessel or vehicle or other conveyance of whatever nature in or passing through, or any receptacle or other container of whatever nature in, such area if such officer has reason to believe that any notified arms are secreted by such person or in such premises or on such animal or in such vessel, vehicle or other conveyance or in such receptacle or other container;\n(ii) to seize at any time during the period specified in the notification any notified arms in the possession of any person in such area or discovered through a search under sub-clause (i), and detain the same during the period specified in the notification.\n(2) The period specified in a notification issued under sub-section (1) in respect of any area shall not, in the first instance, exceed ninety days, but the Central Government may amend such notification to extend such period from time to time by any period not exceeding ninety days at any one time if, in the opinion of that Government, there continues to be in such area such disturbance of public peace and tranquillity as is referred to in sub-section (1) or imminent danger thereof and that for the prevention of offences involving the use of arms in such area it is necessary or expedient so to do.\n(3) The provisions of the Code of Criminal Procedure, 1973 (2 of 1974), relating to searches and seizures shall, so far as may be, apply to any search or seizure made under sub-section (1).\n(4) For the purposes of this section,―\n(a) “arms” includes ammunition;\n(b) where the period specified in a notification, as originally issued under sub-section (1), is extended under sub-section (2), then, in relation to such notification, references in sub-section (1) to “the period specified in the notification” shall be construed as references to the period as so extended.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 24A - Prohibition as to possession of notified arms in disturbed areas, etc.",
+        "metaTitle": "Section 24A - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 24B",
+        "sectionNo": "24B",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "POWERS AND PROCEDURE",
+        "title": "Prohibition as to carrying of notified arms in or through public places in disturbed areas etc.",
+        "description": "(1) Where the Central Government is satisfied that there is extensive disturbance of public peace and tranquillity or imminent danger of such disturbance in any area and that for the prevention of offences involving the use of arms in such area it is necessary or expedient so to do, it may, by notification in the Official Gazette,―\n(a) specify the limits of such area;\n(b) direct that during the period specified in the notification (which period shall be a period commencing from a date not earlier than the second day after the date of publication of the notification in the Official Gazette), no person shall carry or otherwise have in his possession any arms of such description as may be specified in the notification (the arms so specified being hereafter in this section referred to as notified arms) through or in any public place in such area;\n(c) authorise any such officer subordinate to the Central Government or a State Government as may be specified in the notification,―\n(i) to search at any time during the period specified in the notification any person in, or passing through, or any premises in or forming part of, or any animal or vessel or vehicle or other conveyance of whatever nature in or passing through, or any receptacle or other container of whatever nature in, any public place in such area if such officer has reason to believe that any notified arms are secreted by such person or in such premises or on such animal or in such vessel, vehicle or other conveyance or in such receptacle or other container;\n(ii) to seize at any time during the period specified in the notification any notified arms being carried by or otherwise in the possession of any person, through or in a public place in such area or discovered through a search under sub-clause (i), and detain the same during the period specified in the notification.\n(2) The period specified in a notification issued under sub-section (1) in respect of any area shall not, in the first instance, exceed ninety days, but the Central Government may amend such notification to extend such period from time to time by any period not exceeding ninety days at any one time if, in the opinion of that Government, there continues to be in such area such disturbance of public peace and tranquillity as is referred to in sub-section (1) or imminent danger thereof and that for the prevention of offences involving the use of arms in such area it is necessary or expedient so to do.\n(3) The provisions of the Code of Criminal Procedure, 1973 (2 of 1974), relating to searches and seizures shall, so far as may be, apply to any search or seizure made under sub-section (1).\n(4) For the purposes of this section,―\n(a) “arms” includes ammunition;\n(b) “public place” means any place intended for use by, or accessible to, the public or any section of the public; and\n(c) where the period specified in a notification, as originally issued under sub-section (1), is extended under sub-section (2), then, in relation to such notification, references in sub-section (1) to “the period specified in the notification” shall be construed as references to the period as so extended.",
+        "metaData": "Chapter IV POWERS AND PROCEDURE",
+        "metaDescription": "THE ARMS ACT, 1959 Section 24B - Prohibition as to carrying of notified arms in or through public places in disturbed areas etc.",
+        "metaTitle": "Section 24B - THE ARMS ACT, 1959"
+    },
+
+    # CHAPTER V: OFFENCES AND PENALTIES
+    {
+        "section": "Section 25",
+        "sectionNo": "25",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for certain offences",
+        "description": "(1) Whoever—\n(a) manufactures, sells, transfers, converts, repairs, tests or proves, or exposes or offers for sale or transfer, or has in his possession for sale, transfer, conversion, repair, test or proof, any arms or ammunition in contravention of section 5; or\n(b) shortens the barrel of a firearm or converts an imitation firearm into a firearm in contravention of section 6; or\n(d) brings into, or takes out of, India, any arms or ammunition of any class or description in contravention of section 11,\nshall be punishable with imprisonment for a term which shall not be less than three years but which may extend to seven years and shall also be liable to fine.\n(1A) Whoever acquires, has in his possession or carries any prohibited arms or prohibited ammunition in contravention of section 7 shall be punishable with imprisonment for a term which shall not be less than five years, but which may extend to ten years and shall also be liable to fine.\n(1AA) whoever manufactures, sells, transfers, converts, repairs, tests or proves, or exposes or offers for sale or transfer or has in his possession for sale, transfer, conversion, repair, test or proof, any prohibited arms or prohibited ammunition in contravention of section 7 shall be punishable with imprisonment for a term which shall not be less than seven years but which may extend to imprisonment for life and shall also be liable to fine.\n(1AAA) Whoever has in contravention of a notification issued under section 24A in his possession or in contravention of a notification issued under section 24B carries or otherwise has in his possession, any arms or ammunition shall be punishable with imprisonment for a term which shall not be less than [three years, but which may extend to seven years] and shall also be liable to fine.\n(1B) Whoever—\n(a) acquires, has in his possession or carries any firearm or ammunition in contravention of section 3; or\n(b) acquires, has in his possession or carries in any place specified by notification under section 4 any arms of such class or description as has been specified in that notification in contravention of that section; or\n(c) sells or transfers any firearm which does not bear the name of the maker, manufacturer’s number or other identification mark stamped or otherwise shown thereon as required by sub-section (2) of section 8 or does any act in contravention of sub-section (1) of that section; or\n(d) being a person to whom sub-clause (ii) or sub-clause (iii) of clause (a) of sub-section (1) of section 9 applies, acquires, has in his possession or carries any firearm or ammunition in contravention of that section; or\n(e) sells or transfers, or converts, repairs, tests or proves any firearm or ammunition in contravention of clause (b) of sub-section (1) of section 9; or\n(f) brings into, or takes out of, India, any arms or ammunition in contravention of section 10; or\n(g) transports any arms or ammunition in contravention of section 12; or\n(h) fails to deposit arms or ammunition as required by sub-section (2) of section 3, or sub-section (1) of section 21; or\n(i) being a manufacturer of, or dealer in, arms or ammunition, fails, on being required to do so by rules made under section 44, to maintain a record or account or to make therein all such entries as are required by such rules or intentionally makes a false entry therein or prevents or obstructs the inspection of such record or account or the making of copies of entries therefrom or prevents or obstructs the entry into any premises or other place where arms or ammunition are or is manufactured or kept or intentionally fails to exhibit or conceals such arms or ammunition or refuses to point out where the same are or is manufactured or kept,\nshall be punishable with imprisonment for a term which shall not be less than [one year] but which may extend to three years and shall also be liable to fine:\nProvided that the Court may for any adequate and special reasons to be recorded in the judgment impose a sentence of imprisonment for a term of less than [one year].\n(1C) Notwithstanding anything contained in sub-section (1B), whoever commits an offence punishable under that sub-section in any disturbed area shall be punishable with imprisonment for a term which shall not be less than three years but which may extend to seven years and shall also be liable to fine.\nExplanation.―For the purposes of this sub-section, “disturbed area” means any area declared to be a disturbed area under any enactment, for the time being in force, making provision for the suppression of disorder and restoration and maintenance of public order, and includes any areas specified by notification under section 24A or section 24B.\n(2) Whoever being a person to whom sub-clause (i) of clause (a) of sub-section (1) of section 9 applies, acquires, has in his possession or carries any firearm or ammunition in contravention of that section shall be punishable with imprisonment for a term which may extend to one year, or with fine, or with both.\n(3) Whoever sells or transfers any firearm, ammunition or other arms—\n(i) without informing the district magistrate having jurisdiction or the officer in charge of the nearest police station, of the intended sale or transfer of that firearm, ammunition or other arms; or\n(ii) before the expiration of the period of forty-five days from the date of giving such information to such district magistrate or the officer in charge of the police station,\nin contravention of the provisions of clause (a) or clause (b) of the proviso to sub-section (2) of section 5, shall be punishable with imprisonment for a term which may extend to six months, or with fine of an amount which may extend to five hundred rupees, or with both.\n(4) Whoever fails to deliver-up a licence when so required by the licensing authority under sub-section (1) of section 17 for the purpose of varying the conditions specified in the licence or fails to surrender a licence to the appropriate authority under sub-section (10) of that section on its suspension or revocation shall be punishable with imprisonment for a term which may extend to six months, or with fine of an amount which may extend to five hundred rupees, or with both.\n(5) Whoever, when required under section 19 to give his name and address, refuses to give such name and address or gives a name or address which subsequently transpires to be false shall be punishable with imprisonment for a term which may extend to six months, or with fine of an amount which may extend to two hundred rupees, or with both.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 25 - Punishment for certain offences",
+        "metaTitle": "Section 25 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 26",
+        "sectionNo": "26",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Secret contraventions",
+        "description": "(1) Whoever does any act in contravention of any of the provisions of section 3, 4, 10 or 12 in such manner as to indicate an intention that such act may not be known to any public servant or to any person employed or working upon a railway, aircraft, vessel, vehicle or any other means of conveyance, shall be punishable with imprisonment for a term which shall not be less than six months but which may extend to seven years and also with fine.\n(2) Whoever does any act in contravention of any of the provisions of section 5, 6, 7 or 11 in such manner as to indicate an intention that such act may not be known to any public servant or to any person employed or working upon a railway, aircraft, vessel, vehicle or any other means of conveyance, shall be punishable with imprisonment for a term which shall not be less than five years but which may extend to ten years and also with fine.\n(3) Whoever on any search being made under section 22 conceals or attempts to conceal any arms or ammunition, shall be punishable with imprisonment for a term which may extend to ten years and also with fine.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 26 - Secret contraventions",
+        "metaTitle": "Section 26 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 27",
+        "sectionNo": "27",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for using arms, etc.",
+        "description": "(1) Whoever uses any arms or ammunition in contravention of section 5 shall be punishable with imprisonment for a term which shall not be less than three years but which may extend to seven years and shall also be liable to fine.\n(2) Whoever uses any prohibited arms or prohibited ammunition in contravention of section 7 shall be punishable with imprisonment for a term which shall not be less than seven years but which may extend to imprisonment for life and shall also be liable to fine.\n(3) Whoever uses any prohibited arms or prohibited ammunition or does any act in contravention of section 7 and such use or act results in the death of any other person, shall be punishable with death.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 27 - Punishment for using arms, etc.",
+        "metaTitle": "Section 27 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 28",
+        "sectionNo": "28",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for use and possession of firearms or imitation firearms in certain cases",
+        "description": "Whoever makes or attempts to make any use whatsoever of a firearm or an imitation firearm with intent to resist or prevent the lawful arrest or detention of himself or any other person shall be punishable with imprisonment for a term which may extend to seven years [and with fine].\nExplanation.―In this section the expression “imitation firearm” has the same meaning as in section 6.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 28 - Punishment for use and possession of firearms or imitation firearms in certain cases",
+        "metaTitle": "Section 28 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 29",
+        "sectionNo": "29",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for knowingly purchasing arms, etc., from unlicensed person or for delivering arms, etc., to person not entitled to possess the same",
+        "description": "Whoever―\n(a) purchases any firearms or any other arms of such class or description as may be prescribed or any ammunition from any other person knowing that such other person is not licensed or authorised under section 5; or\n(b) delivers any arms or ammunition into the possession of another person without previously ascertaining that such other person is entitled by virtue of this Act or any other law for the time being in force to have, and is not prohibited by this Act or such other law from having, in his possession the same;\nshall be punishable with imprisonment for a term which may extend to [three years, or with fine, or with both].",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 29 - Punishment for knowingly purchasing arms, etc., from unlicensed person or for delivering arms, etc., to person not entitled to possess the same",
+        "metaTitle": "Section 29 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 30",
+        "sectionNo": "30",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for contravention of licence or rule",
+        "description": "Whoever contravenes any condition of a licence or any provision of this Act or any rule made thereunder, for which no punishment is provided elsewhere in this Act shall be punishable with imprisonment for a term which may extend to [six months], or with fine which may extend to [two thousand] rupees, or with both.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 30 - Punishment for contravention of licence or rule",
+        "metaTitle": "Section 30 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 31",
+        "sectionNo": "31",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for subsequent offences",
+        "description": "Whoever having been convicted of an offence under this Act is again convicted of an offence under this Act shall be punishable with double the penalty provided for the latter offence.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 31 - Punishment for subsequent offences",
+        "metaTitle": "Section 31 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 32",
+        "sectionNo": "32",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Power to confiscate",
+        "description": "(1) When any person is convicted under this Act of any offence committed by him in respect of any arms or ammunition, it shall be in the discretion of the convicting court further to direct that the whole or any portion of such arms or ammunition, and any vessel, vehicle or other means of conveyance and any receptacle or thing containing, or used to conceal, the arms or ammunition shall be confiscated:\nProvided that if the conviction is set aside on appeal or otherwise, the order of confiscation shall become void.\n(2) An order of confiscation may also be made by the appellate court or by the High Court when exercising its powers of revision.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 32 - Power to confiscate",
+        "metaTitle": "Section 32 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 33",
+        "sectionNo": "33",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Offences by companies",
+        "description": "(1) Whenever an offence under this Act has been committed by a company, every person who at the time the offence was committed was in charge of, or was responsible to the company for the conduct of, the business of the company, as well as the company, shall be deemed to be guilty of the offence and shall be liable to be proceeded against and punished accordingly:\nProvided that nothing contained in this sub-section shall render any such person liable to any punishment under this Act if he proves that the offence was committed without his knowledge and that he exercised all due diligence to prevent the commission of such offence.\n(2) Notwithstanding anything contained in sub-section (1), where an offence under this Act has been committed by a company and it is proved that the offence has been committed with the consent or connivance of, or is attributable to any neglect on the part of, any director, manager, secretary or other officer of the company, such director, manager, secretary or other officer shall also be deemed to be guilty of that offence and shall be liable to be proceeded against and punished accordingly.\nExplanation.―For the purposes of this section,―\n(a) “company” means any body corporate, and includes a firm or other association of individuals; and\n(b) “director”, in relation to a firm, means a partner in the firm.",
+        "metaData": "Chapter V OFFENCES AND PENALTIES",
+        "metaDescription": "THE ARMS ACT, 1959 Section 33 - Offences by companies",
+        "metaTitle": "Section 33 - THE ARMS ACT, 1959"
+    },
+
+    # CHAPTER VI: MISCELLANEOUS
+    {
+        "section": "Section 34",
+        "sectionNo": "34",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Sanction of Central Government for warehousing of arms",
+        "description": "Notwithstanding anything contained in the [Customs Act, 1962 (52 of 1962),] no arms or ammunition shall be deposited in any warehouse licensed under [section 58] of that Act without the sanction of the Central Government.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 34 - Sanction of Central Government for warehousing of arms",
+        "metaTitle": "Section 34 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 35",
+        "sectionNo": "35",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Criminal responsibility of persons in occupation of premises in certain cases",
+        "description": "Where any arms or ammunition in respect of which any offence under this Act has been or is being committed are or is found in any premises, vehicle or other place in the joint occupation or under the joint control of several persons, each of such persons in respect of whom there is reason to believe that he was aware of the existence of the arms or ammunition in the premises, vehicle or other place shall, unless the contrary is proved, be liable for that offence in the same manner as if it has been or is being committed by him alone.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 35 - Criminal responsibility of persons in occupation of premises in certain cases",
+        "metaTitle": "Section 35 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 36",
+        "sectionNo": "36",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Information to be given regarding certain offences",
+        "description": "(1) Every person aware of the commission of any offence under this Act shall, in the absence of reasonable excuse the burden of proving which shall lie upon such person, give information of the same to the officer in charge of the nearest police station or the magistrate having jurisdiction.\n(2) Every person employed or working upon any railway, aircraft, vessel, vehicle or other means of conveyance shall, in the absence of reasonable excuse the burden of proving which shall lie upon such person, give information to the officer in charge of the nearest police station regarding any box, package or bale in transit which he may have reason to suspect contains arms or ammunition in respect of which an offence under this Act has been or is being committed.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 36 - Information to be given regarding certain offences",
+        "metaTitle": "Section 36 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 37",
+        "sectionNo": "37",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Arrest and searches",
+        "description": "Save as otherwise provided in this Act,―\n(a) all arrests and searches made under this Act or under any rules made thereunder shall be carried out in accordance with the provisions of the [Code of Criminal Procedure, 1973 (2 of 1974)], relating respectively to arrests and searches made under that Code;\n(b) any person arrested and any arms or ammunition seized under this Act by a person not being a magistrate or a police officer shall be delivered without delay to the officer in charge of the nearest police station and that officer shall—\n(i) either release that person on his executing a bond with or without sureties to appear before a magistrate and keep the things seized in his custody till the appearance of that person before the magistrate, or\n(ii) should that person fail to execute the bond and to furnish, if so required, sufficient sureties, produce that person and those things without delay before the magistrate.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 37 - Arrest and searches",
+        "metaTitle": "Section 37 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 38",
+        "sectionNo": "38",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Offences to be cognizable",
+        "description": "Every offence under this Act shall be cognizable within the meaning of the [Code of Criminal Procedure, 1973 (2 of 1974)].",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 38 - Offences to be cognizable",
+        "metaTitle": "Section 38 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 39",
+        "sectionNo": "39",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Previous sanction of the district magistrate necessary in certain cases",
+        "description": "No prosecution shall be instituted against any person in respect of any offence under section 3 without the previous sanction of the district magistrate.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 39 - Previous sanction of the district magistrate necessary in certain cases",
+        "metaTitle": "Section 39 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 40",
+        "sectionNo": "40",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Protection of action taken in good faith",
+        "description": "No suit, prosecution or other legal proceeding shall lie against any person for anything which is in good faith done or intended to be done under this Act.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 40 - Protection of action taken in good faith",
+        "metaTitle": "Section 40 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 41",
+        "sectionNo": "41",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Power to exempt",
+        "description": "Where the Central Government is of the opinion that it is necessary or expedient in the public interest so to do, it may, by notification in the Official Gazette and subject to such conditions, if any, as it may specify in the notification,―\n(a) [exempt any person or class of persons (either generally or in relation to such description of arms and ammunition as may be specified in the notification)], or exclude any description of arms or ammunition, or withdraw any part of India, from the operation of all or any of the provisions of this Act; and\n(b) as often as may be, cancel any such notification and again subject, by a like notification, the person or class of persons or the description of arms and ammunition or the part of India to the operation of such provisions.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 41 - Power to exempt",
+        "metaTitle": "Section 41 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 42",
+        "sectionNo": "42",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Power to take census of firearms",
+        "description": "(1) The Central Government may, by notification in the Official Gazette, direct a census to be taken of all firearms in any area and empower any officer of Government to take such census.\n(2) On the issue of any such notification all persons having in their possession any firearm in that area shall furnish to the officer concerned such information as he may require in relation thereto and shall produce before him such firearms if he so requires.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 42 - Power to take census of firearms",
+        "metaTitle": "Section 42 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 43",
+        "sectionNo": "43",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Power to delegate",
+        "description": "(1) The Central Government may, by notification in the Official Gazette, direct that any power or function which may be exercised or performed by it under this Act other than the power under section 41 or the power under section 44 may, in relation to such matters and subject to such conditions, if any, as it may specify in the notification, be exercised or performed also by―\n(a) such officer or authority subordinate to the Central Government, or\n(b) such State Government or such officer or authority subordinate to the State Government,\nas may be specified in the notification.\n(2) Any rules made by the Central Government under this Act may confer powers or impose duties or authorise the conferring of powers or imposition of duties upon any State Government or any officer or authority subordinate thereto.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 43 - Power to delegate",
+        "metaTitle": "Section 43 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 44",
+        "sectionNo": "44",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Power to make rules",
+        "description": "(1) The Central Government may, by notification in the Official Gazette, make rules for carrying out the purposes of this Act.\n(2) In particular, and without prejudice to the generality of the foregoing power, such rules may provide for all or any of the following matters, namely:―\n(a) the appointment, jurisdiction, control and functions of licensing authorities [including the areas and the categories of arms and ammunition for which they may grant licences];\n(b) the form and particulars of application for the grant or renewal of a licence and where the application is for the renewal of a licence, the time within which it shall be made;\n(c) the form in which and the conditions subject to which any licence may be granted or refused, renewed, varied, suspended or revoked;\n(d) where no period has been specified in this Act, the period for which any licence shall continue to be in force;\n(e) the fees payable in respect of any application for the grant or renewal of a licence and in respect of any licence granted or renewed and the manner of paying the same;\n(f) the manner in which the maker’s name, the manufacturer’s number or other identification mark of a firearm shall be stamped or otherwise shown thereon;\n(g) the procedure for the test or proof of any firearms;\n(h) the firearms that may be used in the course of training, the age-limits of persons who may use them and the conditions for their use by such persons;\n(i) the authority to whom appeals may be preferred under section 18, the procedure to be followed by such authority and the period within which appeals shall be preferred, the fees to be paid in respect of such appeals and the refund of such fees;\n(j) the maintenance of records or accounts of anything done under a licence other than a licence under section 3 or section 4, the form of, and the entries to be made in, such records or accounts and the exhibition of such records or accounts to any police officer or to any officer of Government empowered in this behalf;\n(k) the entry and inspection by any police officer or by any officer of Government empowered in this behalf of any premises or other place in which arms or ammunition are or is manufactured or in which arms or ammunition are or is kept by a manufacturer of or dealer in such arms or ammunition and the exhibition of the same to such officer;\n(l) the conditions subject to which arms or ammunition may be deposited with a licensed dealer or in a unit armoury as required by sub-section (1) of section 21 and the period on the expiry of which the things so deposited may be forfeited;\n(m) any other matter which is to be, or may be, prescribed.\n(3) Every rule made under this section shall be laid, as soon as may be after it is made, before each House of Parliament, while it is in session for a total period of thirty days which may be comprised in one session or in [two or more successive sessions, and if, before the expiry of the session immediately following the session or the successive sessions aforesaid], both Houses agree in making any modification in the rule or both Houses agree that the rule should not be made, the rule shall thereafter have effect only in such modified form or be of no effect, as the case may be; so, however, that any such modification or annulment shall be without prejudice to the validity of anything previously done under that rule.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 44 - Power to make rules",
+        "metaTitle": "Section 44 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 45",
+        "sectionNo": "45",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Act not to apply in certain cases",
+        "description": "Nothing in this Act shall apply to―\n(a) arms or ammunition on board any sea-going vessel or any aircraft and forming part of the ordinary armament or equipment of such vessel or aircraft;\n(b) the acquisition, possession or carrying, the manufacture, repair, conversion, test or proof, the sale or transfer or the import, export or transport of arms or ammunition―\n(i) by or under orders of the Central Government, or\n(ii) by a public servant in the course of his duty as such public servant, or\n(iii) by a member of the National Cadet Corps raised and maintained under the National Cadet Corps Act, 1948 (31 of 1948), or by any officer or enrolled person of the Territorial Army raised and maintained under the Territorial Army Act, 1948 (56 of 1948), or by any member of any other forces raised and maintained or that may hereafter be raised and maintained under any Central Act, or by any member of such other forces as the Central Government may, by notification in the Official Gazette, specify, in the course of his duty as such member, officer or enrolled person;\n(c) any weapon of an obsolete pattern or of antiquarian value or in disrepair which is not capable of being used as a Firearm either with or without repair;\n(d) the acquisition, possession or carrying by a person of minor parts of arms or ammunition which are not intended to be used along with complementary parts acquired or possessed by that or any other person.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 45 - Act not to apply in certain cases",
+        "metaTitle": "Section 45 - THE ARMS ACT, 1959"
+    },
+    {
+        "section": "Section 46",
+        "sectionNo": "46",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Repeal of Act 11 of 1878",
+        "description": "(1) The Indian Arms Act, 1878 (11 of 1878), is hereby repealed.\n(2) Notwithstanding the repeal of the Indian Arms Act, 1878 (11 of 1878), and without prejudice to the provisions of sections 6 and 24 of the General Clauses Act, 1897 (10 of 1897), every licence granted or renewed under the first-mentioned Act and in force immediately before the commencement of this Act shall, unless sooner revoked, continue in force after such commencement for the unexpired portion of the period for which it has been granted or renewed.",
+        "metaData": "Chapter VI MISCELLANEOUS",
+        "metaDescription": "THE ARMS ACT, 1959 Section 46 - Repeal of Act 11 of 1878",
+        "metaTitle": "Section 46 - THE ARMS ACT, 1959"
+    }
+]
+
+def main():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    json_path = os.path.join(base_dir, 'prisma', 'armsBearerActData.json')
+    js_path = os.path.join(base_dir, 'prisma', 'armsBearerActData.js')
+
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(sections_data, f, indent=2, ensure_ascii=False)
+    
+    with open(js_path, 'w', encoding='utf-8') as f:
+        f.write("// THE ARMS ACT, 1959 Bearer Act Data with Full Chapter and Section Structure\n")
+        f.write("export const armsBearerActSections = ")
+        f.write(json.dumps(sections_data, indent=2, ensure_ascii=False))
+        f.write(";\n")
+
+    print(f"Generated {len(sections_data)} sections in {json_path} and {js_path}")
+
+if __name__ == '__main__':
+    main()

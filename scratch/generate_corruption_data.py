@@ -1,0 +1,652 @@
+#!/usr/bin/env python3
+"""
+Generates prisma/corruptionBearerActData.json and prisma/corruptionBearerActData.js
+containing all 35 sections of THE PREVENTION OF CORRUPTION ACT, 1988
+from the PDF.
+"""
+import json
+import os
+
+ACT_HEADING = "THE PREVENTION OF CORRUPTION ACT, 1988"
+
+sections = [
+    # CHAPTER I: PRELIMINARY
+    {
+        "section": "Section 1",
+        "sectionNo": "1",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Short title and extent",
+        "description": "(1) This Act may be called the Prevention of Corruption Act, 1988.\n(2) It extends to the whole of India *** and it applies also to all citizens of India outside India.",
+        "metaData": "Chapter I PRELIMINARY",
+        "metaDescription": f"{ACT_HEADING} Section 1 - Short title and extent",
+        "metaTitle": f"Section 1 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 2",
+        "sectionNo": "2",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Definitions",
+        "description": """In this Act, unless the context otherwise requires,—
+(a) “election” means any election, by whatever means held under any law for the purpose of selecting members of Parliament or of any Legislature, local authority or other public authority;
+[(aa) ‘‘prescribed’’ means prescribed by rules made under this Act and the expression ‘‘prescribe’’ shall be construed accordingly;]
+(b) “public duty” means a duty in the discharge of which the State, the public or the community at large has an interest;
+Explanation.—In this clause “State” includes a corporation established by or under a Central, Provincial or State Act, or an authority or a body owned or controlled or aided by the Government or a Government company as defined in section 617 of the Companies Act, 1956 (1 of 1956);
+(c) “public servant” means—
+(i) any person in the service or pay of the Government or remunerated by the Government by fees or commission for the performance of any public duty;
+(ii) any person in the service or pay of a local authority;
+(iii) any person in the service or pay of a corporation established by or under a Central, Provincial or State Act, or an authority or a body owned or controlled or aided by the Government or a Government company as defined in section 617 of the Companies Act, 1956 (1 of 1956);
+(iv) any Judge, including any person empowered by law to discharge, whether by himself or as a member of any body of persons, any adjudicatory functions;
+(v) any person authorised by a court of justice to perform any duty, in connection with the administration of justice, including a liquidator, receiver or commissioner appointed by such court;
+(vi) any arbitrator or other person to whom any cause or matter has been referred for decision or report by a court of justice or by a competent public authority;
+(vii) any person who holds an office by virtue of which he is empowered to prepare, publish, maintain or revise an electoral roll or to conduct an election or part of an election;
+(viii) any person who holds an office by virtue of which he is authorised or required to perform any public duty;
+(ix) any person who is the president, secretary or other office-bearer of a registered co-operative society engaged in agriculture, industry, trade or banking, receiving or having received any financial aid from the Central Government or a State Government or from any corporation established by or under a Central, Provincial or State Act, or any authority or body owned or controlled or aided by the Government or a Government company as defined in section 617 of the Companies Act, 1956 (1 of 1956);
+(x) any person who is a chairman, member or employee of any Service Commission or Board, by whatever name called, or a member of any selection committee appointed by such Commission or Board for the conduct of any examination or making any selection on behalf of such Commission or Board;
+(xi) any person who is a Vice-Chancellor or member of any governing body, professor, reader, lecturer or any other teacher or employee, by whatever designation called, of any University and any person whose services have been availed of by a University or any other public authority in connection with holding or conducting examinations;
+(xii) any person who is an office-bearer or an employee of an educational, scientific, social, cultural or other institution, in whatever manner established, receiving or having received any financial assistance from the Central Government or any State Government, or local or other public authority.
+[(d) “undue advantage” means any gratification whatever, other than legal remuneration.
+Explanation.—For the purposes of this clause,—
+(a) the word “gratification” is not limited to pecuniary gratifications or to gratifications estimable in money;
+(b) the expression “legal remuneration” is not restricted to remuneration paid to a public servant, but includes all remuneration which he is permitted by the Government or the organisation, which he serves, to receive.]
+Explanation 1.—Persons falling under any of the above sub-clauses are public servants, whether appointed by the Government or not.
+Explanation 2.—Wherever the words “public servant” occur, they shall be understood of every person who is in actual possession of the situation of a public servant, whatever legal defect there may be in his right to hold that situation.""",
+        "metaData": "Chapter I PRELIMINARY",
+        "metaDescription": f"{ACT_HEADING} Section 2 - Definitions",
+        "metaTitle": f"Section 2 - {ACT_HEADING}"
+    },
+
+    # CHAPTER II: APPOINTMENT OF SPECIAL JUDGES
+    {
+        "section": "Section 3",
+        "sectionNo": "3",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "APPOINTMENT OF SPECIAL JUDGES",
+        "title": "Power to appoint special Judges",
+        "description": """(1) The Central Government or the State Government may, by notification in the Official Gazette, appoint as many special Judges as may be necessary for such area or areas or for such case or group of cases as may be specified in the notification to try the following offences, namely:—
+(a) any offence punishable under this Act; and
+(b) any conspiracy to commit or any attempt to commit or any abetment of any of the offences specified in clause (a).
+(2) A person shall not be qualified for appointment as a special Judge under this Act unless he is or has been a Sessions Judge or an Additional Sessions Judge or an Assistant Sessions Judge under the Code of Criminal Procedure, 1973 (2 of 1974).""",
+        "metaData": "Chapter II APPOINTMENT OF SPECIAL JUDGES",
+        "metaDescription": f"{ACT_HEADING} Section 3 - Power to appoint special Judges",
+        "metaTitle": f"Section 3 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 4",
+        "sectionNo": "4",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "APPOINTMENT OF SPECIAL JUDGES",
+        "title": "Cases triable by special Judges",
+        "description": """(1) Notwithstanding anything contained in the Code of Criminal Procedure, 1973 (2 of 1974), or in any other law for the time being in force, the offences specified in sub-section (1) of section 3 shall be tried by special Judges only.
+(2) Every offence specified in sub-section (1) of section 3 shall be tried by the special Judge for the area within which it was committed, or, as the case may be, by the special Judge appointed for the case, or where there are more special Judges than one for such area, by such one of them as may be specified in this behalf by the Central Government.
+(3) When trying any case, a special Judge may also try any offence, other than an offence specified in section 3, with which the accused may, under the Code of Criminal Procedure, 1973 (2 of 1974), be charged at the same trial.
+[(4) Notwithstanding anything contained in the Code of Criminal Procedure, 1973 (2 of 1974), the trial of an offence shall be held, as far as practicable, on day-to-day basis and an endeavour shall be made to ensure that the said trial is concluded within a period of two years:
+Provided that where the trial is not concluded within the said period, the special Judge shall record the reasons for not having done so:
+Provided further that the said period may be extended by such further period, for reasons to be recorded in writing but not exceeding six months at a time; so, however, that the said period together with such extended period shall not exceed ordinarily four years in aggregate.]""",
+        "metaData": "Chapter II APPOINTMENT OF SPECIAL JUDGES",
+        "metaDescription": f"{ACT_HEADING} Section 4 - Cases triable by special Judges",
+        "metaTitle": f"Section 4 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 5",
+        "sectionNo": "5",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "APPOINTMENT OF SPECIAL JUDGES",
+        "title": "Procedure and powers of special Judge",
+        "description": """(1) A special Judge may take cognizance of offences without the accused being committed to him for trial and, in trying the accused persons, shall follow the procedure prescribed by the Code of Criminal Procedure, 1973 (2 of 1974), for the trial of warrant cases by Magistrates.
+(2) A special Judge may, with a view to obtaining the evidence of any person supposed to have been directly or indirectly concerned in, or privy to, an offence, tender a pardon to such person on condition of his making a full and true disclosure of the whole circumstances within his knowledge relating to the offence and to every other person concerned, whether as principal or abettor, in the commission thereof and any pardon so tendered shall, for the purposes of sub-sections (1) to (5) of section 308 of the Code of Criminal Procedure, 1973 (2 of 1974), be deemed to have been tendered under section 307 of that Code.
+(3) Save as provided in sub-section (1) or sub-section (2), the provisions of the Code of Criminal Procedure, 1973 (2 of 1974), shall, so far as they are not inconsistent with this Act, apply to the proceedings before a special Judge; and for the purposes of the said provisions, the Court of the special Judge shall be deemed to be a Court of Session and the person conducting a prosecution before a special Judge shall be deemed to be a public prosecutor.
+(4) In particular and without prejudice to the generality of the provisions contained in sub-section (3), the provisions of sections 326 and 475 of the Code of Criminal Procedure, 1973 (2 of 1974), shall, so far as may be, apply to the proceedings before a special Judge and for the purposes of the said provisions, a special Judge shall be deemed to be a Magistrate.
+(5) A special Judge may pass upon any person convicted by him any sentence authorised by law for the punishment of the offence of which such person is convicted.
+(6) A special Judge, while trying an offence punishable under this Act, shall exercise all the powers and functions exercisable by a District Judge under the Criminal Law Amendment Ordinance, 1944 (Ord. 38 of 1944).""",
+        "metaData": "Chapter II APPOINTMENT OF SPECIAL JUDGES",
+        "metaDescription": f"{ACT_HEADING} Section 5 - Procedure and powers of special Judge",
+        "metaTitle": f"Section 5 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 6",
+        "sectionNo": "6",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "APPOINTMENT OF SPECIAL JUDGES",
+        "title": "Power to try summarily",
+        "description": """(1) Where a special Judge tries any offence specified in sub-section (1) of section 3, alleged to have been committed by a public servant in relation to the contravention of any special order referred to in sub-section (1) of section 12A of the Essential Commodities Act, 1955 (10 of 1955) or of an order referred to in clause (a) of sub-section (2) of that section, then, notwithstanding anything contained in sub-section (1) of section 5 of this Act or section 260 of the Code of Criminal Procedure, 1973 (2 of 1974), the special Judge shall try the offence in a summary way, and the provisions of sections 262 to 265 (both inclusive) of the said Code shall, as far as may be, apply to such trial:
+Provided that, in the case of any conviction in a summary trial under this section, it shall be lawful for the special Judge to pass a sentence of imprisonment for a term not exceeding one year:
+Provided further that when at the commencement of, or in the course of, a summary trial under this section, it appears to the special Judge that the nature of the case is such that a sentence of imprisonment for a term exceeding one year may have to be passed or that it is, for any other reason, undesirable to try the case summarily, the special Judge shall, after hearing the parties, record an order to that effect and thereafter recall any witnesses who may have been examined and proceed to hear or re-hear the case in accordance with the procedure prescribed by the said Code for the trial of warrant cases by Magistrates.
+(2) Notwithstanding anything to the contrary contained in this Act or in the Code of Criminal Procedure, 1973 (2 of 1974), there shall be no appeal by a convicted person in any case tried summarily under this section in which the special Judge passes a sentence of imprisonment not exceeding one month, and of fine not exceeding two thousand rupees whether or not any order under section 452 of the said Code is made in addition to such sentence, but an appeal shall lie where any sentence in excess of the aforesaid limits is passed by the special Judge.""",
+        "metaData": "Chapter II APPOINTMENT OF SPECIAL JUDGES",
+        "metaDescription": f"{ACT_HEADING} Section 6 - Power to try summarily",
+        "metaTitle": f"Section 6 - {ACT_HEADING}"
+    },
+
+    # CHAPTER III: OFFENCES AND PENALTIES
+    {
+        "section": "Section 7",
+        "sectionNo": "7",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Offence relating to public servant being bribed",
+        "description": """Any public servant who,—
+(a) obtains or accepts or attempts to obtain from any person, an undue advantage, with the intention to perform or cause performance of public duty improperly or dishonestly or to forbear or cause forbearance to perform such duty either by himself or by another public servant; or
+(b) obtains or accepts or attempts to obtain, an undue advantage from any person as a reward for the improper or dishonest performance of a public duty or for forbearing to perform such duty either by himself or another public servant; or
+(c) performs or induces another public servant to perform improperly or dishonestly a public duty or to forbear performance of such duty in anticipation of or in consequence of accepting an undue advantage from any person,
+shall be punishable with imprisonment for a term which shall not be less than three years but which may extend to seven years and shall also be liable to fine.
+Explanation 1.—For the purpose of this section, the obtaining, accepting, or the attempting to obtain an undue advantage shall itself constitute an offence even if the performance of a public duty by public servant, is not or has not been improper.
+Illustration.—A public servant, ‘S’ asks a person, ‘P’ to give him an amount of five thousand rupees to process his routine ration card application on time. 'S' is guilty of an offence under this section.
+Explanation 2.—For the purpose of this section,—
+(i) the expressions “obtains” or “accepts” or “attempts to obtain” shall cover cases where a person being a public servant, obtains or “accepts” or attempts to obtain, any undue advantage for himself or for another person, by abusing his position as a public servant or by using his personal influence over another public servant; or by any other corrupt or illegal means;
+(ii) it shall be immaterial whether such person being a public servant obtains or accepts, or attempts to obtain the undue advantage directly or through a third party.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 7 - Offence relating to public servant being bribed",
+        "metaTitle": f"Section 7 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 7A",
+        "sectionNo": "7A",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Taking undue advantage to influence public servant by corrupt or illegal means or by exercise of personal influence",
+        "description": """Whoever accepts or obtains or attempts to obtain from another person for himself or for any other person any undue advantage as a motive or reward to induce a public servant, by corrupt or illegal means or by exercise of his personal influence to perform or to cause performance of a public duty improperly or dishonestly or to forbear or to cause to forbear such public duty by such public servant or by another public servant, shall be punishable with imprisonment for a term which shall not be less than three years but which may extend to seven years and shall also be liable to fine.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 7A - Taking undue advantage to influence public servant by corrupt or illegal means or by exercise of personal influence",
+        "metaTitle": f"Section 7A - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 8",
+        "sectionNo": "8",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Offence relating to bribing of a public servant",
+        "description": """(1) Any person who gives or promises to give an undue advantage to another person or persons, with intention—
+(i) to induce a public servant to perform improperly a public duty; or
+(ii) to reward such public servant for the improper performance of public duty,
+shall be punishable with imprisonment for a term which may extend to seven years or with fine or with both:
+Provided that the provisions of this section shall not apply where a person is compelled to give such undue advantage:
+Provided further that the person so compelled shall report the matter to the law enforcement authority or investigating agency within a period of seven days from the date of giving such undue advantage:
+Provided also that when the offence under this section has been committeed by commercial organisation, such commercial organisation shall be punishable with fine.
+Illustration.—A person, ‘P’ gives a public servant, ‘S’ an amount of ten thousand rupees to ensure that he is granted a license, over all the other bidders. ‘P’ is guilty of an offence under this sub-section.
+Explanation.—It shall be immaterial whether the person to whom an undue advantage is given or promised to be given is the same person as the person who is to perform, or has performed, the public duty concerned, and, it shall also be immaterial whether such undue advantage is given or promised to be given by the person directly or through a third party.
+(2) Nothing in sub-section (1) shall apply to a person, if that person, after informing a law enforcement authority or investigating agency, gives or promises to give any undue advantage to another person in order to assist such law enforcement authority or investigating agency in its investigation of the offence alleged against the latter.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 8 - Offence relating to bribing of a public servant",
+        "metaTitle": f"Section 8 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 9",
+        "sectionNo": "9",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Offence relating to bribing a public servant by a commercial organisation",
+        "description": """(1) Where an offence under this Act has been committed by a commercial organisation, such organisation shall be punishable with fine, if any person associated with such commercial organisation gives or promises to give any undue advantage to a public servant intending—
+(a) to obtain or retain business for such commercial organisation; or
+(b) to obtain or retain an advantage in the conduct of business for such commercial organisation:
+Provided that it shall be a defence for the commercial organisation to prove that it had in place adequate procedures in compliance of such guidelines as may be prescribed to prevent persons associated with it from undertaking such conduct.
+(2) For the purposes of this section, a person is said to give or promise to give any undue advantage to a public servant, if he is alleged to have committed the offence under section 8, whether or not such person has been prosecuted for such offence.
+(3) For the purposes of section 8 and this section,—
+(a) “commercial organisation” means—
+(i) a body which is incorporated in India and which carries on a business, whether in India or outside India;
+(ii) any other body which is incorporated outside India and which carries on a business, or part of a business, in any part of India;
+(iii) a partnership firm or any association of persons formed in India and which carries on a business whether in India or outside India; or
+(iv) any other partnership or association of persons which is formed outside India and which carries on a business, or part of a business, in any part of India;
+(b) “business” includes a trade or profession or providing service;
+(c) a person is said to be associated with the commercial organisation, if such person performs services for or on behalf of the commercial organisation irrespective of any promise to give or giving of any undue advantage which constitutes an offence under sub-section (1).
+Explanation 1.—The capacity in which the person performs services for or on behalf of the commercial organisation shall not matter irrespective of whether such person is employee or agent or subsidiary of such commercial organisation.
+Explanation 2.—Whether or not the person is a person who performs services for or on behalf of the commercial organisation is to be determined by reference to all the relevant circumstances and not merely by reference to the nature of the relationship between such person and the commercial organisation.
+Explanation 3.—If the person is an employee of the commercial organisation, it shall be presumed unless the contrary is proved that such person is a person who has performed services for or on behalf of the commercial organisation.
+(4) Notwithstanding anything contained in the Code of Criminal Procedure, 1973 (2 of 1974), the offence under sections 7A, 8 and this section shall be cognizable.
+(5) The Central Government shall, in consultation with the concerned stakeholders including departments and with a view to preventing persons associated with commercial organisations from bribing any person, being a public servant, prescribe such guidelines as may be considered necessary which can be put in place for compliance by such organisations.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 9 - Offence relating to bribing a public servant by a commercial organisation",
+        "metaTitle": f"Section 9 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 10",
+        "sectionNo": "10",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Person in charge of commercial organisation to be guilty of offence",
+        "description": """Where an offence under section 9 is committed by a commercial organisation, and such offence is proved in the court to have been committed with the consent or connivance of any director, manager, secretary or other officer shall be of the commercial organisation, such director, manager, secretary or other officer shall be guilty of the offence and shall be liable to be proceeded against and shall be punishable with imprisonment for a term which shall not be less than three years but which may extend to seven years and shall also be liable to fine.
+Explanation.—For the purposes of this section, ‘‘director’’, in relation to a firm means a partner in the firm.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 10 - Person in charge of commercial organisation to be guilty of offence",
+        "metaTitle": f"Section 10 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 11",
+        "sectionNo": "11",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Public servant obtaining undue advantage, without consideration from person concerned in proceeding or business transacted by such public servant",
+        "description": """Whoever, being a public servant, accepts or obtains *** or attempts to obtain for himself, or for any other person, any [undue advantage] without consideration, or for a consideration which he knows to be inadequate, from any person whom he knows to have been, or to be, or to be likely to be concerned in any proceeding or business transacted or about to be transacted by such public servant, or having any connection with the [official functions or public duty] of himself or of any public servant to whom he is subordinate, or from any person whom he knows to be interested in or related to the person so concerned, shall be punishable with imprisonment for a term which shall be not less than six months but which may extend to five years and shall also be liable to fine.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 11 - Public servant obtaining undue advantage, without consideration from person concerned in proceeding or business transacted by such public servant",
+        "metaTitle": f"Section 11 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 12",
+        "sectionNo": "12",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for abetment of offences",
+        "description": """Whoever abets any offence punishable under this Act, whether or not that offence is committed in consequence of that abetment, shall be punishable with imprisonment for a term which shall not be less than three years, but which may extend to seven years and shall also be liable to fine.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 12 - Punishment for abetment of offences",
+        "metaTitle": f"Section 12 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 13",
+        "sectionNo": "13",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Criminal misconduct by a public servant",
+        "description": """(1) A public servant is said to commit the offence of criminal misconduct,—
+(a) if he dishonestly or fraudulently misappropriates or otherwise converts for his own use any property entrusted to him or any property under his control as a public servant or allows any other person so to do; or
+(b) if he intentionally enriches himself illicitly during the period of his office.
+Explanation 1.—A person shall be presumed to have intentionally enriched himself illicitly if he or any person on his behalf, is in possession of or has, at any time during the period of his office, been in possession of pecuniary resources or property disproportionate to his known sources of income which the public servant cannot satisfactorily account for.
+Explanation 2.—The expression ‘‘known sources of income’’ means income received from any lawful sources.
+(2) Any public servant who commits criminal misconduct shall be punishable with imprisonment for a term which shall be not less than [four years] but which may extend to [ten years] and shall also be liable to fine.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 13 - Criminal misconduct by a public servant",
+        "metaTitle": f"Section 13 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 14",
+        "sectionNo": "14",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for habitual offender",
+        "description": """Whoever convicted of an offence under this Act subsequently commits an offence punishable under this Act, shall be punishable with imprisonment for a term which shall not be less than five years but which may extend to ten years and shall also be liable to fine.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 14 - Punishment for habitual offender",
+        "metaTitle": f"Section 14 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 15",
+        "sectionNo": "15",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Punishment for attempt",
+        "description": """Whoever attempts to commit an offence referred to in [clause (a)] of sub-section (1) of section 13 shall be punishable with imprisonment for a term [which shall not be less than two years but which may extend to five years] and with fine.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 15 - Punishment for attempt",
+        "metaTitle": f"Section 15 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 16",
+        "sectionNo": "16",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "OFFENCES AND PENALTIES",
+        "title": "Matters to be taken into consideration for fixing fine",
+        "description": """Where a sentence of fine is imposed under [section 7 or section 8 or section 9 or section 10 or section 11 or sub-section (2) of section 13 or section 14 or section 15], the court in fixing the amount of the fine shall take into consideration the amount or the value of the property, if any, which the accused person has obtained by committing the offence or where the conviction is for an offence referred to in [clause (b)] of sub-section (1) of section 13, the pecuniary resources or property referred to in that clause for which the accused person is unable to account satisfactorily.""",
+        "metaData": "Chapter III OFFENCES AND PENALTIES",
+        "metaDescription": f"{ACT_HEADING} Section 16 - Matters to be taken into consideration for fixing fine",
+        "metaTitle": f"Section 16 - {ACT_HEADING}"
+    },
+
+    # CHAPTER IV: INVESTIGATION INTO CASES UNDER THE ACT
+    {
+        "section": "Section 17",
+        "sectionNo": "17",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "INVESTIGATION INTO CASES UNDER THE ACT",
+        "title": "Persons authorised to investigate",
+        "description": """Notwithstanding anything contained in the Code of Criminal Procedure, 1973 (2 of 1974), no police officer below the rank,—
+(a) in the case of the Delhi Special Police Establishment, of an Inspector of Police;
+(b) in the metropolitan areas of Bombay, Calcutta, Madras and Ahmedabad and in any other metropolitan area notified as such under sub-section (1) of section 8 of the Code of Criminal Procedure, 1973 (2 of 1974), of an Assistant Commissioner of Police;
+(c) elsewhere, of a Deputy Superintendent of Police or a police officer of equivalent rank,
+shall investigate any offence punishable under this Act without the order of a Metropolitan Magistrate or a Magistrate of the first class, as the case may be, or make any arrest therefor without a warrant:
+Provided that if a police officer not below the rank of an Inspector of Police is authorised by the State Government in this behalf by general or special order, he may also investigate any such offence without the order of a Metropolitan Magistrate or a Magistrate of the first class, as the case may be, or make arrest therefor without a warrant:
+Provided further that an offence referred to in [clause (b) of sub-section (1)] of section 13 shall not be investigated without the order of a police officer not below the rank of a Superintendent of Police.""",
+        "metaData": "Chapter IV INVESTIGATION INTO CASES UNDER THE ACT",
+        "metaDescription": f"{ACT_HEADING} Section 17 - Persons authorised to investigate",
+        "metaTitle": f"Section 17 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 17A",
+        "sectionNo": "17A",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "INVESTIGATION INTO CASES UNDER THE ACT",
+        "title": "Enquiry or Inquiry or investigation of offences relatable to recommendations made or decision taken by public servant in discharge of official functions or duties",
+        "description": """No police officer shall conduct any enquiry or inquiry or investigation into any offence alleged to have been committed by a public servant under this Act, where the alleged offence is relatable to any recommendation made or decision taken by such public servant in discharge of his official functions or duties, without the previous approval—
+(a) in the case of a person who is or was employed, at the time when the offence was alleged to have been committed, in connection with the affairs of the Union, of that Government;
+(b) in the case of a person who is or was employed, at the time when the offence was alleged to have been committed, in connection with the affairs of a State, of that Government;
+(c) in the case of any other person, of the authority competent to remove him from his office, at the time when the offence was alleged to have been committed:
+Provided that no such approval shall be necessary for cases involving arrest of a person on the spot on the charge of accepting or attempting to accept any undue advantage for himself or for any other person:
+Provided further that the concerned authority shall convey its decision under this section within a period of three months, which may, for reasons to be recorded in writing by such authority, be extended by a further period of one month.
+
+STATE AMENDMENT
+Union Territory of Jammu and Kashmir and Union Territory of Ladakh
+Insertion of section 17B.—After section 17A, insert the following section, namely:—
+17B. Establishment of Anti-Corruption Bureau for the Union territory of Jammu and Kashmir.—(1) Notwithstanding anything contained in this Act, the Government of Union territory of Jammu and Kashmir shall, by notification in the Official Gazette, establish a Bureau for investigation of offences under this Act under the name of ‘Anti-Corruption Bureau’.
+(2) The Bureau shall consist of the Director and such other officers and staff subordinate to him as the Government of Union territory of Jammu and Kashmir may from time to time think fit to appoint.
+(3) The qualification of officers (other than the Director) shall be such as may be prescribed by the Government of Union territory of Jammu and Kashmir:
+Provided that till qualification of officers (other than the Director) is prescribed by the Government of Union Territory of Jammu and Kashmir, the rules notified by the Government in this regard under the Prevention of Corruption Act, Samvat, 2006 (now repealed) shall continue to govern the qualification of such officers.
+(4) The Director and the officers and staff subordinate to him shall hold office for such term and on such conditions as the Government of Union Territory of Jammu and Kashmir may from time to time determine.
+Explanation:—The Anti-Corruption Bureau established under the Prevention of Corruption Act, Samvat, 2006 (now repealed) shall deemed to be Anti-Corruption Bureau established under the provisions of this Act, as if the same has been established under the provisions of this Act and any reference to the Anti-Corruption Bureau in any law, order, notification or rules in force in the Union Territory of Jammu and Kashmir shall be construed to mean the Anti-Corruption Bureau established under the provisions of this Act.
+Insertion of section 17C to 17G.—After section 17A, insert the following sections, namely:—
+17C. Powers of attachment of property.—(1) If an officer (not below the rank of Deputy Superintendent of Police) of the Anti-Corruption Bureau, investigating an offence committed under this Act, has reason to believe that any property in relation to which an investigation is being conducted has been acquired by resorting to such acts of omission and commission which constitute an offence of ‘criminal misconduct’ as defined under section 5, he shall, with the prior approval in writing of the Director of the Anti-Corruption Bureau, make an order seizing such property and, where it is not practicable to seize such property, make an order of attachment directing that such property shall not be transferred or otherwise dealt with, except with the prior permission of the officer making such order or of the Designated Authority to be notified by the Government of Union territory of Jammu and Kashmir before whom the properties seized or attached are produced and a copy of such order shall be served on the person concerned:
+Provided that the Investigating Officer may, at any stage of investigation after registration of F.I.R. in respect of any case under the Act where he has reason to believe that such property is likely to be transferred or otherwise dealt with to defeat the prosecution of the case direct that such property shall not be transferred or dealt with for such period, not exceeding ninety days, as may be specified in the order except with the prior approval of the Designated Authority.
+Explanation.—For the purposes of this section, “attachment” shall include temporarily assuming the custody, possession and/or control of such property].
+(2) The Investigating officer shall inform the Designated Authority, within forty eight hours, of the seizure or attachment of such property together with a report of the circumstances occasioning the seizure or attachment of such property, as the case may be.
+(3) It shall be open to the Designated Authority before whom the seized or attached properties are produced either to confirm or revoke the order of seizure or attachment so issued within [thirty days]:
+Provided that an opportunity of being heard shall be afforded to the Investigating Officer and the person whose property is being attached or seized before making any order under this sub-section:
+Provided further that till disposal of the case the Designated Authority shall ensure the safety and protection of such property.
+(4) In the case of immovable property attached by the Investigating Officer, it shall be deemed to have been produced before the Designated Authority, when the Investigating Officer notifies his report and places it at the disposal of the Designated Authority.
+(5) Any person aggrieved by an order under the proviso to sub-section (1) may apply to the Designated Authority for grant of permission to transfer or otherwise deal with such property.
+(6) The Designated Authority may either grant, or refuse to grant, the permission to the applicant.
+(7) The Designated Authority, acting under the provisions of this Act, shall have all the powers of a civil court required for making a full and fair enquiry into the matter before it.
+17D. Appeal against the order of Designated Authority.―(1) Any person aggrieved by an order made by the Designated Authority under sub-section (3) or sub-section (5) of section 17C may prefer an appeal, within one month from the date of receipt of the order, to the Special Judge and the Special Court may either confirm the order of attachment of property or seizure so made or revoke such order and release the property or pass such order as it may deem just and proper within a period of sixty days.
+(2) Where any property is seized or attached under section 17C and the Special Court is satisfied about such seizure or attachment, it may order forfeiture of such property, whether or not the person from whose possession it is seized or attached is prosecuted in the Special Court for an offence under this Act.
+(3) It shall be competent for the Special Court to make an order in respect of property seized or attached,―
+(a) directing it to be sold if it is a perishable property and the provisions of section 459 of the Code of Criminal Procedure, 1973 (2 of 1974) shall, as nearly as may be practicable, apply to the net proceeds of such sale;
+(b) nominating any officer of the Government, in the case of any other property, to perform the function of the Administrator of such property subject to such conditions as may be specified by the Special Court.
+17E. Issue of show-cause notice before forfeiture of the property.—No order under sub-section (2) of section 17D shall be made by the Special Court—
+(a) unless the person holding or in possession of such property is given a notice in writing informing him of the grounds on which it is proposed to forfeit such property and such person is given an opportunity of making a representation in writing within such reasonable time as may be specified in the notice against the grounds of forfeiture and is also given a reasonable opportunity of being heard in the matter;
+(b) if the person holding or in possession of such property establishes that he is a bona fide transferee of such property for value without knowing that such property has been so acquired.
+17F. Appeal.—(1) Any person aggrieved by order of the Special Court under section 17D may within one month from the date of the receipt of such order, appeal to the High Court of Jammu and Kashmir.
+(2) Where any order under section 17D is modified or annulled by the High Court or where in a prosecution instituted for the contravention of the provisions of this Act, the person against whom an order of the special court has been made is acquitted, such property shall be returned to him and in either case if it is not possible for any reason to return the forfeited property, such person shall be paid the price therefor as if the property had been sold to the Government with reasonable interest calculated from the date of seizure of the property and such price shall be determined in the manner prescribed.
+17G. Order of forfeiture not to interfere with other punishments.—The order of forfeiture made under this Act by the Special Court, shall not prevent the infliction of any other punishment to which the person affected thereby is liable under this Act.
+[Vide the Jammu and Kashmir Reorganization (Adaptation of Central Laws) Order, 2020, notification No. S.O. 1123(E) dated (18-3-2020).]""",
+        "metaData": "Chapter IV INVESTIGATION INTO CASES UNDER THE ACT",
+        "metaDescription": f"{ACT_HEADING} Section 17A - Enquiry or Inquiry or investigation of offences relatable to recommendations made or decision taken by public servant in discharge of official functions or duties",
+        "metaTitle": f"Section 17A - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 18",
+        "sectionNo": "18",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "INVESTIGATION INTO CASES UNDER THE ACT",
+        "title": "Power to inspect bankers’ books",
+        "description": """If from information received or otherwise, a police officer has reason to suspect the commission of an offence which he is empowered to investigate under section 17 and considers that for the purpose of investigation or inquiry into such offence, it is necessary to inspect any bankers’ books, then, notwithstanding anything contained in any law for the time being in force, he may inspect any bankers’ books in so far as they relate to the accounts of the persons suspected to have committed that offence or of any other person suspected to be holding money on behalf of such person, and take or cause to be taken certified copies of the relevant entries therefrom, and the bank concerned shall be bound to assist the police officer in the exercise of his powers under this section:
+Provided that no power under this section in relation to the accounts of any person shall be exercised by a police officer below the rank of a Superintendent of Police, unless he is specially authorised in this behalf by a police officer of or above the rank of a Superintendent of Police.
+Explanation.—In this section, the expressions “bank” and “bankers’ books” shall have the meanings respectively assigned to them in the Bankers’ Books Evidence Act, 1891 (18 of 1891).""",
+        "metaData": "Chapter IV INVESTIGATION INTO CASES UNDER THE ACT",
+        "metaDescription": f"{ACT_HEADING} Section 18 - Power to inspect bankers’ books",
+        "metaTitle": f"Section 18 - {ACT_HEADING}"
+    },
+
+    # CHAPTER IVA: ATTACHMENT AND FORFEITURE OF PROPERTY
+    {
+        "section": "Section 18A",
+        "sectionNo": "18A",
+        "chapterNo": 5,
+        "chapterRoman": "IVA",
+        "chapterName": "ATTACHMENT AND FORFEITURE OF PROPERTY",
+        "title": "Provisions of Criminal Law Amendment Ordinance, 1944 to apply to attachment under this Act",
+        "description": """(1) Save as otherwise provided under the Prevention of Money Laundering Act, 2002 (15 of 2003), the provisions of the Criminal Law Amendment Ordinance, 1944 (Ord. 38 of 1944) shall, as far as may be, apply to the attachment, administration of attached property and execution of order of attachment or confiscation of money or property procured by means of an offence under this Act.
+(2) For the purposes of this Act, the provisions of the Criminal Law Amendment Ordinance, 1944 (Ord. 38 of 1944) shall have effect, subject to the modification that the references to “District Judge” shall be construed as references to “Special Judge”.""",
+        "metaData": "Chapter IVA ATTACHMENT AND FORFEITURE OF PROPERTY",
+        "metaDescription": f"{ACT_HEADING} Section 18A - Provisions of Criminal Law Amendment Ordinance, 1944 to apply to attachment under this Act",
+        "metaTitle": f"Section 18A - {ACT_HEADING}"
+    },
+
+    # CHAPTER V: SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS
+    {
+        "section": "Section 19",
+        "sectionNo": "19",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Previous sanction necessary for prosecution",
+        "description": """(1) No court shall take cognizance of an offence punishable under [sections 7, 11, 13 and 15] alleged to have been committed by a public servant, except with the previous sanction [save as otherwise provided in the Lokpal and Lokayuktas Act, 2013 (1 of 2014)]—
+(a) in the case of a person [who is employed, or as the case may be, was at the time of commission of the alleged offence employed] in connection with the affairs of the Union and is not removable from his office save by or with the sanction of the Central Government, of that Government;
+(b) in the case of a person [who is employed, or as the case may be, was at the time of commission of the alleged offence employed] in connection with the affairs of a State and is not removable from his office save by or with the sanction of the State Government, of that Government;
+(c) in the case of any other person, of the authority competent to remove him from his office:
+[Provided that no request can be made, by a person other than a police officer or an officer of an investigation agency or other law enforcement authority, to the appropriate Government or competent authority, as the case may be, for the previous sanction of such Government or authority for taking cognizance by the court of any of the offences specified in this sub-section, unless—
+(i) such person has filed a complaint in a competent court about the alleged offences for which the public servant is sought to be prosecuted; and
+(ii) the court has not dismissed the complaint under section 203 of the Code of Criminal Procedure, 1973 (2 of 1974) and directed the complainant to obtain the sanction for prosecution against the public servant for further proceeding:
+Provided further that in the case of request from the person other than a police officer or an officer of an investigation agency or other law enforcement authority, the appropriate Government or competent authority shall not accord sanction to prosecute a public servant without providing an opportunity of being heard to the concerned public servant:
+Provided also that the appropriate Government or any competent authority shall, after the receipt of the proposal requiring sanction for prosecution of a public servant under this sub-section, endeavour to convey the decision on such proposal within a period of three months from the date of its receipt:
+Provided also that in case where, for the purpose of grant of sanction for prosecution, legal consultation is required, such period may, for the reasons to be recorded in writing, be extended by a further period of one month:
+Provided also that the Central Government may, for the purpose of sanction for prosecution of a public servant, prescribe such guidelines as it considers necessary.
+Explanation.—For the purposes of sub-section (1), the expression “public servant” includes such person—
+(a) who has ceased to hold the office during which the offence is alleged to have been committed; or
+(b) who has ceased to hold the office during which the offence is alleged to have been committed and is holding an office other than the office during which the offence is alleged to have been committed.]
+(2) Where for any reason whatsoever any doubt arises as to whether the previous sanction as required under sub-section (1) should be given by the Central Government or the State Government or any other authority, such sanction shall be given by that Government or authority which would have been competent to remove the public servant from his office at the time when the offence was alleged to have been committed.
+(3) Notwithstanding anything contained in the Code of Criminal Procedure, 1973 (2 of 1974),—
+(a) no finding, sentence or order passed by a special Judge shall be reversed or altered by a Court in appeal, confirmation or revision on the ground of the absence of, or any error, omission or irregularity in, the sanction required under sub-section (1), unless in the opinion of that court, a failure of justice has in fact been occasioned thereby;
+(b) no court shall stay the proceedings under this Act on the ground of any error, omission or irregularity in the sanction granted by the authority, unless it is satisfied that such error, omission or irregularity has resulted in a failure of justice;
+(c) no court shall stay the proceedings under this Act on any other ground and no court shall exercise the powers of revision in relation to any interlocutory order passed in any inquiry, trial, appeal or other proceedings.
+(4) In determining under sub-section (3) whether the absence of, or any error, omission or irregularity in, such sanction has occasioned or resulted in a failure of justice the court shall have regard to the fact whether the objection could and should have been raised at any earlier stage in the proceedings.
+Explanation.—For the purposes of this section,—
+(a) error includes competency of the authority to grant sanction;
+(b) a sanction required for prosecution includes reference to any requirement that the prosecution shall be at the instance of a specified authority or with the sanction of a specified person or any requirement of a similar nature.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 19 - Previous sanction necessary for prosecution",
+        "metaTitle": f"Section 19 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 20",
+        "sectionNo": "20",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Presumption where public servant accepts any undue advantage",
+        "description": """Where, in any trial of an offence punishable under section 7 or under section 11, it is proved that a public servant accused of an offence has accepted or obtained or attempted to obtain for himself, or for any other person, any undue advantage from any person, it shall be presumed, unless the contrary is proved, that he accepted or obtained or attempted to obtain that undue advantage, as a motive or reward under section 7 for performing or to cause performance of a public duty improperly or dishonestly either by himself or by another public servant or, as the case may be, any undue advantage without consideration or for a consideration which he knows to be inadequate under section 11.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 20 - Presumption where public servant accepts any undue advantage",
+        "metaTitle": f"Section 20 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 21",
+        "sectionNo": "21",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Accused person to be a competent witness",
+        "description": """Any person charged with an offence punishable under this Act, shall be a competent witness for the defence and may give evidence on oath in disproof of the charges made against him or any person charged together with him at the same trial:
+Provided that—
+(a) he shall not be called as a witness except at his own request;
+(b) his failure to give evidence shall not be made the subject of any comment by the prosecution or give rise to any presumption against himself or any person charged together with him at the same trial;
+(c) he shall not be asked, and if asked shall not be required to answer, any question tending to show that he has committed or been convicted of any offence other than the offence with which he is charged, or is of bad character, unless—
+(i) the proof that he has committed or been convicted of such offence is admissible evidence to show that he is guilty of the offence with which he is charged, or
+(ii) he has personally or by his pleader asked any question of any witness for the prosecution with a view to establish his own good character, or has given evidence of his good character, or the nature or conduct of the defence is such as to involve imputations on the character of the prosecutor or of any witness for the prosecution, or
+(iii) he has given evidence against any other person charged with the same offence.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 21 - Accused person to be a competent witness",
+        "metaTitle": f"Section 21 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 22",
+        "sectionNo": "22",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "The Code of Criminal Procedure, 1973 to apply subject to certain modifications",
+        "description": """The provisions of the Code of Criminal Procedure, 1973 (2 of 1974), shall in their application to any proceeding in relation to an offence punishable under this Act have effect as if,—
+(a) in sub-section (1) of section 243, for the words “The accused shall then be called upon”, the words “The accused shall then be required to give in writing at once or within such time as the Court may allow, a list of the persons (if any) whom he proposes to examine as his witnesses and of the documents (if any) on which he proposes to rely and he shall then be called upon” had been substituted;
+(b) in sub-section (2) of section 309, after the third proviso, the following proviso had been inserted, namely:—
+“Provided also that the proceeding shall not be adjourned or postponed merely on the ground that an application under section 397 has been made by a party to the proceeding.”;
+(c) after sub-section (2) of section 317, the following sub-section had been inserted, namely:—
+“(3) Notwithstanding anything contained in sub-section (1) or sub-section (2), the Judge may, if he thinks fit and for reasons to be recorded by him, proceed with inquiry or trial in the absence of the accused or his pleader and record the evidence of any witness subject to the right of the accused to recall the witness for cross-examination.”;
+(d) in sub-section (1) of section 397, before the Explanation, the following proviso had been inserted, namely :—
+“Provided that where the powers under this section are exercised by a Court on an application made by a party to such proceedings, the Court shall not ordinarily call for the record of the proceedings:—
+(a) without giving the other party an opportunity of showing cause why the record should not be called for; or
+(b) if it is satisfied that an examination of the record of the proceedings may be made from the certified copies.”.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 22 - The Code of Criminal Procedure, 1973 to apply subject to certain modifications",
+        "metaTitle": f"Section 22 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 23",
+        "sectionNo": "23",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Particulars in a charge in relation to an offence under section 13(1)(a)",
+        "description": """Notwithstanding anything contained in the Code of Criminal Procedure, 1973 (2 of 1974), when an accused is charged with an offence under [clause (a)] of sub-section (1) of section 13, it shall be sufficient to describe in the charge the property in respect of which the offence is alleged to have been committed and the dates between which the offence is alleged to have been committed, without specifying particular items or exact dates, and the charge so framed shall be deemed to be a charge of one offence within the meaning of section 219 of the said Code:
+Provided that the time included between the first and last of such dates shall not exceed one year.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 23 - Particulars in a charge in relation to an offence under section 13(1)(a)",
+        "metaTitle": f"Section 23 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 24",
+        "sectionNo": "24",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Statement by bribe giver not to subject him to prosecution",
+        "description": """[Statement by bribe giver not to subject him to prosecution.] Omitted by the Prevention of Corruption (Amendment) Act, 2018 (16 of 2018), s. 17 (w.e.f. 26-7-2018).""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 24 - Statement by bribe giver not to subject him to prosecution",
+        "metaTitle": f"Section 24 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 25",
+        "sectionNo": "25",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Military, Naval and Air Force or other law not to be affected",
+        "description": """(1) Nothing in this Act shall affect the jurisdiction exercisable by, or the procedure applicable to, any court or other authority under the Army Act, 1950 (45 of 1950), the Air Force Act, 1950 (46 of 1950), the Navy Act, 1957 (62 of 1957), the Border Security Force Act, 1968 (47 of 1968), the Coast Guard Act, 1978 (30 of 1978) and the National Security Guard Act, 1986 (47 of 1986).
+(2) For the removal of doubts, it is hereby declared that for the purposes of any such law as is referred to in sub-section (1), the court of a special Judge shall be deemed to be a court of ordinary criminal justice.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 25 - Military, Naval and Air Force or other law not to be affected",
+        "metaTitle": f"Section 25 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 26",
+        "sectionNo": "26",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Special Judges appointed under Act 46 of 1952 to be special Judges appointed under this Act",
+        "description": """Every special Judge appointed under the Criminal Law Amendment Act, 1952, for any area or areas and is holding office on the commencement of this Act shall be deemed to be a special Judge appointed under section 3 of this Act for that area or areas and, accordingly, on and from such commencement, every such Judge shall continue to deal with all the proceedings pending before him on such commencement in accordance with the provisions of this Act.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 26 - Special Judges appointed under Act 46 of 1952 to be special Judges appointed under this Act",
+        "metaTitle": f"Section 26 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 27",
+        "sectionNo": "27",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Appeal and revision",
+        "description": """Subject to the provisions of this Act, the High Court may exercise, so far as they may be applicable, all the powers of appeal and revision conferred by the Code of Criminal Procedure, 1973 (2 of 1974) on a High Court as if the court of the special Judge were a court of Session trying cases within the local limits of the High Court.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 27 - Appeal and revision",
+        "metaTitle": f"Section 27 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 28",
+        "sectionNo": "28",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Act to be in addition to any other law",
+        "description": """The provisions of this Act shall be in addition to, and not in derogation of, any other law for the time being in force, and nothing contained herein shall exempt any public servant from any proceeding which might, apart from this Act, be instituted against him.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 28 - Act to be in addition to any other law",
+        "metaTitle": f"Section 28 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 29",
+        "sectionNo": "29",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Amendment of the Ordinance 38 of 1944",
+        "description": """In the Criminal Law Amendment Ordinance, 1944,—
+(a) in sub-section (1) of section 3, sub-section (1) of section 9, clause (a) of section 10, sub-section (1) of section 11 and sub-section (1) of section 13, for the words “State Government”, wherever they occur, the words “State Government or, as the case may be, the Central Government” shall be substituted;
+(b) in section 10, in clause (a), for the words “three months”, the words “one year” shall be substituted;
+(c) in the Schedule,—
+(i) paragraph 1 shall be omitted;
+(ii) in paragraphs 2 and 4,—
+(a) after the words “a local authority”, the words and figures “or a corporation established by or under a Central, Provincial or State Act, or an authority or a body owned or controlled or aided by Government or a Government company as defined in section 617 of the Companies Act, 1956 (1 of 1956) or a society aided by such corporation, authority, body or Government company” shall be inserted;
+(b) after the words “or authority”, the words “or corporation or body or Government company or society” shall be inserted;
+(iii) for paragraph 4A, the following paragraph shall be substituted, namely:—
+“4A.An offence punishable under the Prevention of Corruption Act, 1988.”;
+(iv) in paragraph 5, for the words and figures “items 2, 3 and 4”, the words, figures and letter “items 2, 3, 4 and 4A” shall be substituted.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 29 - Amendment of the Ordinance 38 of 1944",
+        "metaTitle": f"Section 29 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 29A",
+        "sectionNo": "29A",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Power to make rules",
+        "description": """(1) The Central Government may, by notification in the Official Gazette, make rules for carrying out the provisions of this Act.
+(2) In particular, and without prejudice to the generality of the foregoing power, such rules may provide for all or any of the following matters, namely:—
+(a) guidelines which can be put in place by commercial organisation under section 9;
+(b) guidelines for sanction of prosecution under sub-section (1) of section 19;
+(c) any other matter which is required to be, or may be, prescribed.
+(3) Every rule made under this Act, shall be laid, as soon as may be after it is made, before each House of Parliament, while it is in session, for a total period of thirty days which may be comprised in one session or in two or more successive sessions, and if, before the expiry of the session immediately following the session or the successive sessions aforesaid, both Houses agree in making any modification in the rule, or both Houses agree that the rule should not be made, the rule shall thereafter have effect only in such modified form or be of no effect, as the case may be; so, however, that any such modification or annulment shall be without prejudice to the validity of anything previously done under that rule.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 29A - Power to make rules",
+        "metaTitle": f"Section 29A - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 30",
+        "sectionNo": "30",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Repeal and saving",
+        "description": """(1) The Prevention of Corruption Act, 1947 (2 of 1947) and the Criminal Law Amendment Act, 1952 (46 of 1952) are hereby repealed.
+(2) Notwithstanding such repeal, but without prejudice to the application of section 6 of the General Clauses Act, 1897 (10 of 1897), anything done or any action taken or purported to have been done or taken under or in pursuance of the Acts so repealed shall, in so far as it is not inconsistent with the provisions of this Act, be deemed to have been done or taken under or in pursuance of the corresponding provision of this Act.""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 30 - Repeal and saving",
+        "metaTitle": f"Section 30 - {ACT_HEADING}"
+    },
+    {
+        "section": "Section 31",
+        "sectionNo": "31",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "title": "Omission of certain sections of Act 45 of 1860",
+        "description": """[Omission of certain sections of Act 45 of 1860.]—Rep. by the Repealing and Amending Act, 2001(30 of 2001), s.2 and the First Schedule (w.e.f. 3-9-2001).""",
+        "metaData": "Chapter V SANCTION FOR PROSECUTION AND OTHER MISCELLANEOUS PROVISIONS",
+        "metaDescription": f"{ACT_HEADING} Section 31 - Omission of certain sections of Act 45 of 1860",
+        "metaTitle": f"Section 31 - {ACT_HEADING}"
+    }
+]
+
+def main():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    prisma_dir = os.path.join(base_dir, "prisma")
+    
+    json_path = os.path.join(prisma_dir, "corruptionBearerActData.json")
+    js_path = os.path.join(prisma_dir, "corruptionBearerActData.js")
+    
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(sections, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+        
+    with open(js_path, "w", encoding="utf-8") as f:
+        f.write("// THE PREVENTION OF CORRUPTION ACT, 1988 Bearer Act Data with Full Chapter and Section Structure\n")
+        f.write("export const corruptionBearerActSections = ")
+        json.dump(sections, f, indent=2, ensure_ascii=False)
+        f.write(";\n")
+
+    print(f"Generated {len(sections)} sections across 6 chapters.")
+    print(f"JSON written to {json_path}")
+    print(f"JS written to {js_path}")
+
+if __name__ == "__main__":
+    main()

@@ -6430,6 +6430,11 @@ Pre-seeded Acts under `Criminal`:
 - **THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985**: Seeded under `Criminal → THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985` (Chapters I to VI including IIA and VA, Sections 1 to 83 + alphanumeric insertions 7A, 7B, 8A, 9A, 25A, 27A, 27B, 31A, 32A, 32B, 36A-36D, 50A, 52A, 53A, 57A, 64A, 68A-68Z, 74A and THE SCHEDULE, total 129 sections).
 - **THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967**: Seeded under `Criminal → THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967` (Chapters I to IV, Sections 1 to 21 + alphanumeric insertion 2A, total 22 sections).
 - **THE DOWRY PROHIBITION ACT, 1961**: Seeded under `Criminal → THE DOWRY PROHIBITION ACT, 1961` (Sections 1 to 10 + alphanumeric insertions 4A, 8A, 8B, total 13 sections).
+- **THE ARMS ACT, 1959**: Seeded under `Criminal → THE ARMS ACT, 1959` (Chapters I to VI, Sections 1 to 46 + alphanumeric insertions 24A, 24B, total 48 sections).
+- **THE ARMS (AMENDMENT) ACT, 2019**: Seeded under `Criminal → THE ARMS (AMENDMENT) ACT, 2019` (Sections 1 to 11, total 11 sections).
+- **THE PREVENTION OF CORRUPTION ACT, 1988**: Seeded under `Criminal → THE PREVENTION OF CORRUPTION ACT, 1988` (Chapters I to V including IVA, Sections 1 to 31 + alphanumeric insertions 7A, 17A, 18A, 29A, total 35 sections).
+- **THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018**: Seeded under `Criminal → THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018` (Sections 1 to 19, total 19 sections).
+- **THE CODE OF CRIMINAL PROCEDURE, 1973**: Seeded under `Criminal → THE CODE OF CRIMINAL PROCEDURE, 1973` (Chapters I to XXXVII including VIIA and XXIA, Sections 1 to 484 + alphanumeric insertions 25A, 41A-41D, 50A, 53A, 54A, 55A, 60A, 105A-105L, 164A, 166A-166B, 195A, 198A-198B, 265A-265L, 291A, 311A, 357A-357C, 433A, 436A, 437A, 441A, 446A, total 534 sections).
 
 ---
 

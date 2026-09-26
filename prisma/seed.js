@@ -10,6 +10,7 @@ import { evidenceBearerActSections } from './evidenceBearerActData.js';
 import { pmlaBearerActSections } from './pmlaBearerActData.js';
 import { poshBearerActSections } from './poshBearerActData.js';
 import { ndpsBearerActSections } from './ndpsBearerActData.js';
+import { uapaBearerActSections } from './uapaBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -2951,6 +2952,118 @@ async function seedBearerActs() {
     }
 
     console.log(`NDPS Bearer Act Sections seeded: ${createdNdpsSectionCount} created, ${updatedNdpsSectionCount} updated across 8 chapters (Total: ${ndpsBearerActSections.length}).`);
+
+    // Seed THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967 Act and Chapters/Sections under Criminal...');
+    let uapaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967'
+      }
+    });
+
+    if (!uapaAct) {
+      uapaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'UNLAWFUL ACTIVITIES (PREVENTION)',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!uapaAct) {
+      uapaAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967',
+          act: 'THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967',
+          year: 1967
+        }
+      });
+      console.log('Act created: THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967');
+    } else {
+      uapaAct = await prisma.act.update({
+        where: { id: uapaAct.id },
+        data: {
+          heading: 'THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967',
+          act: 'THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967',
+          year: 1967
+        }
+      });
+      console.log('Act synchronized: THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967');
+    }
+
+    const existingUapaSections = await prisma.actSection.findMany({
+      where: { actId: uapaAct.id }
+    });
+    const uapaSectionMap = new Map(existingUapaSections.map(s => [s.section, s]));
+
+    let createdUapaSectionCount = 0;
+    let updatedUapaSectionCount = 0;
+
+    const uapaToCreate = [];
+    const uapaToUpdate = [];
+
+    for (const item of uapaBearerActSections) {
+      const existing = uapaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        uapaToCreate.push({
+          actId: uapaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        uapaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (uapaToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: uapaToCreate
+      });
+      createdUapaSectionCount = uapaToCreate.length;
+    }
+
+    if (uapaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < uapaToUpdate.length; i += updateChunkSize) {
+        const chunk = uapaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedUapaSectionCount = uapaToUpdate.length;
+    }
+
+    console.log(`UAPA Bearer Act Sections seeded: ${createdUapaSectionCount} created, ${updatedUapaSectionCount} updated across 4 chapters (Total: ${uapaBearerActSections.length}).`);
   }
 }
 

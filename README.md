@@ -6428,6 +6428,7 @@ Pre-seeded Acts under `Criminal`:
 - **THE PREVENTION OF MONEY-LAUNDERING ACT, 2002**: Seeded under `Criminal → THE PREVENTION OF MONEY-LAUNDERING ACT, 2002` (Chapters I to X, Sections 1 to 75 + alphanumeric insertions 11A, 12A, 12AA, 58A, 58B, 72A and the complete Schedule, total 81 sections).
 - **THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013**: Seeded under `Criminal → THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013` (Chapters I to VIII, Sections 1 to 30, total 30 sections).
 - **THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985**: Seeded under `Criminal → THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985` (Chapters I to VI including IIA and VA, Sections 1 to 83 + alphanumeric insertions 7A, 7B, 8A, 9A, 25A, 27A, 27B, 31A, 32A, 32B, 36A-36D, 50A, 52A, 53A, 57A, 64A, 68A-68Z, 74A and THE SCHEDULE, total 129 sections).
+- **THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967**: Seeded under `Criminal → THE UNLAWFUL ACTIVITIES (PREVENTION) ACT, 1967` (Chapters I to IV, Sections 1 to 21 + alphanumeric insertion 2A, total 22 sections).
 
 ---
 

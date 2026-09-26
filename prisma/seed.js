@@ -17,6 +17,9 @@ import { armsAmendmentBearerActSections } from './armsAmendmentBearerActData.js'
 import { corruptionBearerActSections } from './corruptionBearerActData.js';
 import { corruptionAmendmentBearerActSections } from './corruptionAmendmentBearerActData.js';
 import { crpcBearerActSections } from './crpcBearerActData.js';
+import { pocsoBearerActSections } from './pocsoBearerActData.js';
+import { negotiableBearerActSections } from './negotiableBearerActData.js';
+import { itBearerActSections } from './itBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -3746,6 +3749,358 @@ async function seedBearerActs() {
     }
 
     console.log(`CrPC Bearer Act Sections seeded: ${createdCrpcSectionCount} created, ${updatedCrpcSectionCount} updated across 39 chapters (Total: ${crpcBearerActSections.length}).`);
+
+    // 14. THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012
+    let pocsoAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012'
+      }
+    });
+
+    if (!pocsoAct) {
+      pocsoAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'PROTECTION OF CHILDREN FROM SEXUAL OFFENCES',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!pocsoAct) {
+      pocsoAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012',
+          act: 'THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012',
+          year: 2012
+        }
+      });
+      console.log('Act created: THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012');
+    } else {
+      pocsoAct = await prisma.act.update({
+        where: { id: pocsoAct.id },
+        data: {
+          heading: 'THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012',
+          act: 'THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012',
+          year: 2012
+        }
+      });
+      console.log('Act synchronized: THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012');
+    }
+
+    const existingPocsoSections = await prisma.actSection.findMany({
+      where: { actId: pocsoAct.id }
+    });
+    const pocsoSectionMap = new Map(existingPocsoSections.map(s => [s.section, s]));
+
+    let createdPocsoSectionCount = 0;
+    let updatedPocsoSectionCount = 0;
+
+    const pocsoToCreate = [];
+    const pocsoToUpdate = [];
+
+    for (const item of pocsoBearerActSections) {
+      const existing = pocsoSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        pocsoToCreate.push({
+          actId: pocsoAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        pocsoToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (pocsoToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < pocsoToCreate.length; i += insertChunkSize) {
+        const chunk = pocsoToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdPocsoSectionCount = pocsoToCreate.length;
+    }
+
+    if (pocsoToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < pocsoToUpdate.length; i += updateChunkSize) {
+        const chunk = pocsoToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedPocsoSectionCount = pocsoToUpdate.length;
+    }
+
+    console.log(`POCSO Bearer Act Sections seeded: ${createdPocsoSectionCount} created, ${updatedPocsoSectionCount} updated across 9 chapters (Total: ${pocsoBearerActSections.length}).`);
+
+    // 15. THE NEGOTIABLE INSTRUMENTS ACT, 1881
+    let negotiableAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE NEGOTIABLE INSTRUMENTS ACT, 1881'
+      }
+    });
+
+    if (!negotiableAct) {
+      negotiableAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'NEGOTIABLE INSTRUMENTS',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!negotiableAct) {
+      negotiableAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE NEGOTIABLE INSTRUMENTS ACT, 1881',
+          act: 'THE NEGOTIABLE INSTRUMENTS ACT, 1881',
+          year: 1881
+        }
+      });
+      console.log('Act created: THE NEGOTIABLE INSTRUMENTS ACT, 1881');
+    } else {
+      negotiableAct = await prisma.act.update({
+        where: { id: negotiableAct.id },
+        data: {
+          heading: 'THE NEGOTIABLE INSTRUMENTS ACT, 1881',
+          act: 'THE NEGOTIABLE INSTRUMENTS ACT, 1881',
+          year: 1881
+        }
+      });
+      console.log('Act synchronized: THE NEGOTIABLE INSTRUMENTS ACT, 1881');
+    }
+
+    const existingNegotiableSections = await prisma.actSection.findMany({
+      where: { actId: negotiableAct.id }
+    });
+    const negotiableSectionMap = new Map(existingNegotiableSections.map(s => [s.section, s]));
+
+    let createdNegotiableSectionCount = 0;
+    let updatedNegotiableSectionCount = 0;
+
+    const negotiableToCreate = [];
+    const negotiableToUpdate = [];
+
+    for (const item of negotiableBearerActSections) {
+      const existing = negotiableSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        negotiableToCreate.push({
+          actId: negotiableAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        negotiableToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (negotiableToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < negotiableToCreate.length; i += insertChunkSize) {
+        const chunk = negotiableToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdNegotiableSectionCount = negotiableToCreate.length;
+    }
+
+    if (negotiableToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < negotiableToUpdate.length; i += updateChunkSize) {
+        const chunk = negotiableToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedNegotiableSectionCount = negotiableToUpdate.length;
+    }
+
+    console.log(`Negotiable Instruments Bearer Act Sections seeded: ${createdNegotiableSectionCount} created, ${updatedNegotiableSectionCount} updated across 17 chapters (Total: ${negotiableBearerActSections.length}).`);
+  }
+
+  // 16. THE INFORMATION TECHNOLOGY ACT, 2000 under Tech, Data & Cyber Laws BearerAct
+  const techDataBearerAct = await prisma.bearerAct.findUnique({
+    where: { name: 'Tech, Data & Cyber Laws' }
+  });
+
+  if (techDataBearerAct) {
+    console.log('Seeding THE INFORMATION TECHNOLOGY ACT, 2000 Act and Chapters/Sections under Tech, Data & Cyber Laws...');
+    let itAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: techDataBearerAct.id,
+        heading: 'THE INFORMATION TECHNOLOGY ACT, 2000'
+      }
+    });
+
+    if (!itAct) {
+      itAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: techDataBearerAct.id,
+          heading: {
+            contains: 'INFORMATION TECHNOLOGY',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!itAct) {
+      itAct = await prisma.act.create({
+        data: {
+          bearerActId: techDataBearerAct.id,
+          heading: 'THE INFORMATION TECHNOLOGY ACT, 2000',
+          act: 'THE INFORMATION TECHNOLOGY ACT, 2000',
+          year: 2000
+        }
+      });
+      console.log('Act created: THE INFORMATION TECHNOLOGY ACT, 2000');
+    } else {
+      itAct = await prisma.act.update({
+        where: { id: itAct.id },
+        data: {
+          heading: 'THE INFORMATION TECHNOLOGY ACT, 2000',
+          act: 'THE INFORMATION TECHNOLOGY ACT, 2000',
+          year: 2000
+        }
+      });
+      console.log('Act synchronized: THE INFORMATION TECHNOLOGY ACT, 2000');
+    }
+
+    const existingItSections = await prisma.actSection.findMany({
+      where: { actId: itAct.id }
+    });
+    const itSectionMap = new Map(existingItSections.map(s => [s.section, s]));
+
+    let createdItSectionCount = 0;
+    let updatedItSectionCount = 0;
+
+    const itToCreate = [];
+    const itToUpdate = [];
+
+    for (const item of itBearerActSections) {
+      const existing = itSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        itToCreate.push({
+          actId: itAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        itToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (itToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < itToCreate.length; i += insertChunkSize) {
+        const chunk = itToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdItSectionCount = itToCreate.length;
+    }
+
+    if (itToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < itToUpdate.length; i += updateChunkSize) {
+        const chunk = itToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedItSectionCount = itToUpdate.length;
+    }
+
+    console.log(`THE INFORMATION TECHNOLOGY ACT, 2000 Bearer Act Sections seeded: ${createdItSectionCount} created, ${updatedItSectionCount} updated across 14 chapters (Total: ${itBearerActSections.length}).`);
   }
 }
 

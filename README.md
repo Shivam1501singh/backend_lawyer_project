@@ -6435,6 +6435,11 @@ Pre-seeded Acts under `Criminal`:
 - **THE PREVENTION OF CORRUPTION ACT, 1988**: Seeded under `Criminal → THE PREVENTION OF CORRUPTION ACT, 1988` (Chapters I to V including IVA, Sections 1 to 31 + alphanumeric insertions 7A, 17A, 18A, 29A, total 35 sections).
 - **THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018**: Seeded under `Criminal → THE PREVENTION OF CORRUPTION (AMENDMENT) ACT, 2018` (Sections 1 to 19, total 19 sections).
 - **THE CODE OF CRIMINAL PROCEDURE, 1973**: Seeded under `Criminal → THE CODE OF CRIMINAL PROCEDURE, 1973` (Chapters I to XXXVII including VIIA and XXIA, Sections 1 to 484 + alphanumeric insertions 25A, 41A-41D, 50A, 53A, 54A, 55A, 60A, 105A-105L, 164A, 166A-166B, 195A, 198A-198B, 265A-265L, 291A, 311A, 357A-357C, 433A, 436A, 437A, 441A, 446A, total 534 sections).
+- **THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012**: Seeded under `Criminal → THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012` (Chapters I to IX, Sections 1 to 46 + alphanumeric insertion 42A and THE SCHEDULE, total 47 sections).
+- **THE NEGOTIABLE INSTRUMENTS ACT, 1881**: Seeded under `Criminal → THE NEGOTIABLE INSTRUMENTS ACT, 1881` (Chapters I to XVII, Sections 1 to 148 + alphanumeric insertions 45A, 75A, 85A, 104A, 131A, 142A, 143A and THE SCHEDULE, total 155 sections).
+
+Pre-seeded Acts under `Tech, Data & Cyber Laws`:
+- **THE INFORMATION TECHNOLOGY ACT, 2000**: Seeded under `Tech, Data & Cyber Laws → THE INFORMATION TECHNOLOGY ACT, 2000` (Chapters I to XIII including XIIA, Sections 1 to 94 + alphanumeric insertions 3A, 6A, 7A, 10A, 40A, 43A, 52A, 52B, 52C, 52D, 66A, 66B, 66C, 66D, 66E, 66F, 67A, 67B, 67C, 69A, 69B, 70A, 70B, 72A, 77A, 77B, 79A, 81A, 84A, 84B, 84C and THE FIRST & SECOND SCHEDULES, total 125 sections).
 
 ---
 

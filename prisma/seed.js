@@ -7,6 +7,7 @@ import { bnsBearerActSections } from './bnsBearerActData.js';
 import { bnssBearerActSections } from './bnssBearerActData.js';
 import { bsaBearerActSections } from './bsaBearerActData.js';
 import { evidenceBearerActSections } from './evidenceBearerActData.js';
+import { pmlaBearerActSections } from './pmlaBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -2612,6 +2613,118 @@ async function seedBearerActs() {
     }
 
     console.log(`Indian Evidence Act Bearer Act Sections seeded: ${createdEvidenceSectionCount} created, ${updatedEvidenceSectionCount} updated across 11 chapters (Total: ${evidenceBearerActSections.length}).`);
+
+    // Seed THE PREVENTION OF MONEY-LAUNDERING ACT, 2002 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE PREVENTION OF MONEY-LAUNDERING ACT, 2002 Act and Chapters/Sections under Criminal...');
+    let pmlaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE PREVENTION OF MONEY-LAUNDERING ACT, 2002'
+      }
+    });
+
+    if (!pmlaAct) {
+      pmlaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'MONEY-LAUNDERING',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!pmlaAct) {
+      pmlaAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE PREVENTION OF MONEY-LAUNDERING ACT, 2002',
+          act: 'THE PREVENTION OF MONEY-LAUNDERING ACT, 2002',
+          year: 2002
+        }
+      });
+      console.log('Act created: THE PREVENTION OF MONEY-LAUNDERING ACT, 2002');
+    } else {
+      pmlaAct = await prisma.act.update({
+        where: { id: pmlaAct.id },
+        data: {
+          heading: 'THE PREVENTION OF MONEY-LAUNDERING ACT, 2002',
+          act: 'THE PREVENTION OF MONEY-LAUNDERING ACT, 2002',
+          year: 2002
+        }
+      });
+      console.log('Act synchronized: THE PREVENTION OF MONEY-LAUNDERING ACT, 2002');
+    }
+
+    const existingPmlaSections = await prisma.actSection.findMany({
+      where: { actId: pmlaAct.id }
+    });
+    const pmlaSectionMap = new Map(existingPmlaSections.map(s => [s.section, s]));
+
+    let createdPmlaSectionCount = 0;
+    let updatedPmlaSectionCount = 0;
+
+    const pmlaToCreate = [];
+    const pmlaToUpdate = [];
+
+    for (const item of pmlaBearerActSections) {
+      const existing = pmlaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        pmlaToCreate.push({
+          actId: pmlaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        pmlaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (pmlaToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: pmlaToCreate
+      });
+      createdPmlaSectionCount = pmlaToCreate.length;
+    }
+
+    if (pmlaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < pmlaToUpdate.length; i += updateChunkSize) {
+        const chunk = pmlaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedPmlaSectionCount = pmlaToUpdate.length;
+    }
+
+    console.log(`PMLA Bearer Act Sections seeded: ${createdPmlaSectionCount} created, ${updatedPmlaSectionCount} updated across 10 chapters (Total: ${pmlaBearerActSections.length}).`);
   }
 }
 

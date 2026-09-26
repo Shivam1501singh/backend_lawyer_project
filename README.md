@@ -6425,6 +6425,7 @@ Pre-seeded Acts under `Criminal`:
 - **The Bharatiya Sakshya Adhiniyam, 2023 (BSA)**: Seeded under `Criminal → The Bharatiya Sakshya Adhiniyam, 2023` (Chapters I to XII, Sections 1 to 170).
 - **THE INDIAN PENAL CODE (IPC)**: Seeded under `Criminal → THE INDIAN PENAL CODE` (Chapters I to XXIII, Sections 1 to 511 + alphanumeric additions, total 576 sections).
 - **THE INDIAN EVIDENCE ACT, 1872**: Seeded under `Criminal → THE INDIAN EVIDENCE ACT, 1872` (Chapters I to XI, Sections 1 to 167 + amendments, total 185 sections).
+- **THE PREVENTION OF MONEY-LAUNDERING ACT, 2002**: Seeded under `Criminal → THE PREVENTION OF MONEY-LAUNDERING ACT, 2002` (Chapters I to X, Sections 1 to 75 + alphanumeric insertions 11A, 12A, 12AA, 58A, 58B, 72A and the complete Schedule, total 81 sections).
 
 ---
 

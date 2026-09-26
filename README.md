@@ -6440,6 +6440,7 @@ Pre-seeded Acts under `Criminal`:
 
 Pre-seeded Acts under `Tech, Data & Cyber Laws`:
 - **THE INFORMATION TECHNOLOGY ACT, 2000**: Seeded under `Tech, Data & Cyber Laws → THE INFORMATION TECHNOLOGY ACT, 2000` (Chapters I to XIII including XIIA, Sections 1 to 94 + alphanumeric insertions 3A, 6A, 7A, 10A, 40A, 43A, 52A, 52B, 52C, 52D, 66A, 66B, 66C, 66D, 66E, 66F, 67A, 67B, 67C, 69A, 69B, 70A, 70B, 72A, 77A, 77B, 79A, 81A, 84A, 84B, 84C and THE FIRST & SECOND SCHEDULES, total 125 sections).
+- **THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023**: Seeded under `Tech, Data & Cyber Laws → THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023` (Chapters I to IX, Sections 1 to 44 and THE SCHEDULE, total 44 sections).
 
 ---
 

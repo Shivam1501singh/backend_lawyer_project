@@ -20,6 +20,7 @@ import { crpcBearerActSections } from './crpcBearerActData.js';
 import { pocsoBearerActSections } from './pocsoBearerActData.js';
 import { negotiableBearerActSections } from './negotiableBearerActData.js';
 import { itBearerActSections } from './itBearerActData.js';
+import { dpdpBearerActSections } from './dpdpBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -4101,6 +4102,122 @@ async function seedBearerActs() {
     }
 
     console.log(`THE INFORMATION TECHNOLOGY ACT, 2000 Bearer Act Sections seeded: ${createdItSectionCount} created, ${updatedItSectionCount} updated across 14 chapters (Total: ${itBearerActSections.length}).`);
+
+    // 17. THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023 under Tech, Data & Cyber Laws BearerAct
+    console.log('Seeding THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023 Act and Chapters/Sections under Tech, Data & Cyber Laws...');
+    let dpdpAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: techDataBearerAct.id,
+        heading: 'THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023'
+      }
+    });
+
+    if (!dpdpAct) {
+      dpdpAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: techDataBearerAct.id,
+          heading: {
+            contains: 'DIGITAL PERSONAL DATA PROTECTION',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!dpdpAct) {
+      dpdpAct = await prisma.act.create({
+        data: {
+          bearerActId: techDataBearerAct.id,
+          heading: 'THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023',
+          act: 'THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act created: THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023');
+    } else {
+      dpdpAct = await prisma.act.update({
+        where: { id: dpdpAct.id },
+        data: {
+          heading: 'THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023',
+          act: 'THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023',
+          year: 2023
+        }
+      });
+      console.log('Act synchronized: THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023');
+    }
+
+    const existingDpdpSections = await prisma.actSection.findMany({
+      where: { actId: dpdpAct.id }
+    });
+    const dpdpSectionMap = new Map(existingDpdpSections.map(s => [s.section, s]));
+
+    let createdDpdpSectionCount = 0;
+    let updatedDpdpSectionCount = 0;
+
+    const dpdpToCreate = [];
+    const dpdpToUpdate = [];
+
+    for (const item of dpdpBearerActSections) {
+      const existing = dpdpSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        dpdpToCreate.push({
+          actId: dpdpAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        dpdpToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (dpdpToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < dpdpToCreate.length; i += insertChunkSize) {
+        const chunk = dpdpToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdDpdpSectionCount = dpdpToCreate.length;
+    }
+
+    if (dpdpToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < dpdpToUpdate.length; i += updateChunkSize) {
+        const chunk = dpdpToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedDpdpSectionCount = dpdpToUpdate.length;
+    }
+
+    console.log(`THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023 Bearer Act Sections seeded: ${createdDpdpSectionCount} created, ${updatedDpdpSectionCount} updated across 9 chapters (Total: ${dpdpBearerActSections.length}).`);
   }
 }
 

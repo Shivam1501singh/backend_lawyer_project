@@ -8,6 +8,8 @@ import { bnssBearerActSections } from './bnssBearerActData.js';
 import { bsaBearerActSections } from './bsaBearerActData.js';
 import { evidenceBearerActSections } from './evidenceBearerActData.js';
 import { pmlaBearerActSections } from './pmlaBearerActData.js';
+import { poshBearerActSections } from './poshBearerActData.js';
+import { ndpsBearerActSections } from './ndpsBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -2725,6 +2727,230 @@ async function seedBearerActs() {
     }
 
     console.log(`PMLA Bearer Act Sections seeded: ${createdPmlaSectionCount} created, ${updatedPmlaSectionCount} updated across 10 chapters (Total: ${pmlaBearerActSections.length}).`);
+
+    // Seed THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013 Act and Chapters/Sections under Criminal...');
+    let poshAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013'
+      }
+    });
+
+    if (!poshAct) {
+      poshAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'SEXUAL HARASSMENT OF WOMEN AT WORKPLACE',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!poshAct) {
+      poshAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013',
+          act: 'THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013',
+          year: 2013
+        }
+      });
+      console.log('Act created: THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013');
+    } else {
+      poshAct = await prisma.act.update({
+        where: { id: poshAct.id },
+        data: {
+          heading: 'THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013',
+          act: 'THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013',
+          year: 2013
+        }
+      });
+      console.log('Act synchronized: THE SEXUAL HARASSMENT OF WOMEN AT WORKPLACE (PREVENTION, PROHIBITION AND REDRESSAL) ACT, 2013');
+    }
+
+    const existingPoshSections = await prisma.actSection.findMany({
+      where: { actId: poshAct.id }
+    });
+    const poshSectionMap = new Map(existingPoshSections.map(s => [s.section, s]));
+
+    let createdPoshSectionCount = 0;
+    let updatedPoshSectionCount = 0;
+
+    const poshToCreate = [];
+    const poshToUpdate = [];
+
+    for (const item of poshBearerActSections) {
+      const existing = poshSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        poshToCreate.push({
+          actId: poshAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        poshToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (poshToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: poshToCreate
+      });
+      createdPoshSectionCount = poshToCreate.length;
+    }
+
+    if (poshToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < poshToUpdate.length; i += updateChunkSize) {
+        const chunk = poshToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedPoshSectionCount = poshToUpdate.length;
+    }
+
+    console.log(`POSH Bearer Act Sections seeded: ${createdPoshSectionCount} created, ${updatedPoshSectionCount} updated across 8 chapters (Total: ${poshBearerActSections.length}).`);
+
+    // Seed THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985 Act and Chapters/Sections under Criminal...');
+    let ndpsAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985'
+      }
+    });
+
+    if (!ndpsAct) {
+      ndpsAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!ndpsAct) {
+      ndpsAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985',
+          act: 'THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985',
+          year: 1985
+        }
+      });
+      console.log('Act created: THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985');
+    } else {
+      ndpsAct = await prisma.act.update({
+        where: { id: ndpsAct.id },
+        data: {
+          heading: 'THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985',
+          act: 'THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985',
+          year: 1985
+        }
+      });
+      console.log('Act synchronized: THE NARCOTIC DRUGS AND PSYCHOTROPIC SUBSTANCES ACT, 1985');
+    }
+
+    const existingNdpsSections = await prisma.actSection.findMany({
+      where: { actId: ndpsAct.id }
+    });
+    const ndpsSectionMap = new Map(existingNdpsSections.map(s => [s.section, s]));
+
+    let createdNdpsSectionCount = 0;
+    let updatedNdpsSectionCount = 0;
+
+    const ndpsToCreate = [];
+    const ndpsToUpdate = [];
+
+    for (const item of ndpsBearerActSections) {
+      const existing = ndpsSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        ndpsToCreate.push({
+          actId: ndpsAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        ndpsToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (ndpsToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: ndpsToCreate
+      });
+      createdNdpsSectionCount = ndpsToCreate.length;
+    }
+
+    if (ndpsToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < ndpsToUpdate.length; i += updateChunkSize) {
+        const chunk = ndpsToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedNdpsSectionCount = ndpsToUpdate.length;
+    }
+
+    console.log(`NDPS Bearer Act Sections seeded: ${createdNdpsSectionCount} created, ${updatedNdpsSectionCount} updated across 8 chapters (Total: ${ndpsBearerActSections.length}).`);
   }
 }
 

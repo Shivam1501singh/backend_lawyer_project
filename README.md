@@ -6419,9 +6419,12 @@ The module comes pre-seeded with 13 official legal categories:
 12. Intellectual Property Rights (IPR)
 13. Tech, Data & Cyber Laws
 
-Pre-seeded Acts:
-- **Bharatiya Nyaya Sanhita (BNS)**: Seeded under `Criminal → The Bharatiya Nyaya Sanhita, 2023` (Chapters I to XX, Sections 1 to 358) sourced directly from the official gazette PDF.
-- **Indian Penal Code (IPC)**: Seeded under `Criminal → Indian Penal Code`.
+Pre-seeded Acts under `Criminal`:
+- **The Bharatiya Nyaya Sanhita, 2023 (BNS)**: Seeded under `Criminal → The Bharatiya Nyaya Sanhita, 2023` (Chapters I to XX, Sections 1 to 358).
+- **The Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)**: Seeded under `Criminal → The Bharatiya Nagarik Suraksha Sanhita, 2023` (Chapters I to XXXIX, Sections 1 to 531).
+- **The Bharatiya Sakshya Adhiniyam, 2023 (BSA)**: Seeded under `Criminal → The Bharatiya Sakshya Adhiniyam, 2023` (Chapters I to XII, Sections 1 to 170).
+- **THE INDIAN PENAL CODE (IPC)**: Seeded under `Criminal → THE INDIAN PENAL CODE` (Chapters I to XXIII, Sections 1 to 511 + alphanumeric additions, total 576 sections).
+- **THE INDIAN EVIDENCE ACT, 1872**: Seeded under `Criminal → THE INDIAN EVIDENCE ACT, 1872` (Chapters I to XI, Sections 1 to 167 + amendments, total 185 sections).
 
 ---
 

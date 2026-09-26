@@ -6,6 +6,7 @@ import { ipcBearerActSections } from './ipcBearerActData.js';
 import { bnsBearerActSections } from './bnsBearerActData.js';
 import { bnssBearerActSections } from './bnssBearerActData.js';
 import { bsaBearerActSections } from './bsaBearerActData.js';
+import { evidenceBearerActSections } from './evidenceBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -2499,6 +2500,118 @@ async function seedBearerActs() {
     }
 
     console.log(`BSA Bearer Act Sections seeded: ${createdBsaSectionCount} created, ${updatedBsaSectionCount} updated across 12 chapters (Total: ${bsaBearerActSections.length}).`);
+
+    // Seed THE INDIAN EVIDENCE ACT, 1872 under Criminal BearerAct (Idempotent & Transaction-safe)
+    console.log('Seeding THE INDIAN EVIDENCE ACT, 1872 Act and Chapters/Sections under Criminal...');
+    let evidenceAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: criminalBearerAct.id,
+        heading: 'THE INDIAN EVIDENCE ACT, 1872'
+      }
+    });
+
+    if (!evidenceAct) {
+      evidenceAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: criminalBearerAct.id,
+          heading: {
+            contains: 'INDIAN EVIDENCE ACT',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!evidenceAct) {
+      evidenceAct = await prisma.act.create({
+        data: {
+          bearerActId: criminalBearerAct.id,
+          heading: 'THE INDIAN EVIDENCE ACT, 1872',
+          act: 'THE INDIAN EVIDENCE ACT, 1872',
+          year: 1872
+        }
+      });
+      console.log('Act created: THE INDIAN EVIDENCE ACT, 1872');
+    } else {
+      evidenceAct = await prisma.act.update({
+        where: { id: evidenceAct.id },
+        data: {
+          heading: 'THE INDIAN EVIDENCE ACT, 1872',
+          act: 'THE INDIAN EVIDENCE ACT, 1872',
+          year: 1872
+        }
+      });
+      console.log('Act synchronized: THE INDIAN EVIDENCE ACT, 1872');
+    }
+
+    const existingEvidenceSections = await prisma.actSection.findMany({
+      where: { actId: evidenceAct.id }
+    });
+    const evidenceSectionMap = new Map(existingEvidenceSections.map(s => [s.section, s]));
+
+    let createdEvidenceSectionCount = 0;
+    let updatedEvidenceSectionCount = 0;
+
+    const evidenceToCreate = [];
+    const evidenceToUpdate = [];
+
+    for (const item of evidenceBearerActSections) {
+      const existing = evidenceSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        evidenceToCreate.push({
+          actId: evidenceAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        evidenceToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (evidenceToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: evidenceToCreate
+      });
+      createdEvidenceSectionCount = evidenceToCreate.length;
+    }
+
+    if (evidenceToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < evidenceToUpdate.length; i += updateChunkSize) {
+        const chunk = evidenceToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedEvidenceSectionCount = evidenceToUpdate.length;
+    }
+
+    console.log(`Indian Evidence Act Bearer Act Sections seeded: ${createdEvidenceSectionCount} created, ${updatedEvidenceSectionCount} updated across 11 chapters (Total: ${evidenceBearerActSections.length}).`);
   }
 }
 

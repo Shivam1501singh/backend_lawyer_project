@@ -21,6 +21,8 @@ import { pocsoBearerActSections } from './pocsoBearerActData.js';
 import { negotiableBearerActSections } from './negotiableBearerActData.js';
 import { itBearerActSections } from './itBearerActData.js';
 import { dpdpBearerActSections } from './dpdpBearerActData.js';
+import { transferOfPropertyBearerActSections } from './transferOfPropertyBearerActData.js';
+import { contractBearerActSections } from './contractBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -4218,6 +4220,244 @@ async function seedBearerActs() {
     }
 
     console.log(`THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023 Bearer Act Sections seeded: ${createdDpdpSectionCount} created, ${updatedDpdpSectionCount} updated across 9 chapters (Total: ${dpdpBearerActSections.length}).`);
+  }
+
+  const civilAndPropertyBearerAct = await prisma.bearerAct.findUnique({
+    where: { name: 'Civil and Property' }
+  });
+
+  if (civilAndPropertyBearerAct) {
+    // Seed THE TRANSFER OF PROPERTY ACT, 1882 under Civil and Property BearerAct
+    console.log('Seeding THE TRANSFER OF PROPERTY ACT, 1882 Act and Chapters/Sections under Civil and Property...');
+    let tpaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: 'THE TRANSFER OF PROPERTY ACT, 1882'
+      }
+    });
+
+    if (!tpaAct) {
+      tpaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Transfer of Property',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!tpaAct) {
+      tpaAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: 'THE TRANSFER OF PROPERTY ACT, 1882',
+          act: 'THE TRANSFER OF PROPERTY ACT, 1882',
+          year: 1882
+        }
+      });
+      console.log('Act created: THE TRANSFER OF PROPERTY ACT, 1882');
+    } else {
+      tpaAct = await prisma.act.update({
+        where: { id: tpaAct.id },
+        data: {
+          heading: 'THE TRANSFER OF PROPERTY ACT, 1882',
+          act: 'THE TRANSFER OF PROPERTY ACT, 1882',
+          year: 1882
+        }
+      });
+      console.log('Act synchronized: THE TRANSFER OF PROPERTY ACT, 1882');
+    }
+
+    const existingTpaSections = await prisma.actSection.findMany({
+      where: { actId: tpaAct.id }
+    });
+    const tpaSectionMap = new Map(existingTpaSections.map(s => [s.section, s]));
+
+    let createdTpaSectionCount = 0;
+    let updatedTpaSectionCount = 0;
+
+    const tpaToCreate = [];
+    const tpaToUpdate = [];
+
+    for (const item of transferOfPropertyBearerActSections) {
+      const existing = tpaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        tpaToCreate.push({
+          actId: tpaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        tpaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (tpaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < tpaToCreate.length; i += insertChunkSize) {
+        const chunk = tpaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdTpaSectionCount = tpaToCreate.length;
+    }
+
+    if (tpaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < tpaToUpdate.length; i += updateChunkSize) {
+        const chunk = tpaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedTpaSectionCount = tpaToUpdate.length;
+    }
+
+    console.log(`THE TRANSFER OF PROPERTY ACT, 1882 Bearer Act Sections seeded: ${createdTpaSectionCount} created, ${updatedTpaSectionCount} updated across 8 chapters (Total: ${transferOfPropertyBearerActSections.length}).`);
+
+    // Seed THE INDIAN CONTRACT ACT, 1872 under Civil and Property BearerAct
+    console.log('Seeding THE INDIAN CONTRACT ACT, 1872 Act and Chapters/Sections under Civil and Property...');
+    let contractAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: 'THE INDIAN CONTRACT ACT, 1872'
+      }
+    });
+
+    if (!contractAct) {
+      contractAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Indian Contract Act',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!contractAct) {
+      contractAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: 'THE INDIAN CONTRACT ACT, 1872',
+          act: 'THE INDIAN CONTRACT ACT, 1872',
+          year: 1872
+        }
+      });
+      console.log('Act created: THE INDIAN CONTRACT ACT, 1872');
+    } else {
+      contractAct = await prisma.act.update({
+        where: { id: contractAct.id },
+        data: {
+          heading: 'THE INDIAN CONTRACT ACT, 1872',
+          act: 'THE INDIAN CONTRACT ACT, 1872',
+          year: 1872
+        }
+      });
+      console.log('Act synchronized: THE INDIAN CONTRACT ACT, 1872');
+    }
+
+    const existingContractSections = await prisma.actSection.findMany({
+      where: { actId: contractAct.id }
+    });
+    const contractSectionMap = new Map(existingContractSections.map(s => [s.section, s]));
+
+    let createdContractSectionCount = 0;
+    let updatedContractSectionCount = 0;
+
+    const contractToCreate = [];
+    const contractToUpdate = [];
+
+    for (const item of contractBearerActSections) {
+      const existing = contractSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        contractToCreate.push({
+          actId: contractAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        contractToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (contractToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < contractToCreate.length; i += insertChunkSize) {
+        const chunk = contractToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdContractSectionCount = contractToCreate.length;
+    }
+
+    if (contractToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < contractToUpdate.length; i += updateChunkSize) {
+        const chunk = contractToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedContractSectionCount = contractToUpdate.length;
+    }
+
+    console.log(`THE INDIAN CONTRACT ACT, 1872 Bearer Act Sections seeded: ${createdContractSectionCount} created, ${updatedContractSectionCount} updated across 12 chapters (Total: ${contractBearerActSections.length}).`);
   }
 }
 

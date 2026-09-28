@@ -6438,6 +6438,10 @@ Pre-seeded Acts under `Criminal`:
 - **THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012**: Seeded under `Criminal → THE PROTECTION OF CHILDREN FROM SEXUAL OFFENCES ACT, 2012` (Chapters I to IX, Sections 1 to 46 + alphanumeric insertion 42A and THE SCHEDULE, total 47 sections).
 - **THE NEGOTIABLE INSTRUMENTS ACT, 1881**: Seeded under `Criminal → THE NEGOTIABLE INSTRUMENTS ACT, 1881` (Chapters I to XVII, Sections 1 to 148 + alphanumeric insertions 45A, 75A, 85A, 104A, 131A, 142A, 143A and THE SCHEDULE, total 155 sections).
 
+Pre-seeded Acts under `Civil and Property`:
+- **THE TRANSFER OF PROPERTY ACT, 1882**: Seeded under `Civil and Property → THE TRANSFER OF PROPERTY ACT, 1882` (Chapters I to VIII, Sections 1 to 137 + alphanumeric insertions 53A, 59A, 60A, 60B, 63A, 65A, 67A, 69A, 114A, 130A, 135A and THE SCHEDULE, total 148 sections).
+- **THE INDIAN CONTRACT ACT, 1872**: Seeded under `Civil and Property → THE INDIAN CONTRACT ACT, 1872` (Preliminary & Chapters I to XI, Sections 1 to 266 including 19A, 178A and Schedule note, total 268 sections).
+
 Pre-seeded Acts under `Tech, Data & Cyber Laws`:
 - **THE INFORMATION TECHNOLOGY ACT, 2000**: Seeded under `Tech, Data & Cyber Laws → THE INFORMATION TECHNOLOGY ACT, 2000` (Chapters I to XIII including XIIA, Sections 1 to 94 + alphanumeric insertions 3A, 6A, 7A, 10A, 40A, 43A, 52A, 52B, 52C, 52D, 66A, 66B, 66C, 66D, 66E, 66F, 67A, 67B, 67C, 69A, 69B, 70A, 70B, 72A, 77A, 77B, 79A, 81A, 84A, 84B, 84C and THE FIRST & SECOND SCHEDULES, total 125 sections).
 - **THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023**: Seeded under `Tech, Data & Cyber Laws → THE DIGITAL PERSONAL DATA PROTECTION ACT, 2023` (Chapters I to IX, Sections 1 to 44 and THE SCHEDULE, total 44 sections).

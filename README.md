@@ -6441,6 +6441,7 @@ Pre-seeded Acts under `Criminal`:
 Pre-seeded Acts under `Civil and Property`:
 - **THE TRANSFER OF PROPERTY ACT, 1882**: Seeded under `Civil and Property → THE TRANSFER OF PROPERTY ACT, 1882` (Chapters I to VIII, Sections 1 to 137 + alphanumeric insertions 53A, 59A, 60A, 60B, 63A, 65A, 67A, 69A, 114A, 130A, 135A and THE SCHEDULE, total 148 sections).
 - **THE INDIAN CONTRACT ACT, 1872**: Seeded under `Civil and Property → THE INDIAN CONTRACT ACT, 1872` (Preliminary & Chapters I to XI, Sections 1 to 266 including 19A, 178A and Schedule note, total 268 sections).
+- **THE SPECIFIC RELIEF ACT, 1963**: Seeded under `Civil and Property → THE SPECIFIC RELIEF ACT, 1963` (Part I Preliminary & Part II-III Chapters I to VIII, Sections 1 to 44 including 14A, 20A, 20B, 20C and THE SCHEDULE, total 48 sections).
 
 Pre-seeded Acts under `Tech, Data & Cyber Laws`:
 - **THE INFORMATION TECHNOLOGY ACT, 2000**: Seeded under `Tech, Data & Cyber Laws → THE INFORMATION TECHNOLOGY ACT, 2000` (Chapters I to XIII including XIIA, Sections 1 to 94 + alphanumeric insertions 3A, 6A, 7A, 10A, 40A, 43A, 52A, 52B, 52C, 52D, 66A, 66B, 66C, 66D, 66E, 66F, 67A, 67B, 67C, 69A, 69B, 70A, 70B, 72A, 77A, 77B, 79A, 81A, 84A, 84B, 84C and THE FIRST & SECOND SCHEDULES, total 125 sections).

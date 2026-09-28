@@ -23,6 +23,7 @@ import { itBearerActSections } from './itBearerActData.js';
 import { dpdpBearerActSections } from './dpdpBearerActData.js';
 import { transferOfPropertyBearerActSections } from './transferOfPropertyBearerActData.js';
 import { contractBearerActSections } from './contractBearerActData.js';
+import { specificReliefBearerActSections } from './specificReliefBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -4458,6 +4459,122 @@ async function seedBearerActs() {
     }
 
     console.log(`THE INDIAN CONTRACT ACT, 1872 Bearer Act Sections seeded: ${createdContractSectionCount} created, ${updatedContractSectionCount} updated across 12 chapters (Total: ${contractBearerActSections.length}).`);
+
+    // Seed THE SPECIFIC RELIEF ACT, 1963 under Civil and Property BearerAct
+    console.log('Seeding THE SPECIFIC RELIEF ACT, 1963 Act and Chapters/Sections under Civil and Property...');
+    let sraAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: 'THE SPECIFIC RELIEF ACT, 1963'
+      }
+    });
+
+    if (!sraAct) {
+      sraAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Specific Relief',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!sraAct) {
+      sraAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: 'THE SPECIFIC RELIEF ACT, 1963',
+          act: 'THE SPECIFIC RELIEF ACT, 1963',
+          year: 1963
+        }
+      });
+      console.log('Act created: THE SPECIFIC RELIEF ACT, 1963');
+    } else {
+      sraAct = await prisma.act.update({
+        where: { id: sraAct.id },
+        data: {
+          heading: 'THE SPECIFIC RELIEF ACT, 1963',
+          act: 'THE SPECIFIC RELIEF ACT, 1963',
+          year: 1963
+        }
+      });
+      console.log('Act synchronized: THE SPECIFIC RELIEF ACT, 1963');
+    }
+
+    const existingSraSections = await prisma.actSection.findMany({
+      where: { actId: sraAct.id }
+    });
+    const sraSectionMap = new Map(existingSraSections.map(s => [s.section, s]));
+
+    let createdSraSectionCount = 0;
+    let updatedSraSectionCount = 0;
+
+    const sraToCreate = [];
+    const sraToUpdate = [];
+
+    for (const item of specificReliefBearerActSections) {
+      const existing = sraSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        sraToCreate.push({
+          actId: sraAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        sraToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (sraToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < sraToCreate.length; i += insertChunkSize) {
+        const chunk = sraToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdSraSectionCount = sraToCreate.length;
+    }
+
+    if (sraToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < sraToUpdate.length; i += updateChunkSize) {
+        const chunk = sraToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedSraSectionCount = sraToUpdate.length;
+    }
+
+    console.log(`THE SPECIFIC RELIEF ACT, 1963 Bearer Act Sections seeded: ${createdSraSectionCount} created, ${updatedSraSectionCount} updated across 9 chapters (Total: ${specificReliefBearerActSections.length}).`);
   }
 }
 

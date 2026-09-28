@@ -24,6 +24,14 @@ import { dpdpBearerActSections } from './dpdpBearerActData.js';
 import { transferOfPropertyBearerActSections } from './transferOfPropertyBearerActData.js';
 import { contractBearerActSections } from './contractBearerActData.js';
 import { specificReliefBearerActSections } from './specificReliefBearerActData.js';
+import { limitationBearerActSections } from './limitationBearerActData.js';
+import { saleOfGoodsBearerActSections } from './saleOfGoodsBearerActData.js';
+import { indianStampBearerActSections } from './indianStampBearerActData.js';
+import { registrationBearerActSections } from './registrationBearerActData.js';
+import { landAcquisitionBearerActSections } from './landAcquisitionBearerActData.js';
+import { cpcBearerActSections } from './cpcBearerActData.js';
+import { hinduMarriageBearerActSections } from './hinduMarriageBearerActData.js';
+import { hinduSuccessionBearerActSections } from './hinduSuccessionBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -4575,6 +4583,944 @@ async function seedBearerActs() {
     }
 
     console.log(`THE SPECIFIC RELIEF ACT, 1963 Bearer Act Sections seeded: ${createdSraSectionCount} created, ${updatedSraSectionCount} updated across 9 chapters (Total: ${specificReliefBearerActSections.length}).`);
+
+    // Seed THE LIMITATION ACT, 1963 under Civil and Property BearerAct
+    console.log('Seeding THE LIMITATION ACT, 1963 Act and Chapters/Sections under Civil and Property...');
+    let limitationAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: 'THE LIMITATION ACT, 1963'
+      }
+    });
+
+    if (!limitationAct) {
+      limitationAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Limitation',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!limitationAct) {
+      limitationAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: 'THE LIMITATION ACT, 1963',
+          act: 'THE LIMITATION ACT, 1963',
+          year: 1963
+        }
+      });
+      console.log('Act created: THE LIMITATION ACT, 1963');
+    } else {
+      limitationAct = await prisma.act.update({
+        where: { id: limitationAct.id },
+        data: {
+          heading: 'THE LIMITATION ACT, 1963',
+          act: 'THE LIMITATION ACT, 1963',
+          year: 1963
+        }
+      });
+      console.log('Act synchronized: THE LIMITATION ACT, 1963');
+    }
+
+    const existingLimitationSections = await prisma.actSection.findMany({
+      where: { actId: limitationAct.id }
+    });
+    const limitationSectionMap = new Map(existingLimitationSections.map(s => [s.section, s]));
+
+    let createdLimitationSectionCount = 0;
+    let updatedLimitationSectionCount = 0;
+
+    const limitationToCreate = [];
+    const limitationToUpdate = [];
+
+    for (const item of limitationBearerActSections) {
+      const existing = limitationSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        limitationToCreate.push({
+          actId: limitationAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        limitationToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (limitationToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < limitationToCreate.length; i += insertChunkSize) {
+        const chunk = limitationToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdLimitationSectionCount = limitationToCreate.length;
+    }
+
+    if (limitationToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < limitationToUpdate.length; i += updateChunkSize) {
+        const chunk = limitationToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedLimitationSectionCount = limitationToUpdate.length;
+    }
+
+    console.log(`THE LIMITATION ACT, 1963 Bearer Act Sections seeded: ${createdLimitationSectionCount} created, ${updatedLimitationSectionCount} updated across 5 chapters (Total: ${limitationBearerActSections.length}).`);
+
+    // Seed THE SALE OF GOODS ACT, 1930 under Civil and Property BearerAct
+    console.log('Seeding THE SALE OF GOODS ACT, 1930 Act and Chapters/Sections under Civil and Property...');
+    let sogAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: 'THE SALE OF GOODS ACT, 1930'
+      }
+    });
+
+    if (!sogAct) {
+      sogAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Sale of Goods',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!sogAct) {
+      sogAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: 'THE SALE OF GOODS ACT, 1930',
+          act: 'THE SALE OF GOODS ACT, 1930',
+          year: 1930
+        }
+      });
+      console.log('Act created: THE SALE OF GOODS ACT, 1930');
+    } else {
+      sogAct = await prisma.act.update({
+        where: { id: sogAct.id },
+        data: {
+          heading: 'THE SALE OF GOODS ACT, 1930',
+          act: 'THE SALE OF GOODS ACT, 1930',
+          year: 1930
+        }
+      });
+      console.log('Act synchronized: THE SALE OF GOODS ACT, 1930');
+    }
+
+    const existingSogSections = await prisma.actSection.findMany({
+      where: { actId: sogAct.id }
+    });
+    const sogSectionMap = new Map(existingSogSections.map(s => [s.section, s]));
+
+    let createdSogSectionCount = 0;
+    let updatedSogSectionCount = 0;
+
+    const sogToCreate = [];
+    const sogToUpdate = [];
+
+    for (const item of saleOfGoodsBearerActSections) {
+      const existing = sogSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        sogToCreate.push({
+          actId: sogAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        sogToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (sogToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < sogToCreate.length; i += insertChunkSize) {
+        const chunk = sogToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdSogSectionCount = sogToCreate.length;
+    }
+
+    if (sogToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < sogToUpdate.length; i += updateChunkSize) {
+        const chunk = sogToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedSogSectionCount = sogToUpdate.length;
+    }
+
+    console.log(`THE SALE OF GOODS ACT, 1930 Bearer Act Sections seeded: ${createdSogSectionCount} created, ${updatedSogSectionCount} updated across 7 chapters (Total: ${saleOfGoodsBearerActSections.length}).`);
+
+    // Seed THE INDIAN STAMP ACT, 1899 under Civil and Property BearerAct
+    console.log('Seeding THE INDIAN STAMP ACT, 1899 Act and Chapters/Sections under Civil and Property...');
+    let stampAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: 'THE INDIAN STAMP ACT, 1899'
+      }
+    });
+
+    if (!stampAct) {
+      stampAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Stamp',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!stampAct) {
+      stampAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: 'THE INDIAN STAMP ACT, 1899',
+          act: 'THE INDIAN STAMP ACT, 1899',
+          year: 1899
+        }
+      });
+      console.log('Act created: THE INDIAN STAMP ACT, 1899');
+    } else {
+      stampAct = await prisma.act.update({
+        where: { id: stampAct.id },
+        data: {
+          heading: 'THE INDIAN STAMP ACT, 1899',
+          act: 'THE INDIAN STAMP ACT, 1899',
+          year: 1899
+        }
+      });
+      console.log('Act synchronized: THE INDIAN STAMP ACT, 1899');
+    }
+
+    const existingStampSections = await prisma.actSection.findMany({
+      where: { actId: stampAct.id }
+    });
+    const stampSectionMap = new Map(existingStampSections.map(s => [s.section, s]));
+
+    let createdStampSectionCount = 0;
+    let updatedStampSectionCount = 0;
+
+    const stampToCreate = [];
+    const stampToUpdate = [];
+
+    for (const item of indianStampBearerActSections) {
+      const existing = stampSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        stampToCreate.push({
+          actId: stampAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        stampToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (stampToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < stampToCreate.length; i += insertChunkSize) {
+        const chunk = stampToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdStampSectionCount = stampToCreate.length;
+    }
+
+    if (stampToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < stampToUpdate.length; i += updateChunkSize) {
+        const chunk = stampToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedStampSectionCount = stampToUpdate.length;
+    }
+
+    console.log(`THE INDIAN STAMP ACT, 1899 Bearer Act Sections seeded: ${createdStampSectionCount} created, ${updatedStampSectionCount} updated across 8 chapters (Total: ${indianStampBearerActSections.length}).`);
+
+    // Seed THE REGISTRATION ACT, 1908 under Civil and Property BearerAct
+    console.log('Seeding THE REGISTRATION ACT, 1908 Act and Chapters/Sections under Civil and Property...');
+    let registrationAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: 'THE REGISTRATION ACT, 1908'
+      }
+    });
+
+    if (!registrationAct) {
+      registrationAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Registration',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!registrationAct) {
+      registrationAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: 'THE REGISTRATION ACT, 1908',
+          act: 'THE REGISTRATION ACT, 1908',
+          year: 1908
+        }
+      });
+      console.log('Act created: THE REGISTRATION ACT, 1908');
+    } else {
+      registrationAct = await prisma.act.update({
+        where: { id: registrationAct.id },
+        data: {
+          heading: 'THE REGISTRATION ACT, 1908',
+          act: 'THE REGISTRATION ACT, 1908',
+          year: 1908
+        }
+      });
+      console.log('Act synchronized: THE REGISTRATION ACT, 1908');
+    }
+
+    const existingRegSections = await prisma.actSection.findMany({
+      where: { actId: registrationAct.id }
+    });
+    const regSectionMap = new Map(existingRegSections.map(s => [s.section, s]));
+
+    let createdRegSectionCount = 0;
+    let updatedRegSectionCount = 0;
+
+    const regToCreate = [];
+    const regToUpdate = [];
+
+    for (const item of registrationBearerActSections) {
+      const existing = regSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        regToCreate.push({
+          actId: registrationAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        regToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (regToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < regToCreate.length; i += insertChunkSize) {
+        const chunk = regToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdRegSectionCount = regToCreate.length;
+    }
+
+    if (regToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < regToUpdate.length; i += updateChunkSize) {
+        const chunk = regToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedRegSectionCount = regToUpdate.length;
+    }
+
+    console.log(`THE REGISTRATION ACT, 1908 Bearer Act Sections seeded: ${createdRegSectionCount} created, ${updatedRegSectionCount} updated across 15 chapters (Total: ${registrationBearerActSections.length}).`);
+
+    // Seed THE RIGHT TO FAIR COMPENSATION AND TRANSPARENCY IN LAND ACQUISITION, REHABILITATION AND RESETTLEMENT ACT, 2013 under Civil and Property BearerAct
+    console.log('Seeding THE RIGHT TO FAIR COMPENSATION AND TRANSPARENCY IN LAND ACQUISITION, REHABILITATION AND RESETTLEMENT ACT, 2013 Act and Chapters/Sections under Civil and Property...');
+    const landAcquisitionActHeading = 'THE RIGHT TO FAIR COMPENSATION AND TRANSPARENCY IN LAND ACQUISITION, REHABILITATION AND RESETTLEMENT ACT, 2013';
+    let landAcquisitionAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: landAcquisitionActHeading
+      }
+    });
+
+    if (!landAcquisitionAct) {
+      landAcquisitionAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Land Acquisition',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!landAcquisitionAct) {
+      landAcquisitionAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: landAcquisitionActHeading,
+          act: landAcquisitionActHeading,
+          year: 2013
+        }
+      });
+      console.log('Act created: ' + landAcquisitionActHeading);
+    } else {
+      landAcquisitionAct = await prisma.act.update({
+        where: { id: landAcquisitionAct.id },
+        data: {
+          heading: landAcquisitionActHeading,
+          act: landAcquisitionActHeading,
+          year: 2013
+        }
+      });
+      console.log('Act synchronized: ' + landAcquisitionActHeading);
+    }
+
+    const existingLaSections = await prisma.actSection.findMany({
+      where: { actId: landAcquisitionAct.id }
+    });
+    const laSectionMap = new Map(existingLaSections.map(s => [s.section, s]));
+
+    let createdLaSectionCount = 0;
+    let updatedLaSectionCount = 0;
+
+    const laToCreate = [];
+    const laToUpdate = [];
+
+    for (const item of landAcquisitionBearerActSections) {
+      const existing = laSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        laToCreate.push({
+          actId: landAcquisitionAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        laToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (laToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < laToCreate.length; i += insertChunkSize) {
+        const chunk = laToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdLaSectionCount = laToCreate.length;
+    }
+
+    if (laToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < laToUpdate.length; i += updateChunkSize) {
+        const chunk = laToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedLaSectionCount = laToUpdate.length;
+    }
+
+    console.log(`THE RIGHT TO FAIR COMPENSATION AND TRANSPARENCY IN LAND ACQUISITION, REHABILITATION AND RESETTLEMENT ACT, 2013 Bearer Act Sections seeded: ${createdLaSectionCount} created, ${updatedLaSectionCount} updated across 13 chapters (Total: ${landAcquisitionBearerActSections.length}).`);
+
+    // Seed THE CODE OF CIVIL PROCEDURE, 1908 under Civil and Property BearerAct
+    console.log('Seeding THE CODE OF CIVIL PROCEDURE, 1908 Act and Chapters/Sections under Civil and Property...');
+    const cpcActHeading = 'THE CODE OF CIVIL PROCEDURE, 1908';
+    let cpcAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: civilAndPropertyBearerAct.id,
+        heading: cpcActHeading
+      }
+    });
+
+    if (!cpcAct) {
+      cpcAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: {
+            contains: 'Civil Procedure',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!cpcAct) {
+      cpcAct = await prisma.act.create({
+        data: {
+          bearerActId: civilAndPropertyBearerAct.id,
+          heading: cpcActHeading,
+          act: cpcActHeading,
+          year: 1908
+        }
+      });
+      console.log('Act created: ' + cpcActHeading);
+    } else {
+      cpcAct = await prisma.act.update({
+        where: { id: cpcAct.id },
+        data: {
+          heading: cpcActHeading,
+          act: cpcActHeading,
+          year: 1908
+        }
+      });
+      console.log('Act synchronized: ' + cpcActHeading);
+    }
+
+    const existingCpcSections = await prisma.actSection.findMany({
+      where: { actId: cpcAct.id }
+    });
+    const cpcSectionMap = new Map(existingCpcSections.map(s => [s.section, s]));
+
+    let createdCpcSectionCount = 0;
+    let updatedCpcSectionCount = 0;
+
+    const cpcToCreate = [];
+    const cpcToUpdate = [];
+
+    for (const item of cpcBearerActSections) {
+      const existing = cpcSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        cpcToCreate.push({
+          actId: cpcAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        cpcToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (cpcToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < cpcToCreate.length; i += insertChunkSize) {
+        const chunk = cpcToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdCpcSectionCount = cpcToCreate.length;
+    }
+
+    if (cpcToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < cpcToUpdate.length; i += updateChunkSize) {
+        const chunk = cpcToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedCpcSectionCount = cpcToUpdate.length;
+    }
+
+    console.log(`THE CODE OF CIVIL PROCEDURE, 1908 Bearer Act Sections seeded: ${createdCpcSectionCount} created, ${updatedCpcSectionCount} updated across 12 chapters (Total: ${cpcBearerActSections.length}).`);
+  }
+
+  const personalBearerAct = await prisma.bearerAct.findUnique({
+    where: { name: 'Personal' }
+  });
+
+  if (personalBearerAct) {
+    // Seed THE HINDU MARRIAGE ACT, 1955 under Personal BearerAct
+    console.log('Seeding THE HINDU MARRIAGE ACT, 1955 Act and Chapters/Sections under Personal...');
+    const hmaActHeading = 'THE HINDU MARRIAGE ACT, 1955';
+    let hmaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: hmaActHeading
+      }
+    });
+
+    if (!hmaAct) {
+      hmaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Hindu Marriage',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!hmaAct) {
+      hmaAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: hmaActHeading,
+          act: hmaActHeading,
+          year: 1955
+        }
+      });
+      console.log('Act created: ' + hmaActHeading);
+    } else {
+      hmaAct = await prisma.act.update({
+        where: { id: hmaAct.id },
+        data: {
+          heading: hmaActHeading,
+          act: hmaActHeading,
+          year: 1955
+        }
+      });
+      console.log('Act synchronized: ' + hmaActHeading);
+    }
+
+    const existingHmaSections = await prisma.actSection.findMany({
+      where: { actId: hmaAct.id }
+    });
+    const hmaSectionMap = new Map(existingHmaSections.map(s => [s.section, s]));
+
+    let createdHmaSectionCount = 0;
+    let updatedHmaSectionCount = 0;
+
+    const hmaToCreate = [];
+    const hmaToUpdate = [];
+
+    for (const item of hinduMarriageBearerActSections) {
+      const existing = hmaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        hmaToCreate.push({
+          actId: hmaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        hmaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (hmaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < hmaToCreate.length; i += insertChunkSize) {
+        const chunk = hmaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdHmaSectionCount = hmaToCreate.length;
+    }
+
+    if (hmaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < hmaToUpdate.length; i += updateChunkSize) {
+        const chunk = hmaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedHmaSectionCount = hmaToUpdate.length;
+    }
+
+    console.log(`THE HINDU MARRIAGE ACT, 1955 Bearer Act Sections seeded: ${createdHmaSectionCount} created, ${updatedHmaSectionCount} updated across 6 chapters (Total: ${hinduMarriageBearerActSections.length}).`);
+
+    // Seed THE HINDU SUCCESSION ACT, 1956 under Personal BearerAct
+    console.log('Seeding THE HINDU SUCCESSION ACT, 1956 Act and Chapters/Sections under Personal...');
+    const hsaActHeading = 'THE HINDU SUCCESSION ACT, 1956';
+    let hsaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: hsaActHeading
+      }
+    });
+
+    if (!hsaAct) {
+      hsaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Hindu Succession',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!hsaAct) {
+      hsaAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: hsaActHeading,
+          act: hsaActHeading,
+          year: 1956
+        }
+      });
+      console.log('Act created: ' + hsaActHeading);
+    } else {
+      hsaAct = await prisma.act.update({
+        where: { id: hsaAct.id },
+        data: {
+          heading: hsaActHeading,
+          act: hsaActHeading,
+          year: 1956
+        }
+      });
+      console.log('Act synchronized: ' + hsaActHeading);
+    }
+
+    const existingHsaSections = await prisma.actSection.findMany({
+      where: { actId: hsaAct.id }
+    });
+    const hsaSectionMap = new Map(existingHsaSections.map(s => [s.section, s]));
+
+    let createdHsaSectionCount = 0;
+    let updatedHsaSectionCount = 0;
+
+    const hsaToCreate = [];
+    const hsaToUpdate = [];
+
+    for (const item of hinduSuccessionBearerActSections) {
+      const existing = hsaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        hsaToCreate.push({
+          actId: hsaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        hsaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (hsaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < hsaToCreate.length; i += insertChunkSize) {
+        const chunk = hsaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdHsaSectionCount = hsaToCreate.length;
+    }
+
+    if (hsaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < hsaToUpdate.length; i += updateChunkSize) {
+        const chunk = hsaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedHsaSectionCount = hsaToUpdate.length;
+    }
+
+    console.log(`THE HINDU SUCCESSION ACT, 1956 Bearer Act Sections seeded: ${createdHsaSectionCount} created, ${updatedHsaSectionCount} updated across 4 chapters (Total: ${hinduSuccessionBearerActSections.length}).`);
   }
 }
 

@@ -1,0 +1,403 @@
+import json
+import os
+
+sections_data = [
+    # Chapter I: PRELIMINARY
+    {
+        "section": "Section 1",
+        "sectionNo": "1",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Short title and extent",
+        "description": "1.(1)Short title and extent. This Act may be called the Hindu Succession Act, 1956.\n\n(2) It extends to the whole of India except the State of Jammu and Kashmir.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 1 - Short title and extent",
+        "metaTitle": "Section 1 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 2",
+        "sectionNo": "2",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Application of Act",
+        "description": "2.(1)Application of Act. This Act applies-\n\n(a) to any person, who is a Hindu by religion in any of its forms or developments, including a Virashaiva, a Lingayat or a follower of the Brahmo, Prarthana or Arya Samaj,\n\n(b) to any person who is a Buddhist, Jaina or Sikh by religion, and\n\n(c) to any other person who is not a Muslim, Christian, Parsi or Jew by religion, unless it is proved that any such person would not have been governed by the Hindu law or by any custom or usage as part of that law in respect of any of the matters dealt with herein if this Act had not been passed.\n\nExplanation. The following persons are Hindus, Buddhists, Jainas or Sikhs by religion, as the case may be: -\n(a) any child, legitimate or illegitimate, both of whose parents are Hindus, Buddhists, Jainas or Sikhs by religion;\n\n(b) any child, legitimate or illegitimate, one of whose parents is a Hindu, Buddhist, Jaina or Sikh by religion and who is brought up as a member of the tribe, community, group or family to which such parent belongs or belonged;\n\n(c) any person who is a convert or reconvert to the Hindu, Buddhist, Jaina or Sikh religion.\n\n(2) Notwithstanding anything contained in sub-section (1), nothing contained in this Act shall apply to the members of any Scheduled Tribe within the meaning of clause (25) of article 366 of the Constitution unless the Central Government, by notification in the Official Gazette, otherwise directs.\n\n(3) The expression \" Hindu \" in any portion of this Act shall be construed as if it included a person who, though not a Hindu by religion, is, nevertheless, a person to whom this Act applies by virtue of the provisions contained in this section.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 2 - Application of Act",
+        "metaTitle": "Section 2 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 3",
+        "sectionNo": "3",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Definitions and interpretation",
+        "description": "3.(1) Definitions and interpretation.In this Act, unless the context otherwise requires,-\n\n(a) \" agnate \"-one person is said to be an \" agnate \" of another if the two are related by blood or adoption wholly through males ;\n\n(b) \" aliyasantana law \" means the system of law applicable to persons who, if this Act had not been passed, would have been governed by the Madras Aliyasantana Act, 1949, (Madras Act 9 of 1949.) or by the customary aliyasantana law with respect to the matters for which provision is made in this Act ;\n\n(c) \" cognate \"-one person is said to be a \" cognate \" of another if the two are related by blood or adoption but not wholly through males;\n\n(d) the expressions \"custom\" and \"usage\" signify any rule which, having been continuously and uniformly observed for a long time, has obtained the force of law among Hindus in any local area, tribe, community, group or family:\n\nProvided that the rule is certain and not unreasonable or opposed to public policy: and\n\nProvided further that in the case of a rule applicable only to a family it has not been discontinued by the family;\n\n(e) full blood \"half blood\" and \"uterine blood\"-\n(i) two persons are said to be related to each other by full blood when they are descended from a common ancestor by the same wife, and by half blood when they are descended from a common ancestor but by different wives;\n(ii)two persons are said to be related to each other by uterine blood when they are descended from a common ancestress but by different husbands;\n\nExplanation.-In this clause \" ancestor\" includes the father and \" ancestress \" the mother ;\n\n(f)\"heir\" means any person, male or female, who is entitled to succeed to the property of an intestate under this Act ;\n\n(g) \" intestate \"-a person is deemed to die intestate in respect of property of which he or she has not made a testamentary disposition capable of taking effect ;\n\n(h) \" marumakkattayam law \" means the system of law applicable to persons-\n\n(a)who, if this Act had not been passed, would have been governed by the Madras Marumakkattayam Act, 1932 Madras Act 22 of 1933; the Travancore Nayar Act 2 of 1100K; the Travancore Ezhava Act 3 of 1100K; the Travancore Nanjinad Vellala Act 6 of 1101K; the Travancore Kshatriya Act 7 of 1108K; the Travancore Krishnanvaka Marumakkathayee Act 7 of 1115K; the Cochin Marumakkathayam Act 33 of 1113K ; or the Cochin Nayar Act 29 of 1113K; with respect to the matters for which provision is made in this Act ; or\n\n(b)who belong to any community, the members of which are largely domiciled in the State of Travancore Cochin or Madras '[as it existed immediately before the 1st November, 1956], and who, if this Act had not been passed, would have been governed with respect to the matters for which provision is made in this Act by any system of inheritance in which descent is traced through the female line ;\n\nbut does not include the aliyasantana law;\n\n(i) \"nambudri law \" means the system of law applicable to persons who, if this Act had not been passed, would have been governed by the Madras Nambudri Act, 1932 Madras Act 21 of 1933; the Cochin Nambudri Act 17 of 111K; or the Travancore Malayala Brahmin Act 3 of 1106K; with respect to the matters for which provision is made in this Act;\n\n(j) \"related\" means related by legitimate kinship:\n\nProvided that illegitimate children shall be deemed to be related to their mother and to one another, and their legitimate descendants shall be deemed to be related to them and to one another ; and any word expressing relationship or denoting a relative shall be construed accordingly.\n\n(2) In this Act, unless the context otherwise requires, words importing the masculine gender shall not be taken to include females.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 3 - Definitions and interpretation",
+        "metaTitle": "Section 3 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 4",
+        "sectionNo": "4",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Over-riding effect of Act",
+        "description": "4.(1)Over-riding effect of Act. Save as otherwise expressly provided in this Act,-\n\n(a) any text, rule or interpretation of Hindu law or any custom or usage as part of that law in force immediately before the commencement of this Act shall cease to have effect with respect to any matter for which provision is made in this Act ;\n\n(b) any other law in force immediately before the commencement of this Act shall cease to apply to Hindus in so far as it is inconsistent with any of the provisions contained in this Act.\n\n(2) For the removal of doubts it is hereby declared that nothing contained in this Act shall be deemed to affect the provisions of any law for the time being in force providing for the prevention of fragmentation of agricultural holdings or for the fixation of ceilings or for the devolution of tenancy rights in respect of such holdings.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 4 - Over-riding effect of Act",
+        "metaTitle": "Section 4 - THE HINDU SUCCESSION ACT, 1956"
+    },
+
+    # Chapter II: INTESTATE SUCCESSION
+    {
+        "section": "Section 5",
+        "sectionNo": "5",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Act not to apply to certain properties",
+        "description": "5.Act not to apply to certain properties. This Act shall not apply to-\n(i) any property succession to which is regulated by the Indian Succession Act, 1925, ( 39 of 1925.) by reason of the provisions contained in section 21 of the Special Marriage Act, 1954 (43 of 1954);\n(ii) any estate which descends to a single heir by the terms of any covenant or agreement entered into by the Ruler of any Indian State with the Government of India or by the terms of any enactment passed before the commencement of this Act ;\n\n(iii) the Valiamma Thampuran Kovilagam Estate and the Palace Fund administered by the Palace Administration Board by reason of the powers conferred by Proclamation (IX of 1124) dated 29th June, 1949, promulgated by the Maharaja of Cochin.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 5 - Act not to apply to certain properties",
+        "metaTitle": "Section 5 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 6",
+        "sectionNo": "6",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Devolution of interest in coparcenary property",
+        "description": "6.Devolution of interest in coparcenary property. When a male Hindu dies after the commencement of this Act, having at the time of his death an interest in a Mitakshara coparcenary property, his interest in the property shall devolve by survivorship upon the surviving members of the coparcenary and not in accordance with this Act:\n\nProvided that, if the deceased had left him surviving a female relative specified in class I of the Schedule or a male relative specified in that class who claims through such female relative, the interest of the deceased in the Mitakshara coparcenary property shall devolve by testamentary or intestate succession, as the case may be, under this Act and not by survivorship.\n\nExplanation 1.-For the purposes of this section, the interest of a Hindu Mitakshara coparcener shall be deemed to be the share in the property that would have been allotted to him if a partition of the property had taken place immediately before his death, irrespective of whether he was entitled to claim partition or not.\n\nExplanation 2.-Nothing contained in the proviso to this section shall be construed as enabling a person who has separated himself from the coparcenary before the death of the deceased or any of his heirs to claim on intestacy a share in the interest referred to therein.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 6 - Devolution of interest in coparcenary property",
+        "metaTitle": "Section 6 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 7",
+        "sectionNo": "7",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Devolution of interest in the property of a tarwad, tavazhi, kutumba, kavaru or illom",
+        "description": "7. Devolution of interest in the property of a tarwad, tavazhi, kutumba, kavaru or illom. (1) When a Hindu to whom the marumakkattayam or nambudri law would have applied if this Act had not been passed dies after the commencement of this Act, having at the time of his or her death an interest in the property of a tarwad, tavazhi or illom, as the case may be, his or her interest in the property shall devolve by testamentary or intestate succession, as the case may be, under this Act and not according to the marumakkattayam or nambudri law.\n\nExplanation.-For the purposes of this sub-section, the interest of a Hindu in the property of a tarwad, tavazhi or illom shall be deemed to be the share in the property of the tarwad, tavazhi or illom, as the case may be, that would have fallen to him or her if a partition of that property per capita had been made immediately before his or her death among all the members of the tarwad. tavazhi or illom, as the case may be,. then living, whether he or she was entitled to claim such partition or not under the marumakkattayam or nambudri law applicable to him or her, and such share shall be deemed to have been allotted to him or her absolutely.\n\n(2) When a Hindu to whom the aliyasantana law would have applied if this Act had not been passed dies after the commencement of this Act, having at the time of his or her death an undivided interest in the property of a kutumba or kavaru, as the case may be, his or her interest in the property shall devolve by testamentary or intestate succession, as the case may be, under this Act and not according to the aliyasantana law.\n\nExplanation.-For the purposes of this sub-section, the interest of a Hindu in the property of a kutumba or kavaru shall be deemed to be the share in the property of the kutumba or kavaru, as the case may be, that would have fallen to him or her if a partition of that property per capita had been made immediately before his or her death among all the members of the kutumba or kavaru, as the case may be, then living, whether he or she was entitled to claim such partition or not under the aliyasantana law, and such share shall be deemed to have been allotted to him or her absolutely.\n\n(3) Notwithstanding anything contained in sub-section (1), when a sthanamdar dies after the commencement of this Act, the sthanam property held by him shall devolve upon the members of the family to which the sthanamdar belonged and the heirs of the sthanamdar as if the sthanam property had been divided per capita immediately before the death of the sthanamdar among himself and all the members of his family then living,, and the shares falling to the members of his family and the heirs of the sthanamdar shall be held by them as their separate property.\n\nExplanation.-For the purposes of this sub-section, the family of a sthanamdar shall include every branch of that family, whether divided or undivided, the male members of which would have been entitled by any custom or usage to succeed to the position of sthanamdar if this Act had not been passed,",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 7 - Devolution of interest in the property of a tarwad, tavazhi, kutumba, kavaru or illom",
+        "metaTitle": "Section 7 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 8",
+        "sectionNo": "8",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "General rules of succession in the case of males",
+        "description": "8.General rules of succession in the case of males. The property of a male Hindu dying intestate shall devolve according to the provisions of this Chapter :-\n\n(a) firstly, upon the heirs, being the relatives specified in class I of the Schedule ;\n\n(b) secondly, if there is no heir of class I, then upon the heirs, being the relatives specified in class II of the Schedule ;\n\n(c) thirdly, if there is no heir of any of the two classes, then upon the agnates of the deceased ; and\n\n(d) lastly, if there is no agnate, then upon the cognates of the deceased.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 8 - General rules of succession in the case of males",
+        "metaTitle": "Section 8 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 9",
+        "sectionNo": "9",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Order of succession among heirs in the Schedule",
+        "description": "9.Order of succession among heirs in the Schedule. Among the heirs specified in the Schedule, those in class I shall take simultaneously and to the exclusion of all other heirs ; those in the first entry in class II shall be preferred to those in the second entry ; those in the second entry shall be preferred to those in the third entry ; and so on in succession.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 9 - Order of succession among heirs in the Schedule",
+        "metaTitle": "Section 9 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 10",
+        "sectionNo": "10",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Distribution of property among heirs in class I of the Schedule",
+        "description": "10.Distribution of property among heirs in class I of the Schedule. The property of an intestate shall be divided among the heirs in class I of the Schedule in accordance with the following rules:-\n\nRule 1.-The intestate's widow, or if there are more widows than one, all the widows together, shall take one share.\n\nRule 2.-The surviving sons and daughters and the mother of the intestate shall each take one share.\n\nRule 3.-The heirs in the branch of each pre-deceased son or each pre-deceased daughter of the intestate shall take between them one share.\n\nRule 4.-The distribution of the share referred to in Rule 3--\n\n(i) among the heirs in the branch of the pre-decease son shall be so made that his widow (or widows together), and the surviving sons and daughters get equal portions ; and the branch of his pre-deceased sons gets the same portion;\n\n(ii) among the heirs in the branch of the pre-deceased daughter shall be so made that the surviving sons and daughters get equal portions.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 10 - Distribution of property among heirs in class I of the Schedule",
+        "metaTitle": "Section 10 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 11",
+        "sectionNo": "11",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Distribution of property among heirs in class II of the Schedule",
+        "description": "11. Distribution of property among heirs in class II of the Schedule. The property of an intestate shall be divided between the heirs specified in any one entry in class II of the Schedule so that they, share equally.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 11 - Distribution of property among heirs in class II of the Schedule",
+        "metaTitle": "Section 11 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 12",
+        "sectionNo": "12",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Order of succession among agnets and cognates",
+        "description": "12.Order of succession among agnets and cognates. The order of succession among agnates or cognates, as the case may be, shall be determined in accordance with the rules of preference laid down hereunder:-\n\nRule 1.-Of two heirs, the one who has fewer or no degrees of ascent is preferred.\n\nRule 2.-Where the number of degrees of ascent is the same or none, that heir is preferred who has fewer or no degrees of descent.\n\nRule 3.-Where neither heir is entitled to be preferred to the other under Rule 1 or Rule 2 they take simultaneously.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 12 - Order of succession among agnets and cognates",
+        "metaTitle": "Section 12 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 13",
+        "sectionNo": "13",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Computation of degrees",
+        "description": "13. Computation of degrees. (1) For the purposes of determining the order of succession among agnates or cognates, relationship shall be reckoned from the intestate to the heir in terms of degrees of ascent or degrees of descent or both, as the case may be.\n\n(2) Degrees of ascent and degrees of descent shall be computed inclusive of the intestate.\n\n(3) Every generation constitutes a degree either ascending or descending.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 13 - Computation of degrees",
+        "metaTitle": "Section 13 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 14",
+        "sectionNo": "14",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Property of a female Hindu to be her absolute property",
+        "description": "14.Property of a female Hindu to be her absolute property. (1)Any property possessed by a female Hindu, whether acquired before or after the commencement of this Act, shall be held by her as full owner thereof and not as a limited owner.\n\nExplanation.-In this sub-section, \" property \" includes both movable and immovable property acquired by a female Hindu by inheritance or devise, or at a partition, or in lieu of maintenance or arrears of maintenance, or by gift from any person, whether a relative or not, before, at or after her marriage, or by her own skill or exertion, or by purchase or by prescription, or in any other manner whatsoever, and also any such property held by her as stridhana immediately before the commencement of this Act.\n\n(2) Nothing contained in sub-section (1) shall apply to any pro- perty acquired by way of gift or under a will or any other instrument or under a decree or order of a civil court or under an award where the terms of the gift, will or other instrument or the decree, order or award prescribe a restricted estate in such property.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 14 - Property of a female Hindu to be her absolute property",
+        "metaTitle": "Section 14 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 15",
+        "sectionNo": "15",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "General rules of succession in the case of female Hindus",
+        "description": "15. General rules of succession in the case of female Hindus. (1) The property of a female Hindu dying intestate shall devolveac",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 15 - General rules of succession in the case of female Hindus",
+        "metaTitle": "Section 15 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 16",
+        "sectionNo": "16",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Order of succession and manner of distribution among heirs of a female Hindu",
+        "description": "16.Order of succession and manner of distribution among heirs of a female Hindu. The order of succession among the heirs referred to in section 15 shall be, and the distribution of the intestate's property among those heirs shall take place according to the following rules, namely:-\n\nRule 1.-Among the heirs specified in sub-section (1) of section 15, those in one entry shall be preferred to those in any succeeding entry, and those included in the same entry shall take simultaneously.\n\nRule 2.-If any son or daughter of the intestate had pre-deceased the intestate leaving his or her own children alive at the time of the intestate's death, the children of such son or daughter shall take between them the share which such son or daughter would have taken if living at the intestate's death.\n\nRule 3.-The devolution of the property of the intestate on the heirs referred to in clauses (b), (d) and (e) of sub-section. (1) and in sub-section (2) of section 15 shall be in the same order and according to the same rules as would have applied if the property had been the father's or the mother's or the husband's as the case may be, and such person had died intestate in respect thereof immediately after the intestate's death.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 16 - Order of succession and manner of distribution among heirs of a female Hindu",
+        "metaTitle": "Section 16 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 17",
+        "sectionNo": "17",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Special provisions respecting persons governed by marumakkattayam andatiyasantana laws",
+        "description": "17.Special provisions respecting persons governed by marumakkattayam and atiyasantana laws. The provisions of sections 8, 10, 15 and 23 shall have effect in relation to persons who would have been governed by the marumakkattayam law or aliyasantana law if this Act had not been passed as if-\n(i) for sub-clauses (c) and (d) of section 8, the following had been substituted, namely :-\n\n\"(c) thirdly, if there is no heir of any of the two classes, then upon his relatives, whether agnates or cognates.\"\n\n(ii) for clauses (a) to (e) of sub-section (1) of section 15, the following had been substituted, namely :-\n\n\"(a) firstly, upon the sons and daughter (including the children of any predeceased son or daughter) and the mother ;\n(b) secondly, upon the father and the husband\n\n(c) thirdly, upon the heirs of the mother ;\n\n(d) fourthly, upon the heirs of the father ; and\n\n(e) lastly, upon the heirs of the husband.\"\n\n(iii) clause (a) of sub-section (2) of section 15 had been omitted ;\n\n(iv) section 23 had been omitted.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 17 - Special provisions respecting persons governed by marumakkattayam andatiyasantana laws",
+        "metaTitle": "Section 17 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 18",
+        "sectionNo": "18",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Full blood preferred to half blood",
+        "description": "18.Full blood preferred to half blood. Heirs related to an intestate by full blood shall be preferred to heirs related by half blood, if the nature of the relationship is the same in every other respect.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 18 - Full blood preferred to half blood",
+        "metaTitle": "Section 18 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 19",
+        "sectionNo": "19",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Mode of succession of two or more heirs",
+        "description": "19.Mode of succession of two or more heirs. If two or more heirs succeed together to the property of an intestate, they shall take the property,-\n\n(a) save as otherwise expressly provided in this Act, per capita and not per stirpes and\n\n(b) as tenants-in-common and not as joint tenants.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 19 - Mode of succession of two or more heirs",
+        "metaTitle": "Section 19 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 20",
+        "sectionNo": "20",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Right of child in womb",
+        "description": "20.Right of child in womb. A child who was in the womb at the time of the death of an intestate and who is subsequently born alive shall have the same right to inherit to the intestate as if he or she had been born before the death of the intestate, and the inheritance shall be deemed to vest in such a case with effect from the date of the death of the intestate.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 20 - Right of child in womb",
+        "metaTitle": "Section 20 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 21",
+        "sectionNo": "21",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Presumption in cases of simultaneous deaths",
+        "description": "21.Presumption in cases of simultaneous deaths. Where two persons have died in circumstances rendering it uncertain whether either of them, and if so which, survived the other, then, for all purposes affecting succession to property, it shall be presumed, until the contrary is proved, that the younger survived the elder.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 21 - Presumption in cases of simultaneous deaths",
+        "metaTitle": "Section 21 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 22",
+        "sectionNo": "22",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Preferential right to acquire property in certain cases",
+        "description": "22 Preferential right to acquire property in certain cases. (1) Where, after the commencement of this Act, an interest in any immovable property of an intestate, or in any business carried on by him or her, whether solely or in conjunction with others, devolves upon two or more heirs specified in class I of the Schedule, and any one of such heirs proposes to transfer his or her interest in the property or business, the other heirs shall have a preferential right to acquire the interest proposed to be transferred.\n\n(2)The consideration for which any interest in the property of the deceased may be transferred under this section shall, in the absence of any agreement between the parties, be determined by the court on application being made to it in this behalf, and if any person proposing to acquire the interest is not willing to acquire it for the consideration so determined, such person shall be liable to pay all costs of or incident to the application.\n\n(3)If there are two or more heirs specified in class I of the Schedule proposing to acquire any interest under this section, that heir who offers the highest consideration for the transfer shall be preferred.\n\nExplanation.-In this section, \" court \" means the court within the limits of whose jurisdiction the immovable property is situate or the business is carried on, and includes any other court which the State Government may, by notification in the Official Gazette, specify in this behalf.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 22 - Preferential right to acquire property in certain cases",
+        "metaTitle": "Section 22 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 23",
+        "sectionNo": "23",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Special provision respecting dwelling- houses",
+        "description": "23.Special provision respecting dwelling- houses. Where a Hindu intestate has left surviving him or her both male and female heirs specified in class I of the Schedule and his or her property includes a dwelling-house wholly occupied by members of his or her family, then, notwithstanding anything contained in this Act, the right of any such female heir to claim partition of the dwelling-house shall not arise until the male heirs choose to divide their respective shares therein ; but the female heir shall be entitled to a right of residence therein:\n\nProvided that where such female heir is a daughter, she shall be entitled to a right of residence in the dwelling-house only if she is unmarried or has been deserted by or has separated from her husband or is a widow.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 23 - Special provision respecting dwelling- houses",
+        "metaTitle": "Section 23 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 24",
+        "sectionNo": "24",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Certain windows re-marrying may not inherit as windows",
+        "description": "24.Certain windows re-marrying may not inherit as windows. Any heir who is related to an intestate as the widow of a pre-deceased son, the widow of a pre-deceased son of a pre-deceased son or the widow of a brother shall not be entitled to succeed to the property of the intestate as such widow, if on the date the succession opens, she has re-married.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 24 - Certain windows re-marrying may not inherit as windows",
+        "metaTitle": "Section 24 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 25",
+        "sectionNo": "25",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Murderer disqualified",
+        "description": "25.Murderer disqualified. A person who commits murder or abets the commission of murder shall be disqualified from inheriting the property of the person murdered, or any other property in furtherance of the succession to which he or she committed or abetted the commission of the murder.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 25 - Murderer disqualified",
+        "metaTitle": "Section 25 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 26",
+        "sectionNo": "26",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Converts descendants disqualified",
+        "description": "26.Converts descendants disqualified. Where, before or after the commencement of this Act, a Hindu has ceased or ceases to be a Hindu by conversion to another religion, children born to him or her after such conversion and their descendants shall be disqualified from inheriting the property of any of their Hindu relatives, unless such children or descendants are Hindus at the time when the succession opens.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 26 - Converts descendants disqualified",
+        "metaTitle": "Section 26 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 27",
+        "sectionNo": "27",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Succession when heir disqualified",
+        "description": "27.Succession when heir disqualified. If any person is disqualified from inheriting any property under this Act, it shall devolve as if such person had died before the intestate.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 27 - Succession when heir disqualified",
+        "metaTitle": "Section 27 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 28",
+        "sectionNo": "28",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Disease, defect, etc., not disqualified",
+        "description": "28.Disease, defect, etc., not to disqualify No person shall be disqualified from succeeding to any property on the ground of any disease, defect or deformity, or save as provided in this Act, on any other ground whatsoever.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 28 - Disease, defect, etc., not disqualified",
+        "metaTitle": "Section 28 - THE HINDU SUCCESSION ACT, 1956"
+    },
+    {
+        "section": "Section 29",
+        "sectionNo": "29",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "INTESTATE SUCCESSION",
+        "title": "Failure of heirs",
+        "description": "29.Failure of heirs. If an intestate has left no heir qualified to succeed to his or her property in accordance with the provisions of this Act, such property shall devolve on the Government; and the Government shall take the property subject to all the obligations and liabilities to which an heir would have been subject.",
+        "metaData": "INTESTATE SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 29 - Failure of heirs",
+        "metaTitle": "Section 29 - THE HINDU SUCCESSION ACT, 1956"
+    },
+
+    # Chapter III: TESTAMENTARY SUCCESSION
+    {
+        "section": "Section 30",
+        "sectionNo": "30",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "TESTAMENTARY SUCCESSION",
+        "title": "Testamentary succession",
+        "description": "30.Testamentary succession. 1***** Any Hindu may dispose of by will or other testamentary disposition any property, which is capable of being so disposed of by him, in accordance with the provisions of the Indian Succession Act, 1925, (39 of 1925.) or any other law for the time being in force and applicable to Hindus.\n\nExplanation.-The interest of a male Hindu in a Mitakshara coparcenary property or the interest of a member of a tarwad, tavazhi, illom, kutumba or kavaru in the property of the tarwad, tavazhi, illom, kutumba or kavaru shall, notwithstanding anything contained in this Act or in any other law for the time being in force, be deemed to be property capable of being disposed of by him or by her within the meaning of this 2[section.]",
+        "metaData": "TESTAMENTARY SUCCESSION",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 30 - Testamentary succession",
+        "metaTitle": "Section 30 - THE HINDU SUCCESSION ACT, 1956"
+    },
+
+    # Chapter IV: REPEALS
+    {
+        "section": "Section 31",
+        "sectionNo": "31",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "REPEALS",
+        "title": "[Repeals.]",
+        "description": "31.[Repeals.] Rep. by the Repealing and Amending Act, 1960 (58 of 1960), s. 2 and the First Schedule.\n\nTHE SCHEDULE\n(See section 8)\n\nHEIRS IN CLASS I AND CLASS II\n\nClass I\nSon; daughter; widow ; mother; son of a pre-deceased son; daughter of a pre-deceased son ; son of a pre-deceased daughter ; daughter of a pre-deceased daughter; widow of a pre-deceased son; son of a predeceased son of a pre-deceased son ; daughter of a pre- deceased son of a pre-deceased son; widow of a pre-deceased son of a pre-deceased son.\n\nClass II\n\nI. Father.\n\nII. (1) Son's daughter's son, (2). son's daughter's daughter,\n(3) brother, (4) sister.\n\nIII. (1) Daughter's son's son, (2) daughter's son's daughter,\n(3) daughter's daughter's son, (4) daughter's daughter's daughter.\n\nIV. (1) Brother's son, (2) sister's son, (3) brother's daughter\n(4) sister's daughter.\n\nV. Father's father ; father's mother.\n\nVI. Father's widow; brother's widow.\n\nVII. Father's brother ; father's sister.\n\nVIII. Mother's father; mother's mother.\n\nIX. Mother's brother ; mother's sister.\n\nExplanation.-In this Schedule references to a brother or sister do not include references to a brother or sister by uterine blood.",
+        "metaData": "REPEALS",
+        "metaDescription": "THE HINDU SUCCESSION ACT, 1956 Section 31 - [Repeals.]",
+        "metaTitle": "Section 31 - THE HINDU SUCCESSION ACT, 1956"
+    }
+]
+
+def main():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    prisma_dir = os.path.join(base_dir, 'prisma')
+    
+    json_path = os.path.join(prisma_dir, 'hinduSuccessionBearerActData.json')
+    js_path = os.path.join(prisma_dir, 'hinduSuccessionBearerActData.js')
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(sections_data, f, indent=2, ensure_ascii=False)
+    print(f"Wrote {len(sections_data)} sections to {json_path}")
+    
+    js_content = "export const hinduSuccessionBearerActSections = " + json.dumps(sections_data, indent=2, ensure_ascii=False) + ";\n"
+    with open(js_path, 'w', encoding='utf-8') as f:
+        f.write(js_content)
+    print(f"Wrote {len(sections_data)} sections to {js_path}")
+
+if __name__ == '__main__':
+    main()

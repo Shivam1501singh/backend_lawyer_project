@@ -48,6 +48,9 @@ import { rightToInformationBearerActSections } from './rightToInformationBearerA
 import { immigrationAndForeignersBearerActSections } from './immigrationAndForeignersBearerActData.js';
 import { lokpalAndLokayuktasBearerActSections } from './lokpalAndLokayuktasBearerActData.js';
 import { constitutionBearerActSections } from './constitutionBearerActData.js';
+import { industrialRelationsBearerActSections } from './industrialRelationsBearerActData.js';
+import { realEstateBearerActSections } from './realEstateBearerActData.js';
+import { codeOnWagesBearerActSections } from './codeOnWagesBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -7425,6 +7428,372 @@ async function seedBearerActs() {
     }
 
     console.log(`Constitution of India Bearer Act Sections seeded: ${createdConstitutionSectionCount} created, ${updatedConstitutionSectionCount} updated (Total: ${constitutionBearerActSections.length}).`);
+  }
+
+  // 32. THE INDUSTRIAL RELATIONS CODE, 2020
+  const taxationLabourBearerAct = await prisma.bearerAct.findUnique({
+    where: { name: 'Taxation, Labour & Consumer Protection' }
+  });
+
+  if (taxationLabourBearerAct) {
+    console.log('Seeding THE INDUSTRIAL RELATIONS CODE, 2020 under Taxation, Labour & Consumer Protection...');
+    let industrialRelationsAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: taxationLabourBearerAct.id,
+        heading: 'THE INDUSTRIAL RELATIONS CODE, 2020'
+      }
+    });
+
+    if (!industrialRelationsAct) {
+      industrialRelationsAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: taxationLabourBearerAct.id,
+          heading: {
+            contains: 'INDUSTRIAL RELATIONS CODE',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!industrialRelationsAct) {
+      industrialRelationsAct = await prisma.act.create({
+        data: {
+          bearerActId: taxationLabourBearerAct.id,
+          heading: 'THE INDUSTRIAL RELATIONS CODE, 2020',
+          act: 'THE INDUSTRIAL RELATIONS CODE, 2020',
+          year: 2020
+        }
+      });
+      console.log('Act created: THE INDUSTRIAL RELATIONS CODE, 2020');
+    } else {
+      industrialRelationsAct = await prisma.act.update({
+        where: { id: industrialRelationsAct.id },
+        data: {
+          heading: 'THE INDUSTRIAL RELATIONS CODE, 2020',
+          act: 'THE INDUSTRIAL RELATIONS CODE, 2020',
+          year: 2020
+        }
+      });
+      console.log('Act synchronized: THE INDUSTRIAL RELATIONS CODE, 2020');
+    }
+
+    const existingIRSections = await prisma.actSection.findMany({
+      where: { actId: industrialRelationsAct.id }
+    });
+    const irSectionMap = new Map(existingIRSections.map(s => [s.section, s]));
+
+    let createdIRSectionCount = 0;
+    let updatedIRSectionCount = 0;
+
+    const irToCreate = [];
+    const irToUpdate = [];
+
+    for (const item of industrialRelationsBearerActSections) {
+      const existing = irSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        irToCreate.push({
+          actId: industrialRelationsAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        irToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (irToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < irToCreate.length; i += insertChunkSize) {
+        const chunk = irToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdIRSectionCount = irToCreate.length;
+    }
+
+    if (irToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < irToUpdate.length; i += updateChunkSize) {
+        const chunk = irToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedIRSectionCount = irToUpdate.length;
+    }
+
+    console.log(`Industrial Relations Code Bearer Act Sections seeded: ${createdIRSectionCount} created, ${updatedIRSectionCount} updated (Total: ${industrialRelationsBearerActSections.length}).`);
+  }
+
+  // 33. THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016
+  const taxationLabourBearerActForRera = await prisma.bearerAct.findUnique({
+    where: { name: 'Taxation, Labour & Consumer Protection' }
+  });
+
+  if (taxationLabourBearerActForRera) {
+    console.log('Seeding THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016 under Taxation, Labour & Consumer Protection...');
+    let realEstateAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: taxationLabourBearerActForRera.id,
+        heading: 'THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016'
+      }
+    });
+
+    if (!realEstateAct) {
+      realEstateAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: taxationLabourBearerActForRera.id,
+          heading: {
+            contains: 'REAL ESTATE (REGULATION AND DEVELOPMENT)',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!realEstateAct) {
+      realEstateAct = await prisma.act.create({
+        data: {
+          bearerActId: taxationLabourBearerActForRera.id,
+          heading: 'THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016',
+          act: 'THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016',
+          year: 2016
+        }
+      });
+      console.log('Act created: THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016');
+    } else {
+      realEstateAct = await prisma.act.update({
+        where: { id: realEstateAct.id },
+        data: {
+          heading: 'THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016',
+          act: 'THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016',
+          year: 2016
+        }
+      });
+      console.log('Act synchronized: THE REAL ESTATE (REGULATION AND DEVELOPMENT) ACT, 2016');
+    }
+
+    const existingRERASections = await prisma.actSection.findMany({
+      where: { actId: realEstateAct.id }
+    });
+    const reraSectionMap = new Map(existingRERASections.map(s => [s.section, s]));
+
+    let createdRERASectionCount = 0;
+    let updatedRERASectionCount = 0;
+
+    const reraToCreate = [];
+    const reraToUpdate = [];
+
+    for (const item of realEstateBearerActSections) {
+      const existing = reraSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        reraToCreate.push({
+          actId: realEstateAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        reraToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (reraToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < reraToCreate.length; i += insertChunkSize) {
+        const chunk = reraToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdRERASectionCount = reraToCreate.length;
+    }
+
+    if (reraToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < reraToUpdate.length; i += updateChunkSize) {
+        const chunk = reraToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedRERASectionCount = reraToUpdate.length;
+    }
+
+    console.log(`Real Estate Act Bearer Act Sections seeded: ${createdRERASectionCount} created, ${updatedRERASectionCount} updated (Total: ${realEstateBearerActSections.length}).`);
+  }
+
+  // 34. THE CODE ON WAGES, 2019
+  const taxationLabourBearerActForWages = await prisma.bearerAct.findUnique({
+    where: { name: 'Taxation, Labour & Consumer Protection' }
+  });
+
+  if (taxationLabourBearerActForWages) {
+    console.log('Seeding THE CODE ON WAGES, 2019 under Taxation, Labour & Consumer Protection...');
+    let wagesAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: taxationLabourBearerActForWages.id,
+        heading: 'THE CODE ON WAGES, 2019'
+      }
+    });
+
+    if (!wagesAct) {
+      wagesAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: taxationLabourBearerActForWages.id,
+          heading: {
+            contains: 'CODE ON WAGES',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!wagesAct) {
+      wagesAct = await prisma.act.create({
+        data: {
+          bearerActId: taxationLabourBearerActForWages.id,
+          heading: 'THE CODE ON WAGES, 2019',
+          act: 'THE CODE ON WAGES, 2019',
+          year: 2019
+        }
+      });
+      console.log('Act created: THE CODE ON WAGES, 2019');
+    } else {
+      wagesAct = await prisma.act.update({
+        where: { id: wagesAct.id },
+        data: {
+          heading: 'THE CODE ON WAGES, 2019',
+          act: 'THE CODE ON WAGES, 2019',
+          year: 2019
+        }
+      });
+      console.log('Act synchronized: THE CODE ON WAGES, 2019');
+    }
+
+    const existingWagesSections = await prisma.actSection.findMany({
+      where: { actId: wagesAct.id }
+    });
+    const wagesSectionMap = new Map(existingWagesSections.map(s => [s.section, s]));
+
+    let createdWagesSectionCount = 0;
+    let updatedWagesSectionCount = 0;
+
+    const wagesToCreate = [];
+    const wagesToUpdate = [];
+
+    for (const item of codeOnWagesBearerActSections) {
+      const existing = wagesSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        wagesToCreate.push({
+          actId: wagesAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        wagesToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (wagesToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < wagesToCreate.length; i += insertChunkSize) {
+        const chunk = wagesToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdWagesSectionCount = wagesToCreate.length;
+    }
+
+    if (wagesToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < wagesToUpdate.length; i += updateChunkSize) {
+        const chunk = wagesToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedWagesSectionCount = wagesToUpdate.length;
+    }
+
+    console.log(`Code on Wages Bearer Act Sections seeded: ${createdWagesSectionCount} created, ${updatedWagesSectionCount} updated (Total: ${codeOnWagesBearerActSections.length}).`);
   }
 }
 

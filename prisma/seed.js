@@ -51,6 +51,7 @@ import { constitutionBearerActSections } from './constitutionBearerActData.js';
 import { industrialRelationsBearerActSections } from './industrialRelationsBearerActData.js';
 import { realEstateBearerActSections } from './realEstateBearerActData.js';
 import { codeOnWagesBearerActSections } from './codeOnWagesBearerActData.js';
+import { consumerProtectionBearerActSections } from './consumerProtectionBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -7794,6 +7795,121 @@ async function seedBearerActs() {
     }
 
     console.log(`Code on Wages Bearer Act Sections seeded: ${createdWagesSectionCount} created, ${updatedWagesSectionCount} updated (Total: ${codeOnWagesBearerActSections.length}).`);
+
+    // THE CONSUMER PROTECTION ACT, 2019
+    let cpAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: taxationLabourCategory.id,
+        heading: 'THE CONSUMER PROTECTION ACT, 2019'
+      }
+    });
+
+    if (!cpAct) {
+      cpAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: taxationLabourCategory.id,
+          heading: {
+            contains: 'CONSUMER PROTECTION',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!cpAct) {
+      cpAct = await prisma.act.create({
+        data: {
+          bearerActId: taxationLabourCategory.id,
+          heading: 'THE CONSUMER PROTECTION ACT, 2019',
+          act: 'THE CONSUMER PROTECTION ACT, 2019',
+          year: 2019
+        }
+      });
+      console.log('Act created: THE CONSUMER PROTECTION ACT, 2019');
+    } else {
+      cpAct = await prisma.act.update({
+        where: { id: cpAct.id },
+        data: {
+          heading: 'THE CONSUMER PROTECTION ACT, 2019',
+          act: 'THE CONSUMER PROTECTION ACT, 2019',
+          year: 2019
+        }
+      });
+      console.log('Act synchronized: THE CONSUMER PROTECTION ACT, 2019');
+    }
+
+    const existingCpSections = await prisma.actSection.findMany({
+      where: { actId: cpAct.id }
+    });
+    const cpSectionMap = new Map(existingCpSections.map(s => [s.section, s]));
+
+    let createdCpSectionCount = 0;
+    let updatedCpSectionCount = 0;
+
+    const cpToCreate = [];
+    const cpToUpdate = [];
+
+    for (const item of consumerProtectionBearerActSections) {
+      const existing = cpSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        cpToCreate.push({
+          actId: cpAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        cpToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (cpToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < cpToCreate.length; i += insertChunkSize) {
+        const chunk = cpToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdCpSectionCount = cpToCreate.length;
+    }
+
+    if (cpToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < cpToUpdate.length; i += updateChunkSize) {
+        const chunk = cpToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedCpSectionCount = cpToUpdate.length;
+    }
+
+    console.log(`Consumer Protection Bearer Act Sections seeded: ${createdCpSectionCount} created, ${updatedCpSectionCount} updated (Total: ${consumerProtectionBearerActSections.length}).`);
   }
 }
 

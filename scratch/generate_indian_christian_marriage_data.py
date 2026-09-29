@@ -1,0 +1,1097 @@
+import json
+import os
+
+ACT_NAME = "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+ACT_YEAR = 1872
+
+sections = [
+    # CHAPTER 1: PRELIMINARY
+    {
+        "section": "Section 1",
+        "sectionNo": "1",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Short title. Extent.",
+        "description": "1. Short title.—This Act may be called the Indian Christian Marriage Act, 1872.\nExtent.—[It extends to the whole of India [except [the territories which, immediately before the 1st November, 1956, were comprised in the States] of Travancore-Cochin, Manipur and ****].]\n* * * * *",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 1 - Short title. Extent.",
+        "metaTitle": "Section 1 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 2",
+        "sectionNo": "2",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "[Enactments repealed.]",
+        "description": "2. [Enactments repealed.]—Rep. by the Repealing Act, 1938 (1 of 1938), s. 2 and the Schedule.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 2 - [Enactments repealed.]",
+        "metaTitle": "Section 2 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 3",
+        "sectionNo": "3",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Interpretation clause",
+        "description": "3. Interpretation clause.—In this Act, unless there is something repugnant in the subject or context,—\n“Church of England” and “Anglican”.—mean and apply to the Church of England as by law established;\n“Church of Scotland”.—means the Church of Scotland as by law established;\n“Church of Rome” and “Roman Catholic”.—mean and apply to the Church which regards the Pope of Rome as its spiritual head;\n“Church”.—includes any chapel or other building generally used for public Christian worship;\n[“India”.—means the [territories] to which this Act extends;]\n“minor”.—“minor” means a person who has not completed the age of twenty-one years and who is not a widower or a widow;\n* * * * *\nthe expression “Christians” means persons professing the Christian religion;\n[and the expression “Indian Christians” includes the Christian descendants of natives of India converted to Christianity, as well as such converts;]\n[“Registrar General of Births, Deaths and Marriages”.—means a Registrar General of Births, Deaths and Marriages appointed under the Births, Deaths and Marriages Registration Act, 1886 (6 of 1886).]",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 3 - Interpretation clause",
+        "metaTitle": "Section 3 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 2: PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED
+    {
+        "section": "Section 4",
+        "sectionNo": "4",
+        "chapterNo": 2,
+        "chapterRoman": "I",
+        "chapterName": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "title": "Marriages to be solemnized according to Act",
+        "description": "4. Marriages to be solemnized according to Act.—Every marriage between persons, one or both of whom is [or are] a Christian or Christians, shall be solemnized in accordance with the provisions of the next following section; and any such marriage solemnized otherwise than in accordance with such provisions shall be void.",
+        "metaData": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 4 - Marriages to be solemnized according to Act",
+        "metaTitle": "Section 4 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 5",
+        "sectionNo": "5",
+        "chapterNo": 2,
+        "chapterRoman": "I",
+        "chapterName": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "title": "Persons by whom marriages may be solemnized",
+        "description": "5. Persons by whom marriages may be solemnized.—Marriages may be solemnized in [India]—\n(1) by any person who has received episcopal ordination, provided that the marriage be solemnized according to the rules, rites, ceremonies and customs of the Church of which he is a Minister;\n(2) by any Clergyman of the Church of Scotland, provided that such marriage be solemnized according to the rules, rites, ceremonies and customs of the Church of Scotland;\n(3) by any Minister of Religion licensed under this Act to solemnize marriages;\n(4) by, or in the presence of, a Marriage Registrar appointed under this Act;\n(5) by any person licensed under this Act to grant certificates of marriage between [Indian] Christians.",
+        "metaData": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 5 - Persons by whom marriages may be solemnized",
+        "metaTitle": "Section 5 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 6",
+        "sectionNo": "6",
+        "chapterNo": 2,
+        "chapterRoman": "I",
+        "chapterName": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "title": "Grant and revocation of licenses to solemnize marriages",
+        "description": "[6. Grant and revocation of licenses to solemnize marriages.—The State Government, so far as regards the territories under its administration, *** may, by notification in the Official Gazette ***, grant licenses to Ministers of Religion to solemnize marriages within such territories *** and may, by a like notification revoke such licenses.]",
+        "metaData": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 6 - Grant and revocation of licenses to solemnize marriages",
+        "metaTitle": "Section 6 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 7",
+        "sectionNo": "7",
+        "chapterNo": 2,
+        "chapterRoman": "I",
+        "chapterName": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "title": "Marriage Registrars",
+        "description": "7. Marriage Registrars.—The State Government may appoint one or more Christians, either by name or as holding any office for the time being, to be the Marriage Registrar or Marriage Registrars for any district subject to its administration.\nSenior Marriage Registrar.—Where there are more Marriage Registrars than one in any district, the State Government shall appoint one of them to be the Senior Marriage Registrar.\nMagistrate when to be Marriage Registrar.—When there is only one Marriage Registrar in a district, and such Registrar is absent from such district, or ill, or when his office is temporarily vacant, the Magistrate of the district shall act as, and be, Marriage Registrar thereof during such absence, illness, or temporary vacancy.\n\nSTATE AMENDMENT\nKARNATAKA\nIn section 7, for the words, “Magistrate of the district” the words “District Magistrate” shall be substituted.\n[Vide Karnataka Act 13 of 1965, s. 67 and Schedule.]",
+        "metaData": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 7 - Marriage Registrars",
+        "metaTitle": "Section 7 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 8",
+        "sectionNo": "8",
+        "chapterNo": 2,
+        "chapterRoman": "I",
+        "chapterName": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "title": "[Marriage Registrars in Indian States.]",
+        "description": "8. [Marriage Registrars in Indian States.]—Rep., by the A. O. 1950.",
+        "metaData": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 8 - [Marriage Registrars in Indian States.]",
+        "metaTitle": "Section 8 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 9",
+        "sectionNo": "9",
+        "chapterNo": 2,
+        "chapterRoman": "I",
+        "chapterName": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "title": "Licensing of persons to grant certificates of marriage between Indian Christians",
+        "description": "9. Licensing of persons to grant certificates of marriage between Indian Christians.—The State Government *** may grant a license to any Christian, either by name or as holding any office for the time being, authorizing him to grant certificates of marriage between [Indian] Christians.\nAny such license may be revoked by the authority by which it was granted, and every such grant or revocation shall be notified in the Official Gazette.",
+        "metaData": "PART I - THE PERSONS BY WHOM MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 9 - Licensing of persons to grant certificates of marriage between Indian Christians",
+        "metaTitle": "Section 9 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 3: PART II - TIME AND PLACE AT WHICH MARRIAGES MAY BE SOLEMNIZED
+    {
+        "section": "Section 10",
+        "sectionNo": "10",
+        "chapterNo": 3,
+        "chapterRoman": "II",
+        "chapterName": "PART II - TIME AND PLACE AT WHICH MARRIAGES MAY BE SOLEMNIZED",
+        "title": "Time for solemnizing marriage",
+        "description": "10. Time for solemnizing marriage.—Every marriage under this Act shall be solemnized between the hours of six in the morning and seven in the evening:\nExceptions.—Provided that nothing in this section shall apply to—\n(1) a Clergyman of the Church of England solemnizing a marriage under a special license permitting him to do so at any hour other than between six in the morning and seven in the evening, under the hand and seal of the Anglican Bishop of the Diocese or his Commissary, or\n(2) a Clergyman of the Church of Rome solemnizing a marriage between the hours of seven in the evening and six in the morning, when he has received a general or special license in that behalf from the Roman Catholic Bishop of the Diocese or Vicariate in which such marriage is so solemnized, or from such person as the same Bishop has authorized to grant such license, [or\n(3) a Clergyman of the Church of Scotland solemnizing a marriage according to the rules, rites, ceremonies and customs of the Church of Scotland.]",
+        "metaData": "PART II - TIME AND PLACE AT WHICH MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 10 - Time for solemnizing marriage",
+        "metaTitle": "Section 10 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 11",
+        "sectionNo": "11",
+        "chapterNo": 3,
+        "chapterRoman": "II",
+        "chapterName": "PART II - TIME AND PLACE AT WHICH MARRIAGES MAY BE SOLEMNIZED",
+        "title": "Place for solemnizing marriage",
+        "description": "11. Place for solemnizing marriage.—No Clergyman of the Church of England shall solemnize a marriage in any place other than a church [where worship is generally held according to the forms of the Church of England],\nunless there is no [such] church within five miles distance by the shortest road from such place, or\nunless he has received a special license authorizing him to do so under the hand and seal of the Anglican Bishop of the Diocese or his Commissary.\nFee for special license.—For such special license, the Registrar of the Diocese may charge such additional fee as the said Bishop from time to time authorizes.",
+        "metaData": "PART II - TIME AND PLACE AT WHICH MARRIAGES MAY BE SOLEMNIZED",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 11 - Place for solemnizing marriage",
+        "metaTitle": "Section 11 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 4: PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT
+    {
+        "section": "Section 12",
+        "sectionNo": "12",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Notice of intended marriage",
+        "description": "12. Notice of intended marriage.—Whenever a marriage is intended to be solemnized by a Minister of Religion licensed to solemnize marriages under this Act—\none of the persons intending marriage shall give notice in writing, according to the form contained in the First Schedule hereto annexed, or to the like effect, to the Minister of Religion whom he or she desires to solemnize the marriage, and shall state therein—\n(a) the name and surname, and the profession or condition, of each of the persons intending marriage,\n(b) the dwelling-place of each of them,\n(c) the time during which each has dwelt there, and\n(d) the church or private dwelling in which the marriage is to be solemnized:\nProvided that, if either of such persons has dwelt in the place mentioned in the notice during more than one month, it may be stated therein that he or she has dwelt there one month and upwards.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 12 - Notice of intended marriage",
+        "metaTitle": "Section 12 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 13",
+        "sectionNo": "13",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Publication of such notice",
+        "description": "13. Publication of such notice.—If the persons intending marriage desire it to be solemnized in a particular church, and if the Minister of Religion to whom such notice has been delivered be entitled to officiate therein, he shall cause the notice to be affixed in some conspicuous part of such church.\nReturn or transfer of notice.—But if he is not entitled to officiate as a Minister in such church, he shall, at his option, either return the notice, to the person who delivered it to him, or deliver it to some other Minister entitled to officiate therein, who shall thereupon cause the notice to be affixed as aforesaid.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 13 - Publication of such notice",
+        "metaTitle": "Section 13 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 14",
+        "sectionNo": "14",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Notice of intended marriage in private dwelling",
+        "description": "14. Notice of intended marriage in private dwelling.—If it be intended that the marriage shall be solemnized in a private dwelling, the Minister of Religion, on receiving the notice prescribed in section 12, shall forward it to the Marriage Registrar of the district, who shall affix the same to some conspicuous place in his own office.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 14 - Notice of intended marriage in private dwelling",
+        "metaTitle": "Section 14 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 15",
+        "sectionNo": "15",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Sending copy of notice to Marriage Registrar when one party is a minor",
+        "description": "15. Sending copy of notice to Marriage Registrar when one party is a minor.—When one of the persons intending marriage is a minor, every Minister receiving such notice shall, unless within twenty-four hours after its receipt he returns the same under the provisions of section 13, send by the post or otherwise a copy of such notice to the Marriage Registrar of the district, or, if there be more than one Registrar of such district, to the Senior Marriage Registrar.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 15 - Sending copy of notice to Marriage Registrar when one party is a minor",
+        "metaTitle": "Section 15 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 16",
+        "sectionNo": "16",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Procedure on receipt of notice",
+        "description": "16. Procedure on receipt of notice.—The Marriage Registrar or Senior Marriage Registrar, as the case may be, on receiving any such notice, shall affix it to some conspicuous place in his own office, and the latter shall further cause a copy of the said notice to be sent to each of the other Marriage Registrars in the same district, who shall likewise publish the same in the manner above directed.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 16 - Procedure on receipt of notice",
+        "metaTitle": "Section 16 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 17",
+        "sectionNo": "17",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Issue of certificate of notice given and declaration made",
+        "description": "17. Issue of certificate of notice given and declaration made.—Any Minister of Religion consenting or intending to solemnize any such marriage as aforesaid, shall, on being required so to do by or on behalf of the person by whom the notice was given, and upon one of the persons intending marriage making the declaration herein after required, issue under his hand a certificate of such notice having been given and of such declaration having been made:\nProviso.—Provided—\n(1) that no such certificate shall be issued until the expiration of four days after the date of the receipt of the notice by such Minister;\n(2) that no lawful impediment be shown to his satisfaction why such certificate should not issue; and\n(3) that the issue of such certificate has not been forbidden, in manner hereinafter mentioned, by any person authorized in that behalf.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 17 - Issue of certificate of notice given and declaration made",
+        "metaTitle": "Section 17 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 18",
+        "sectionNo": "18",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Declaration before issue of certificate",
+        "description": "18. Declaration before issue of certificate.—The certificate mentioned in section 17 shall not be issued until one of the persons intending marriage has appeared personally before the Minister and made a solemn declaration—\n(a) that he or she believes that there is not any impediment of kindred or affinity, or other lawful hindrance, to the said marriage,\nAnd, when either or both of the parties is or are a minor or minors,\n(b) that the consent or consents required by law has or have been obtained thereto, or that there is no person resident in India having authority to give such consent, as the case may be.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 18 - Declaration before issue of certificate",
+        "metaTitle": "Section 18 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 19",
+        "sectionNo": "19",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Consent of father, or guardian, or mother",
+        "description": "19. Consent of father, or guardian, or mother.—The father, if living, of any minor, or, if the father be dead the guardian of the person of such minor, and, in case there be no such guardian, then the mother of such minor, may give consent to the minor’s marriage,\nand such consent is hereby required for the same marriage, unless no person authorized to give such consent be resident in India.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 19 - Consent of father, or guardian, or mother",
+        "metaTitle": "Section 19 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 20",
+        "sectionNo": "20",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Power to prohibit by notice issue of certificate",
+        "description": "20. Power to prohibit by notice issue of certificate.—Every person whose consent to a marriage is required under section 19, is hereby authorized to prohibit the issue of the certificate by any Minister, at any time before the issue of the same, by notice in writing to such Minister, subscribed by the person so authorized with is or her name and place of abode and position with respect to either of the persons intending marriage, by reason of which he or she is so authorized as aforesaid.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 20 - Power to prohibit by notice issue of certificate",
+        "metaTitle": "Section 20 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 21",
+        "sectionNo": "21",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Procedure on receipt of notice",
+        "description": "21. Procedure on receipt of notice.—If any such notice be received by such Minister, he shall not issue his certificate and shall not solemnize the said marriage until he has examined into the matter of the said prohibition, and is satisfied that the person prohibiting the marriage has no lawful authority for such prohibition,\nor until the said notice is withdrawn by the person who gave it.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 21 - Procedure on receipt of notice",
+        "metaTitle": "Section 21 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 22",
+        "sectionNo": "22",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Issue of certificate in case of minority",
+        "description": "22. Issue of certificate in case of minority.—When either of the persons intending marriage is a minor, and the Minister is not satisfied that the consent of the person whose consent to such marriage is required by section 19 has been obtained, such Minister shall not issue such certificate until the expiration of fourteen days after the receipt by him of the notice of marriage.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 22 - Issue of certificate in case of minority",
+        "metaTitle": "Section 22 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 23",
+        "sectionNo": "23",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Issue of certificates to Indian Christians",
+        "description": "23. Issue of certificates to Indian Christians.—When any [Indian] Christians about to be married takes a notice of marriage to a Minister of Religion, or applies for a certificate from such Minister under section 17, such Minister shall, before issuing the certificate, ascertain whether such [Indian] Christians is cognizant of the purport and effect of the said notice or certificate, as the case may be, and, if not, shall translate or cause to be translated the notice or certificate to such [Indian] Christian into some language which he understands.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 23 - Issue of certificates to Indian Christians",
+        "metaTitle": "Section 23 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 24",
+        "sectionNo": "24",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Form of certificate",
+        "description": "24. Form of certificate.—The certificate to be issued by such Minister shall be in the form contained in the Second Schedule hereto annexed, or to the like effect.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 24 - Form of certificate",
+        "metaTitle": "Section 24 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 25",
+        "sectionNo": "25",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Solemnization of marriage",
+        "description": "25. Solemnization of marriage.—After the issue of the certificate by the Minister, marriage may be solemnized between the persons therein described according to such form or ceremony as the Minister thinks fit to adopt:\nProvided that the marriage be solemnized in the presence of at least two witnesses besides the Minister.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 25 - Solemnization of marriage",
+        "metaTitle": "Section 25 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 26",
+        "sectionNo": "26",
+        "chapterNo": 4,
+        "chapterRoman": "III",
+        "chapterName": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "title": "Certificate void if marriage not solemnized within two months",
+        "description": "26. Certificate void if marriage not solemnized within two months.—Whenever a marriage is not solemnized within two months after the date of the certificate issued by such Minister as aforesaid, such certificate and all proceedings (if any) thereon shall be void,\nand no person shall proceed to solemnize the said marriage until new notice has been given and a certificate thereof issued in manner aforesaid.",
+        "metaData": "PART III - MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION LICENSED UNDER THIS ACT",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 26 - Certificate void if marriage not solemnized within two months",
+        "metaTitle": "Section 26 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 5: PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION
+    {
+        "section": "Section 27",
+        "sectionNo": "27",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Marriages when to be registered",
+        "description": "27. Marriages when to be registered.—All marriages hereafter solemnized in [India] between persons one or both of whom professes or profess the Christian religion, except marriages solemnized under Part V or Part VI of this Act, shall be registered in manner hereinafter prescribed.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 27 - Marriages when to be registered",
+        "metaTitle": "Section 27 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 28",
+        "sectionNo": "28",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Registration of marriages solemnized by Clergymen of Church of England",
+        "description": "28. Registration of marriages solemnized by Clergymen of Church of England.—Every Clergyman of the Church of England shall keep a register of marriages and shall register therein, according to the tabular form set forth in the Third Schedule hereto annexed, every marriage which he solemnizes under this Act.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 28 - Registration of marriages solemnized by Clergymen of Church of England",
+        "metaTitle": "Section 28 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 29",
+        "sectionNo": "29",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Quarterly returns to Archdeaconry",
+        "description": "29. Quarterly returns to Archdeaconry.—Every Clergyman of the Church of England shall send four times in every year returns induplicate, authenticated by his signature, of the entries in the register of marriages solemnized at any place where he has any spiritual charge, to the Registrar of the Archdeaconry to which he is subject, or within the limits of which such place is situate.\nContents of returns.—Such quarterly returns shall contain all the entries of marriages contained in the said register from the first day of January to the thirty-first day of March, from the first day of April to the thirtieth day of June, from the first day of July to the thirtieth day of September, and from the first day of October to the thirty-first day of December, of each year, respectively, and shall be sent by such Clergyman within two weeks from the expiration of each of the quarters above specified.\nThe said Registrar upon receiving the said returns shall send one copy thereof to the [Registrar General of Births, Deaths and Marriages].",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 29 - Quarterly returns to Archdeaconry",
+        "metaTitle": "Section 29 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 30",
+        "sectionNo": "30",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Registration and returns of marriages solemnized by Clergymen of Church of Rome",
+        "description": "30. Registration and returns of marriages solemnized by Clergymen of Church of Rome.—Every marriage solemnized by a Clergyman of the Church of Rome shall be registered by the person and according to the form directed in that behalf by the Roman Catholic Bishop of the Diocese or Vicariate in which such marriage is solemnized,\nand such person shall forward quarterly to the [Registrar General of Births, Deaths and Marriages] returns of the entries of all marriages registered by him during the three months next preceding.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 30 - Registration and returns of marriages solemnized by Clergymen of Church of Rome",
+        "metaTitle": "Section 30 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 31",
+        "sectionNo": "31",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Registration and returns of marriages solemnized by Clergymen of Church of Scotland",
+        "description": "31. Registration and returns of marriages solemnized by Clergymen of Church of Scotland.—Every Clergyman of the Church of Scotland shall keep a register of marriages,\nand shall register therein, according to the tabular form set forth in the Third Schedule hereto annexed, every marriage which he solemnizes under this Act,\nand shall forward quarterly to the [Registrar General of Births, Deaths and Marriages], through the Senior Chaplain of the Church of Scotland, returns, similar to those prescribed in section 29, of all such marriages.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 31 - Registration and returns of marriages solemnized by Clergymen of Church of Scotland",
+        "metaTitle": "Section 31 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 32",
+        "sectionNo": "32",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Certain marriages to be registered in duplicate",
+        "description": "32. Certain marriages to be registered in duplicate.—Every marriage solemnized by any person who has received episcopal ordination, but who is not a Clergyman of the Church of England, or of the Church of Rome, or by any Minister of Religion licensed under this Act to solemnize marriages, shall immediately after the solemnization thereof, be registered in duplicate by the person solemnizing the same; (that is to say) in a marriage-register book to be kept by him for that purpose, according to the form contained in the Fourth Schedule hereto annexed, and also in a certificate attached to the marriage-register-book as a counterfoil.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 32 - Certain marriages to be registered in duplicate",
+        "metaTitle": "Section 32 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 33",
+        "sectionNo": "33",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Entries of such marriages to be signed and attested",
+        "description": "33. Entries of such marriages to be signed and attested.—The entry of such marriage in both the certificate and marriage-register-book shall be signed by the person solemnizing the marriage, and also by the persons married, and shall be attested by two credible witnesses, other than the person solemnizing the marriage, present at its solemnization.\nEvery such entry shall be made in order from the beginning to the end of the book, and the number of the certificate shall correspond with that of the entry in the marriage-register-book.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 33 - Entries of such marriages to be signed and attested",
+        "metaTitle": "Section 33 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 34",
+        "sectionNo": "34",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Certificate to be forwarded to Marriage Registrar, copied and sent to Registrar General",
+        "description": "34. Certificate to be forwarded to Marriage Registrar, copied and sent to Registrar General.—The person solemnizing the marriage shall forthwith separate the certificate from the marriage-register-book and send it, within one month from the time of the solemnization, to the Marriage Registrar of the district in which the marriage was solemnized, or, if there be more Marriage Registrars than one, to the Senior Marriage Registrar,\nwho shall cause such certificate to be copied into a book to be kept by him for that purpose,\nand shall send all the certificates which he has received during the month, with such number and signature or initials added thereto as are hereinafter required, to the [Registrar General of Births, Deaths and Marriages].",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 34 - Certificate to be forwarded to Marriage Registrar, copied and sent to Registrar General",
+        "metaTitle": "Section 34 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 35",
+        "sectionNo": "35",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Copies of certificates to be entered and numbered",
+        "description": "35. Copies of certificates to be entered and numbered.—Such copies shall be entered in order from the beginning to the end of the said book, and shall bear both the number of the certificate as copied, and also a number to be entered by the Marriage Registrar, indicating the number of the entry of the said copy in the said book, according to the order in which he receives each certificate.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 35 - Copies of certificates to be entered and numbered",
+        "metaTitle": "Section 35 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 36",
+        "sectionNo": "36",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Registrar to add number of entry to certificate, and send to Registrar General",
+        "description": "36. Registrar to add number of entry to certificate, and send to Registrar General.—The Marriage Registrar shall also add such last-mentioned number of the entry of the copy in the book to the certificate, with his signature or initials, and shall, at the end of every month, send the same to the [Registrar General of Births, Deaths and Marriages].",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 36 - Registrar to add number of entry to certificate, and send to Registrar General",
+        "metaTitle": "Section 36 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 37",
+        "sectionNo": "37",
+        "chapterNo": 5,
+        "chapterRoman": "IV",
+        "chapterName": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "title": "Registration of marriages between Indian Christians, by persons referred to in clauses (1), (2) and (3) of section 5",
+        "description": "37. Registration of marriages between Indian Christians, by persons referred to in clauses (1), (2) and (3) of section 5.—When any marriage between [Indian] Christians is solemnized [by any such person, Clergyman or Minister of Religion as is referred to in clause (1), clause (2) or clause (3) of section 5], the person solemnizing the same shall, instead of proceeding in the manner provided by sections 28 to 36, both inclusive, register the marriage in a separate register-book, and shall keep it safely until it is filled, or, if he leave the district in which he solemnized the marriage before the said book is filled, shall make over the same to the person succeeding to his duties in the said district.\nCustody and disposal of register-book.—Whoever has the control of the book at the time when it is filled, shall send it to the Marriage Registrar of the district, or, if there be more Marriage Registrars than one, to the Senior Marriage Registrar, who shall send it to the [Registrar General of Births, Deaths and Marriages,] to be kept by him with the records of his office.",
+        "metaData": "PART IV - REGISTRATION OF MARRIAGES SOLEMNIZED BY MINISTERS OF RELIGION",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 37 - Registration of marriages between Indian Christians, by persons referred to in clauses (1), (2) and (3) of section 5",
+        "metaTitle": "Section 37 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 6: PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR
+    {
+        "section": "Section 38",
+        "sectionNo": "38",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Notice of intended marriage before Marriage Registrar",
+        "description": "38. Notice of intended marriage before Marriage Registrar.—When a marriage is intended to be solemnized by, or in the presence of, a Marriage Registrar, one of the parties to such marriage shall give notice in writing, in the form contained in the First Schedule hereto annexed, or to the like effect, to any Marriage Registrar of the district within which the parties have dwelt,\nor, if the parties dwell in different districts, shall give the like notice to a Marriage Registrar of each district,\nand shall state therein the name and surname, and the profession or condition, of each of the parties intending marriage, the dwelling-place of each of them, the time during which each has dwelt therein, and the place at which the marriage is to be solemnized:\nProvided that, if either party has dwelt in the place stated in the notice for more than one month, it may be stated therein that he or she has dwelt there one month and upwards.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 38 - Notice of intended marriage before Marriage Registrar",
+        "metaTitle": "Section 38 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 39",
+        "sectionNo": "39",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Publication of notice",
+        "description": "39. Publication of notice.—Every Marriage Registrar shall, on receiving any such notice, cause a copy thereof to be affixed in some conspicuous place in his office.\nWhen one of the parties intending marriage is a minor, every Marriage Registrar shall, within twenty-four hours after the receipt by him of the notice of such marriage, send, by post or otherwise, a copy of such notice to each of the other Marriage Registrars (if any) in the same district, who shall likewise affix the copy in some conspicuous place in his own office.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 39 - Publication of notice",
+        "metaTitle": "Section 39 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 40",
+        "sectionNo": "40",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Notice to be filed and copy entered in Marriage Notice Book",
+        "description": "40. Notice to be filed and copy entered in Marriage Notice Book.—The Marriage Registrar shall file all such notices and keep them with the records of his office,\nand shall also forthwith enter a true copy of all such notices in a book to be furnished to him for that purpose by the State Government, and to be called the “Marriage Notice Book”,\nand the Marriage Notice Book shall be open at all reasonable times, without fee, to all persons desirous of inspecting the same.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 40 - Notice to be filed and copy entered in Marriage Notice Book",
+        "metaTitle": "Section 40 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 41",
+        "sectionNo": "41",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Certificate of notice given and oath made",
+        "description": "41. Certificate of notice given and oath made.—If the party by whom the notice was given requests the Marriage Registrar to issue the certificate next hereinafter mentioned, and if one of the parties intending marriage has made oath as hereinafter required, the Marriage Registrar shall issue under his hand a certificate of such notice having been given and of such oath having been made:\nProviso.—Provided—\nthat no lawful impediment be shown to his satisfaction why such certificate should not issue;\nthat the issue of such certificate has not been forbidden, in manner hereinafter mentioned, by any person authorized in that behalf by this Act;\nthat four days after the receipt of the notice have expired; and further,\nthat where, by such oath, it appears that one of the parties intending marriage is a minor, fourteen days after the entry of such notice have expired.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 41 - Certificate of notice given and oath made",
+        "metaTitle": "Section 41 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 42",
+        "sectionNo": "42",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Oath before issue of certificate",
+        "description": "42. Oath before issue of certificate.—The certificate mentioned in section 41 shall not be issued by any Marriage Registrar, until one of the parties intending marriage appears personally before such Marriage Registrar, and makes oath—\n(a) that he or she believes that there is not any impediment of kindred or affinity, or other lawful hindrance, to the said marriage, and\n(b) that both the parties have, or (where they have dwelt in the districts of different Marriage Registrars) that the party making such oath has, had their, his or her usual place of abode within the district of such Marriage Registrar,\nand, where either or each of the parties is a minor,\n(c) that the consent or consents to such marriage required by law has or have been obtained thereto, or that there is no person resident in India authorized to give such consent, as the case may be.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 42 - Oath before issue of certificate",
+        "metaTitle": "Section 42 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 43",
+        "sectionNo": "43",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Petition to High Court to order certificate in less than fourteen days",
+        "description": "43. Petition to High Court to order certificate in less than fourteen days.—When one of the parties intending marriage is a minor, and both such parties are at the time resident in any of the towns of Calcutta, Madras and Bombay, and are desirous of being married in less than fourteen days after the entry of such notice as aforesaid, they may apply by petition to a Judge of the High Court, for an order upon the Marriage Registrar to whom the notice of marriage has been given, directing him to issue his certificate before the expiration of the said fourteen days required by section 41.\nOrder on petition.—And on sufficient cause being shown, the said Judge may, in his discretion, make an order upon such Marriage Registrar, directing him to issue his certificate at any time to be mentioned in the said order before the expiration of the fourteen days so required.\nAnd the said Marriage Registrar, on receipt of the said order, shall issue his certificate in accordance therewith.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 43 - Petition to High Court to order certificate in less than fourteen days",
+        "metaTitle": "Section 43 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 44",
+        "sectionNo": "44",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Consent of father or guardian",
+        "description": "44. Consent of father or guardian.—The provisions of section 19 apply to every marriage under this Part, either of the parties to which is a minor;\nProtest against issue of certificate.—And any person whose consent to such marriage would be required thereunder may enter a protest against the issue of the Marriage Registrar’s certificate, by writing, at any time before the issue of such certificate, the word “forbidden” opposite to the entry of the notice of such intended marriage in the Marriage Notice Book, and by subscribing thereto his or her name and place of abode, and his or her position with respect to either of the parties, by reason of which he or she is so authorized.\nEffect of protest.—When such protest has been entered, no certificate shall issue until the Marriage Registrar has examined into the matter of the protest, and is satisfied that it ought not to obstruct the issue of the certificate for the said marriage, or until the protest be withdrawn by the person who entered it.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 44 - Consent of father or guardian",
+        "metaTitle": "Section 44 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 45",
+        "sectionNo": "45",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Petition where person whose consent is necessary is insane, or unjustly withholds consent",
+        "description": "45. Petition where person whose consent is necessary is insane, or unjustly withholds consent.—If any person whose consent is necessary to any marriage under this Part is of unsound mind,\nor if any such person (other than the father) without just cause withholds his consent to the marriage,\nthe parties intending marriage may apply by petition, where the person whose consent is necessary is resident within any of the towns of Calcutta, Madras and Bombay, to a Judge of the High Court, or if he is not resident within any of the said towns, then to the District Judge:\nProcedure on petition.—And the said Judge of the High Court, or District Judge, as the case may be, may examine the allegations of the petition in a summary way;\nand, if upon examination such marriage appears proper, such Judge of the High Court or District Judge, as the case may be, shall declare the marriage to be a proper marriage.\nSuch declaration shall be as effectual as if the person whose consent was needed had consented to the marriage;\nand, if he has forbidden the issue of the Marriage Registrar’s certificate, such certificate shall be issued and the like proceedings may be had under this Part in relation to the marriage as if the issue of such certificate had not been forbidden.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 45 - Petition where person whose consent is necessary is insane, or unjustly withholds consent",
+        "metaTitle": "Section 45 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 46",
+        "sectionNo": "46",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Petition when Marriage Registrar refuses certificate",
+        "description": "46. Petition when Marriage Registrar refuses certificate.—Whenever a Marriage Registrar refuses to issue a certificate under this Part, either of the parties intending marriage may apply by petition, where the district of such Registrar is within any of the towns of Calcutta, Madras and Bombay, to a Judge of the High Court, or if such district is not within any of the said towns, then to the District Judge.\nProcedure on petition.—The said Judge of the High Court, or District Judge, as the case may be, may examine the allegations of the petition in a summary way, and shall decide thereon.\nThe decision of such Judge of the High Court or District Judge, as the case may be, shall be final, and the Marriage Registrar to whom the application for the issue of a certificate was originally made shall proceed in accordance therewith.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 46 - Petition when Marriage Registrar refuses certificate",
+        "metaTitle": "Section 46 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 47",
+        "sectionNo": "47",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "[Petition when Marriage Registrar in Indian State refuses certificate.]",
+        "description": "47. [Petition when Marriage Registrar in Indian State refuses certificate.] Omitted by the A.O. 1950.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 47 - [Petition when Marriage Registrar in Indian State refuses certificate.]",
+        "metaTitle": "Section 47 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 48",
+        "sectionNo": "48",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Petition when Registrar doubts authority of person forbidding",
+        "description": "48. Petition when Registrar doubts authority of person forbidding.—Whenever a Marriage Registrar, acting under the provisions of section 44, is not satisfied that the person forbidding the issue of the certificate is authorized by law so to do, the said Marriage Registrar shall apply by petition, where his district is within any of the towns of Calcutta, Madras and Bombay, to a Judge of the High Court, or if such district be not within any of the said towns, then to the District Judge.\nProcedure on petition.—The said petition shall state all the circumstances of the case, and pray for the order and direction of the Court concerning the same,\nand the said Judge of the High Court or District Judge, as thecae may be, shall examine into the allegations of the petition and the circumstances of the case,\nand if, upon such examination, it appears, that the person forbidding the issue of such certificate is not authorized by law so to do, such Judge of the High Court or District Judge, as the case may be, shall declare that the person forbidding the issue of such certificate is not authorized as aforesaid,\nand thereupon such certificate shall be issued, and the like proceedings may be had in relation to such marriage as if the issue had not been forbidden.\n* * * * *",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 48 - Petition when Registrar doubts authority of person forbidding",
+        "metaTitle": "Section 48 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 49",
+        "sectionNo": "49",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Liability for frivolous protest against issue of certificate",
+        "description": "49. Liability for frivolous protest against issue of certificate.—Every person entering a protest with the Marriage Registrar, under this Part, against the issue of any certificate, on grounds which such Marriage Registrar, under section 44, or a Judge of the High Court or the District Judge, under section 45 or 46, declares to be frivolous and such as ought not to obstruct the issue of the certificate, shall be liable for the costs of all proceedings in relation thereto and for damages, to be recovered by suit by the person against whose marriage such protest was entered.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 49 - Liability for frivolous protest against issue of certificate",
+        "metaTitle": "Section 49 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 50",
+        "sectionNo": "50",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Form of certificate",
+        "description": "50. Form of certificate.—The certificate to be issued by the Marriage Registrar under the provisions of section 41 shall be in the form contained in the Second Schedule to this Act annexed or to the like effect,\nand the State Government shall furnish to every Marriage Registrar a sufficient number of forms of certificate.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 50 - Form of certificate",
+        "metaTitle": "Section 50 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 51",
+        "sectionNo": "51",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Solemnization of marriage after issue of certificate",
+        "description": "51. Solemnization of marriage after issue of certificate.—After the issue of the certificate of the Marriage Registrar, or, where notice is required to be given under this Act to the Marriage Registrars for different districts, after the issue of the certificates of the Marriage Registrars for such districts,\nmarriage may, if there be no lawful impediment to the marriage of the parties described in such certificate or certificates, be solemnized between them, according to such form and ceremony as they think fit to adopt.\nBut every such marriage shall be solemnized in the presence of some Marriage Registrar (to whom shall be delivered such certificate or certificates as aforesaid), and of two or more credible witnesses besides the Marriage Registrar.\nAnd in some part of the ceremony each of the parties shall declare as follows, or to the like effect:—\n“I do solemnly declare that I know not of any lawful impediment why I, A. B., may not be joined in matrimony to C. D.”\nAnd each of the parties shall say to the other as follows or to the like effect:—\n“I call upon these persons here present to witness that I, A. B., do take thee, C. D., to be my lawful wedded wife [or husband].”",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 51 - Solemnization of marriage after issue of certificate",
+        "metaTitle": "Section 51 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 52",
+        "sectionNo": "52",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "When marriage not had within two months after notice, new notice required",
+        "description": "52. When marriage not had within two months after notice, new notice required.—Whenever a marriage is not solemnized within two months after the copy of the notice has been entered by the Marriage Registrar, as required by section 40, the notice and the certificate, if any, issued thereupon, and all other proceedings thereupon, shall be void;\nand no person shall proceed to solemnize the marriage, nor shall any Marriage Registrar enter the same, until new notice has been given, and entry made, and certificate thereof given, at the time and in the manner aforesaid.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 52 - When marriage not had within two months after notice, new notice required",
+        "metaTitle": "Section 52 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 53",
+        "sectionNo": "53",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Marriage Registrar may ask for particulars to be registered",
+        "description": "53. Marriage Registrar may ask for particulars to be registered.—A Marriage Registrar before whom any marriage is solemnized under this Part may ask of the persons to be married the several particulars required to be registered touching such marriage.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 53 - Marriage Registrar may ask for particulars to be registered",
+        "metaTitle": "Section 53 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 54",
+        "sectionNo": "54",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Registration of marriages solemnized under part V",
+        "description": "54. Registration of marriages solemnized under part V.—After the solemnization of any marriage under this Part, the Marriage Registrar present at such solemnization shall forthwith register the marriage induplicate; that is to say, in a marriage-register-book, according to the form of the Fourth Schedule hereto annexed, and also in a certificate attached to the marriage-register-book as a counterfoil.\nThe entry of such marriage in both the certificates and the marriage-register-book shall be signed by the person by or before whom the marriage has been solemnized, if there be any such person, and by the Marriage Registrar present at such marriage, whether or not it is solemnized by him, and also by the parties married, and attested by two credible witnesses other than the Marriage Registrar and person solemnizing the marriage.\nEvery such entry shall be made in order from the beginning to the end of the book, and the number of the certificate shall correspond with that of the entry in the marriage-register-book.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 54 - Registration of marriages solemnized under part V",
+        "metaTitle": "Section 54 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 55",
+        "sectionNo": "55",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Certificates to be sent monthly to Registrar General",
+        "description": "55. Certificates to be sent monthly to Registrar General.—The Marriage Registrar shall forthwith separate the certificate from the marriage-register-book and send it, at the end of every month, to the [Registrar General of Births, Deaths and Marriages].\nCustody of register-book.—The Marriage Registrar shall keep safely the said register-book until it is filled, and shall then send it to the [Registrar General of Births, Deaths and Marriages], to be kept by him with the records of his office.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 55 - Certificates to be sent monthly to Registrar General",
+        "metaTitle": "Section 55 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 56",
+        "sectionNo": "56",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "[Officers to whom Registrars in Indian States shall send certificates.]",
+        "description": "56. [Officers to whom Registrars in Indian States shall send certificates.) Omitted by the A. O. 1950.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 56 - [Officers to whom Registrars in Indian States shall send certificates.]",
+        "metaTitle": "Section 56 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 57",
+        "sectionNo": "57",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Registrars to ascertain that notice and certificate are understood by Indian Christians",
+        "description": "57. Registrars to ascertain that notice and certificate are understood by Indian Christians.—When any [Indian] Christians about to be married gives a notice of marriage, or applies for a certificate from a Marriage Registrar, such Marriage Registrar shall ascertain whether the said [Indian] Christians understands the English language, and, if he does not, the Marriage Registrar shall translate, or cause to be translated, such notice or certificate, or both of them, as the case may be, to such [Indian] Christians into a language which he understands;\nor the Marriage Registrar shall otherwise ascertain whether the [Indian] Christians is cognizant of the purport and effect of the said notice and certificate.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 57 - Registrars to ascertain that notice and certificate are understood by Indian Christians",
+        "metaTitle": "Section 57 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 58",
+        "sectionNo": "58",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Indian Christians to be made to understand declarations",
+        "description": "58. Indian Christians to be made to understand declarations.—When any [Indian] Christians is married under the provisions of this Part, the person solemnizing the marriage shall ascertain whether such [Indian] Christians understands the English language, and, if he does not, the person solemnizing the marriage shall, at the time of the solemnization, translate, or cause to be translated, to such [Indian] Christians, into a language which he understands, the declarations made at such marriage in accordance with the provisions of this Act.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 58 - Indian Christians to be made to understand declarations",
+        "metaTitle": "Section 58 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 59",
+        "sectionNo": "59",
+        "chapterNo": 6,
+        "chapterRoman": "V",
+        "chapterName": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "title": "Registration of marriages between Indian Christians",
+        "description": "59. Registration of marriages between Indian Christians.—The registration of marriages between [Indian] Christians under this Part shall be made in conformity with the rules laid down in section 37 (so far as they are applicable), and not otherwise.",
+        "metaData": "PART V - MARRIAGES SOLEMNIZED BY, OR IN THE PRESENCE OF, A MARRIAGE REGISTRAR",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 59 - Registration of marriages between Indian Christians",
+        "metaTitle": "Section 59 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 7: PART VI - MARRIAGE OF INDIAN CHRISTIANS
+    {
+        "section": "Section 60",
+        "sectionNo": "60",
+        "chapterNo": 7,
+        "chapterRoman": "VI",
+        "chapterName": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "title": "On what conditions marriages of Indian Christians may be certified",
+        "description": "60. On what conditions marriages of [Indian] Christians may be certified.—Every marriage between [Indian] Christians applying for a certificate, shall, without the preliminary notice required under Part III, be certified under this Part, if the following conditions be fulfilled, and not otherwise:—\n(1) the age of the man intending to be married [shall not be under [twenty-one years]], and the age of the woman intending to be married [shall not be under [eighteen years]];\n(2) neither of the persons intending to be married shall have a wife or husband still living;\n(3) in the presence of a person licensed under section 9, and of at least two credible witnesses other than such person, each of the parties shall say to the other—\n“I call upon these persons here present to witness that. 1, A. B., in the presence of Almighty God, and in the name of our Lord Jesus Christ, do take thee, C. D., to be my lawful wedded wife [or husband]” or words to the like effect:\n* * * * *",
+        "metaData": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 60 - On what conditions marriages of Indian Christians may be certified",
+        "metaTitle": "Section 60 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 61",
+        "sectionNo": "61",
+        "chapterNo": 7,
+        "chapterRoman": "VI",
+        "chapterName": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "title": "Grant of certificate",
+        "description": "61. Grant of certificate.—When, in respect to any marriage solemnized under this Part, the conditions prescribed in section 60 have been fulfilled, the person licensed as aforesaid, in whose presence the said declaration has been made, shall, on the application of either of the parties to such marriage, and, on the payment of a fee of four annas, grant a certificate of the marriage.\nThe certificate shall be signed by such licensed person, and shall be received in any suit touching the validity of such marriage as conclusive proof of its having been performed.",
+        "metaData": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 61 - Grant of certificate",
+        "metaTitle": "Section 61 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 62",
+        "sectionNo": "62",
+        "chapterNo": 7,
+        "chapterRoman": "VI",
+        "chapterName": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "title": "Keeping of register-book and deposit of extracts therefrom with Registrar General",
+        "description": "[62. Keeping of register-book and deposit of extracts therefrom with Registrar General.—(1) Every person licensed under section 9 shall keep in English, or in the vernacular language in ordinary use in the district or State in which the marriage was solemnized, and in such form as the State Government by which he was licensed may from time to time prescribe, a register-book of all marriages solemnized under this Part in his presence, and shall deposit in the office of the Registrar General of Births, Deaths and Marriages for the territories under the administration of the said State Government, in such form and at such intervals as that Government may prescribe, true and duly authenticated extracts from his register-book of all entries made therein since the last of those intervals.]\n* * * * *",
+        "metaData": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 62 - Keeping of register-book and deposit of extracts therefrom with Registrar General",
+        "metaTitle": "Section 62 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 63",
+        "sectionNo": "63",
+        "chapterNo": 7,
+        "chapterRoman": "VI",
+        "chapterName": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "title": "Searches in register-book and copies of entries",
+        "description": "63. Searches in register book and copies of entries.—Every person licensed under this Act to grant certificates of marriage, and keeping a marriage-register-book under section 62, shall at all reasonable times, allow search to be made in such book, and shall, on payment of the proper fee, give a copy, certified under his hand, of any entry therein.",
+        "metaData": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 63 - Searches in register-book and copies of entries",
+        "metaTitle": "Section 63 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 64",
+        "sectionNo": "64",
+        "chapterNo": 7,
+        "chapterRoman": "VI",
+        "chapterName": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "title": "Books in which marriages of Indian Christians under Part I or Part III are registered",
+        "description": "64. Books in which marriages of Indian Christians under Part I or Part III are registered.—The provisions of sections 62 and 63, as to the form of the register-book, depositing extracts therefrom, allowing searches thereof, and giving copies of the entries therein, shall, mutatis mutandis, apply to the books kept under section 37.",
+        "metaData": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 64 - Books in which marriages of Indian Christians under Part I or Part III are registered",
+        "metaTitle": "Section 64 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 65",
+        "sectionNo": "65",
+        "chapterNo": 7,
+        "chapterRoman": "VI",
+        "chapterName": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "title": "Part VI not to apply to Roman Catholics",
+        "description": "65. Part VI not to apply to Roman Catholics.\nSaving of certain marriages.—This Part of this Act, except so much of sections 62 and 63 as are referred to in section 64, shall not apply to marriages between Roman Catholics. But nothing herein contained shall invalidate any marriage celebrated between Roman Catholics under the provisions of [Part V of Act No. 25 of 1864], previous to the twenty-third day of February, 1865.",
+        "metaData": "PART VI - MARRIAGE OF INDIAN CHRISTIANS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 65 - Part VI not to apply to Roman Catholics",
+        "metaTitle": "Section 65 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 8: PART VII - PENALTIES
+    {
+        "section": "Section 66",
+        "sectionNo": "66",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "False oath, declaration, notice or certificate for procuring marriage",
+        "description": "[66. False oath, declaration, notice or certificate for procuring marriage.—Whoever, for the purpose of procuring a marriage or license of marriage, intentionally,—\n(a) where an oath or declaration is required by this Act, or by any rule or custom of a Church according to the rites and ceremonies of which a marriage is intended to be solemnized, such Church being the Church of England or of Scotland or of Rome, makes a false oath or declaration, or,\n(b) where a notice or certificate is required by this Act, signs a false notice or certificate,\nshall be deemed to have committed the offence punishable under section 193 of the Indian Penal Code (45 of 1860) with imprisonment of either description for a term which may extend to three years and, at the discretion of the Court, with fine.]",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 66 - False oath, declaration, notice or certificate for procuring marriage",
+        "metaTitle": "Section 66 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 67",
+        "sectionNo": "67",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Forbidding, by false personation issue of certificate by Marriage Registrar",
+        "description": "67. Forbidding, by false personation issue of certificate by Marriage Registrar.—Whoever forbids the issue, by a Marriage Registrar, of a certificate, by falsely representing himself to be a person whose consent to the marriage is required by law, knowing or believing such representation to be false, or not having reason to believe it to be true, shall be deemed guilty of the offence described in section 205 of the Indian Penal Code (45 of 1860).",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 67 - Forbidding, by false personation issue of certificate by Marriage Registrar",
+        "metaTitle": "Section 67 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 68",
+        "sectionNo": "68",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Solemnizing marriage without due authority",
+        "description": "[68. Solemnizing marriage without due authority.—Whoever, not being authorized by section 5 of this Act to solemnize marriages, solemnizes or professes to solemnize, in the absence of a Marriage Registrar of the district in which the ceremony takes place, a marriage between persons one or both of whom is or are a Christian or Christians, shall be punished with imprisonment which may extend to ten years, or (in lieu of a sentence of imprisonment for seven years or upwards) with transportation for a term of not less than seven years, and not exceeding ten years,\n* * * * *\nand shall also be liable to fine.]",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 68 - Solemnizing marriage without due authority",
+        "metaTitle": "Section 68 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 69",
+        "sectionNo": "69",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Solemnizing marriage out of proper time, or without witnesses",
+        "description": "69. Solemnizing marriage out of proper time, or without witnesses.—Whoever knowingly and wilfully solemnizes a marriage between persons, one or both of whom is or are a Christian or Christians, at any time other than between the hours of six in the morning and seven in the evening, or in the absence of at least two credible witnesses other than the person solemnizing the marriage, shall be punished with imprisonment for a term which may extend to three years, and shall also be liable to fine.\nSaving of marriages solemnized under special licence.—This section does not apply to marriages solemnized under special licenses granted by the Anglican Bishop of the Diocese or by his Commissary, nor to marriages performed between the hours of seven in the evening and six in the morning by a Clergyman of the Church of Rome, when he has received the general or special license in that behalf mentioned in section 10.\n[Nor does this section apply to marriages solemnized by a Clergyman of the Church of Scotland according to the rules, rites, ceremonies and customs of the Church of Scotland.]",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 69 - Solemnizing marriage out of proper time, or without witnesses",
+        "metaTitle": "Section 69 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 70",
+        "sectionNo": "70",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Solemnizing without notice or within fourteen days after notice, marriage with minor",
+        "description": "70. Solemnizing without notice or within fourteen days after notice, marriage with minor.—Any Minister of Religion licensed to solemnize marriages under this Act, who, without a notice in writing, or, when one of the parties to the marriage is a minor and the required consent of the parents or guardians to such marriage has not been obtained, within fourteen days after the receipt by him of notice of such marriage, knowingly and wilfully solemnizes a marriage under Part III, shall be punished with imprisonment for a term which may extend to three years, and shall also be liable to fine.",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 70 - Solemnizing without notice or within fourteen days after notice, marriage with minor",
+        "metaTitle": "Section 70 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 71",
+        "sectionNo": "71",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Issuing certificate, or marrying, without publication of notice",
+        "description": "71. Issuing certificate, or marrying, without publication of notice.—A Marriage Registrar under this Act, who commits any of the following offences:—\n(1) knowingly and wilfully issues any certificate for marriage, or solemnizes any marriage, without publishing the notice of such marriage as directed by this Act;\n[(2) marrying after expiry of notice.—after the expiration of two months after the copy of the notice has been entered as required by section 40 in respect of any marriage, solemnizes such marriage;]\n(3) solemnizing marriage with minor within fourteen days, without authority of Court, or without sending copy of notice.—solemnizes, without an order of a competent Court authorizing him to do so, any marriage, when one of the parties is a minor, before the expiration of fourteen days after the receipt of the notice of such marriage, or without sending, by the post or otherwise, a copy of such notice to the Senior Marriage Registrar of the district if there be more Marriage Registrars of the district than one, and if he himself be not the Senior Marriage Registrar;\n(4) issuing certificate against authorized prohibition.—issues any certificate the issue of which has been prohibited, as in this Act provided, by any person authorized to prohibit the issue thereof,\nshall be punished with imprisonment for a term which may extend to five years, and shall also be liable to fine.",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 71 - Issuing certificate, or marrying, without publication of notice",
+        "metaTitle": "Section 71 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 72",
+        "sectionNo": "72",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Issuing certificate after expiry of notice, or, in case of minor, within fourteen days after notice, or against authorized prohibition",
+        "description": "72. Issuing certificate after expiry of notice, or, in case of minor, within fourteen days after notice, or against authorized prohibition.—Any Marriage Registrar knowingly and wilfully issuing any certificate for marriage after the expiration of [two months] after the notice has been entered by him as aforesaid,\nor knowingly and wilfully issuing, without the order of a competent Court authorizing him so to do, any certificate for marriage, where one of the parties intending marriage is a minor, before the expiration of fourteen days after the entry of such notice, or any certificate the issue of which has been forbidden as aforesaid by any person authorized in this behalf,\nshall be deemed to have committed an offence under section 166 of the Indian Penal Code (45 of 1860).",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 72 - Issuing certificate after expiry of notice, or, in case of minor, within fourteen days after notice, or against authorized prohibition",
+        "metaTitle": "Section 72 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 73",
+        "sectionNo": "73",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Persons authorized to solemnize marriage (other than Clergy of Churches of England, Scotland or Rome)",
+        "description": "73. Persons authorized to solemnize marriage (other than Clergy of Churches of England, Scotland or Rome).—Whoever, being authorized under this Act to solemnize a marriage,\nand not being a Clergyman of the Church of England solemnizing a marriage after due publication of banns, or under a license from the Anglican Bishop of the Diocese or a Surrogate duly authorized in that behalf,\nor, not being a Clergyman of the Church of Scotland, solemnizing a marriage according to the rules, rites, ceremonies and customs of that church,\nor, not being a Clergyman of the Church of Rome, solemnizing a marriage according to the rites, rules, ceremonies and customs of that church,\nissuing certificate, or marrying, without publishing notice, or after expiry of certificate;—\nknowingly and wilfully issues any certificate for marriage under this Act, or solemnizes any marriage between such persons as aforesaid, without publishing, or causing to be affixed, the notice of such marriage as directed in Part III of this Act, or after the expiration of two months after the certificate has been issued by him;\nissuing certificate for, or solemnizing, marriage with minor, within fourteen days after notice.—\nor knowingly and wilfully issues any certificate for marriage, or solemnizes a marriage between such persons when one of the persons intending marriage is a minor, before the expiration of fourteen days after the receipt of notice of such marriage, or without sending, by the post or otherwise, a copy of such notice to the Marriage Registrar, or, if there be more Marriage Registrars than one, to the Senior Marriage Registrar of the district;\nissuing certificate authorizedly forbidden:—or knowingly and wilfully issues any certificate the issue of which has been forbidden, under this Act, by any person authorized to forbid the issue;\nsolemnizing marriage authorizedly forbidden.—or knowingly and wilfully solemnizes any marriage forbidden by any person authorized to forbid the same;\nshall be punished with imprisonment for a term which may extend to four years, and shall also be liable to fine.",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 73 - Persons authorized to solemnize marriage (other than Clergy of Churches of England, Scotland or Rome)",
+        "metaTitle": "Section 73 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 74",
+        "sectionNo": "74",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Unlicensed person granting certificate pretending to be licensed",
+        "description": "74. Unlicensed person granting certificate pretending to be licensed.—Whoever, not being licensed to grant a certificate of marriage under Part VI of this Act, grants such certificate intending thereby to make it appear that he is so licensed, shall be punished with imprisonment for a term which may extend to five years, and shall also be liable to fine.\n[Whoever, being licensed to grant certificates of marriage under Part VI of this Act, without just cause refuses, or wilfully neglects or omits, to perform any of the duties imposed upon him by that Part shall be punished with fine which may extend to one hundred rupees.]",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 74 - Unlicensed person granting certificate pretending to be licensed",
+        "metaTitle": "Section 74 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 75",
+        "sectionNo": "75",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Destroying or falsifying register-books",
+        "description": "75. Destroying or falsifying register-books.—Whoever, by himself or another, wilfully destroys or injures any register-book or the counterfoil certificates thereof, or any part thereof, or any authenticated extract therefrom,\nor falsely makes or counterfeits any part of such register-book or counterfoil certificates,\nor wilfully inserts any false entry in any such register-book or counterfoil certificate or authenticated extract,\nshall be punished with imprisonment for a term which may extend to seven years, and shall also be liable to fine.",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 75 - Destroying or falsifying register-books",
+        "metaTitle": "Section 75 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 76",
+        "sectionNo": "76",
+        "chapterNo": 8,
+        "chapterRoman": "VII",
+        "chapterName": "PART VII - PENALTIES",
+        "title": "Limitation of prosecutions under Act",
+        "description": "76. Limitation of prosecutions under Act.—The prosecution for every offence punishable under this Act shall be commenced within two years after the offence is committed.",
+        "metaData": "PART VII - PENALTIES",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 76 - Limitation of prosecutions under Act",
+        "metaTitle": "Section 76 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+
+    # CHAPTER 9: PART VIII - MISCELLANEOUS
+    {
+        "section": "Section 77",
+        "sectionNo": "77",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "What matters need not be proved in respect of marriage in accordance with Act",
+        "description": "77. What matters need not be proved in respect of marriage in accordance with Act.—Whenever any marriage has been solemnized in accordance with the provisions of sections 4 and 5, it shall not be void merely on account of any irregularity in respect of any of the following matters, namely:—\n(1) any statement made in regard to the dwelling of the persons married, or to the consent of any person whose consent to such marriage is required by law;\n(2) the notice of the marriage;\n(3) the certificate or translation thereof;\n(4) the time and place at which the marriage has been solemnized;\n(5) the registration of the marriage.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 77 - What matters need not be proved in respect of marriage in accordance with Act",
+        "metaTitle": "Section 77 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 78",
+        "sectionNo": "78",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Corrections of errors",
+        "description": "78. Corrections of errors.—Every person charged with the duty of registering any marriage, who discovers any error in the form or substance of any such entry, may within one month next after the discovery of such error, in the presence of the persons married, or, in case of their death or absence, in the presence of two other credible witnesses, correct the error by entry in the margin, without any alteration of the original entry, and shall sign the marginal entry, and add thereto the date of such correction, and such person shall make the like marginal entry in the certificate thereof.\nAnd every entry made under this section shall be attested by the witnesses in whose presence it was made.\nAnd, in case such certificate has been already sent to the [Registrar General of Births, Deaths and Marriages], such person shall make and send in like manner a separate certificate of the original erroneous entry, and of the marginal correction therein made.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 78 - Corrections of errors",
+        "metaTitle": "Section 78 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 79",
+        "sectionNo": "79",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Searches and copies of entries",
+        "description": "79. Searches and copies of entries.—Every person solemnizing a marriage under this Act, and hereby required to register the same,\nand every Marriage Registrar or [Registrar General of Births, Deaths and Marriages] having the custody for the time being of any register of marriages, or of any certificate, or duplicate, or copies of certificate, under this Act,\nshall, on payment of the proper fees, at all reasonable times, allow searches to be made in such register, or for such certificate, or duplicate or copies, and give a copy under his hand of any entry in the same.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 79 - Searches and copies of entries",
+        "metaTitle": "Section 79 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 80",
+        "sectionNo": "80",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Certified copy of entry in marriage-register, etc., to be evidence",
+        "description": "80. Certified copy of entry in marriage-register, etc., to be evidence.—Every certified copy, purporting to be signed by the person entrusted under this Act with the custody of any marriage-register or certificate, or duplicate, required to be kept or delivered under this Act, of any entry of a marriage in such register or of any such certificate or duplicate, shall be received as evidence of the marriage purporting to be so entered, or of the facts purporting to be so certified therein, without further proof of such register or certificate, or duplicate, or of any entry therein, respectively, or of such copy.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 80 - Certified copy of entry in marriage-register, etc., to be evidence",
+        "metaTitle": "Section 80 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 81",
+        "sectionNo": "81",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Certificates of certain marriages to be sent to Central Government",
+        "description": "[81. Certificates of certain marriages to be sent to Central Government.—The Registrar General of Births, Deaths and Marriages *** shall, at the end of every quarter in each year, select, from the certificates of marriages forwarded to [him], during such quarter, the certificates of the marriages of which [the Government by whom he was appointed] may desire that evidence shall be transmitted to England, and shall send the same certificates, signed by [him] to the [Central Government].]",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 81 - Certificates of certain marriages to be sent to Central Government",
+        "metaTitle": "Section 81 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 82",
+        "sectionNo": "82",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "State Government to prescribe fees",
+        "description": "82. State Government to prescribe fees.—Fees shall be chargeable under this Act for—\nreceiving and publishing notices of marriages;\nissuing [certificates for marriage] by Marriage Registrars, and registering marriages by the same;\nentering protests against, or prohibitions of, the issue of [certificates for marriage] by the said Registrars;\nsearching register-books or certificates, or duplicates, of copies thereof;\ngiving copies of entries in the same under sections 63 and 79.\nThe State Government shall fix the amount of such fees respectively,\nand may from time to time vary or remit them either generally or in special cases, as to it may seem fit.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 82 - State Government to prescribe fees",
+        "metaTitle": "Section 82 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 83",
+        "sectionNo": "83",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Power to make rules",
+        "description": "83. Power to make rules.—[(1)] The State Government [may, by notification in the Official Gazette, make rules] in regard to the disposal of the fees mentioned in section 82, the supply of register-books, and the preparation and submission of returns of marriages solemnized under this Act.\n[(2) Every rule made by the State Government under this section shall be laid, as soon as may be after it is made, before the State Legislature.]",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 83 - Power to make rules",
+        "metaTitle": "Section 83 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 84",
+        "sectionNo": "84",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "[Power to prescribe fees and rules for Indian States.]",
+        "description": "84. [Power to prescribe fees and rules for Indian States.] Omitted by the A.O. 1950.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 84 - [Power to prescribe fees and rules for Indian States.]",
+        "metaTitle": "Section 84 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 85",
+        "sectionNo": "85",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Power to declare who shall be District Judge",
+        "description": "85. Power to declare who shall be District Judge.—The State Government may, by notification in the Official Gazette, declare who shall, in any place to which this Act applies, be deemed to be the District Judge.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 85 - Power to declare who shall be District Judge",
+        "metaTitle": "Section 85 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 86",
+        "sectionNo": "86",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "[Powers and functions exercisable as regards Indian States.]",
+        "description": "86. [Powers and functions exercisable as regards Indian States.] Omitted by the A.O. 1950.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 86 - [Powers and functions exercisable as regards Indian States.]",
+        "metaTitle": "Section 86 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 87",
+        "sectionNo": "87",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Saving of Consular marriages",
+        "description": "87. Saving of Consular marriages.—Nothing in this Act applies to any marriage performed by any Minister, Consul, or Consular Agent between subjects of the State which he represents and according to the laws of such State.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 87 - Saving of Consular marriages",
+        "metaTitle": "Section 87 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    },
+    {
+        "section": "Section 88",
+        "sectionNo": "88",
+        "chapterNo": 9,
+        "chapterRoman": "VIII",
+        "chapterName": "PART VIII - MISCELLANEOUS",
+        "title": "Non-validation of marriages within prohibited degrees",
+        "description": "88. Non-validation of marriages within prohibited degrees.—Nothing in this Act shall be deemed to validate any marriage which the personal law applicable to either of the parties forbids him or her to enter into.\n\nSCHEDULE I\n(See sections 12 and 38)\nNOTICE OF MARRIAGE\nTo a Minister [or Registrar] of\nI hereby give you notice that a marriage is intended to be had, within three calendar months from the date hereof, between me and the other party herein named and described (that is to say):—\n\nNames | Condition | Rank or profession | Age | Dwelling place | Length of residence | Church, chapel or place of worship in which the marriage is to be solemnized | District in which the other party resides, when the parties dwell in different districts\nJames Smith | Widower | Carpenter | of full age | 16, Clive Street | 23 days | Free Church of Scotland Church, Calcutta | -\nMartha Green | Spinster | … | Minor | 20, Hastings Street | More than a month | - | -\n\nWitness my hand, this day of seventy-two\n(Signed) JAMES SMITH.\n[The italics in this schedule are to be filled up, as the case may be, and the blank division thereof is only to be filled up when one of the parties lives in another district.]\n\nSCHEDULE II\n(See sections 24 and 50)\nCERTIFICATE OF RECEIPT OF NOTICE\nI, do hereby certify that, on the day of , notice was duly entered in my Marriage Notice Book of the marriage intended between the parties therein named and described, delivered under the hand of, one of the parties, (that is to say):—\n\nNames | Condition | Rank or profession | Age | Dwelling place | Length of residence | Church, chapel or place of worship in which the marriage is to be solemnized | District in which the other party resides, when the parties dwell in different districts\nJames Smith | Widower | Carpenter | of full age | 16, Clive Street | 23 days | Free Church of Scotland Church, Calcutta | -\nMartha Green | Spinster | ………………. | Minor | 20, Hastings Street | More than a month | - | -\n\nand that the declaration [or oath], required by section 17 or 41 of the Indian Christian Marriage Act, 1872 (15 of 1872), has been duly made by the said (James Smith).\n\nDate of notice entered\nDate of Certificate given\n\nThe issue of this certificate has not been prohibited by any person authorized to forbid the issue thereof.\n\nWitness my hand, this day of seventy-two.\n(Signed)\n\nThis certificate will be void, unless the marriage is solemnized on or before the day of\n[The italics in the Schedule are to be filled up, as the case may be, and the blank division thereof is only to be filled up when one of the parties lives in another district].\n\nSCHEDULE III\n[(See sections 28 and 31)]\nFORM OF REGISTER OF MARRIAGES\nQuarterly Returns of MARRIAGES\nFOR [Calcutta / Madras / Bombay]\nThe Archdeaconry of [Calcutta / Madras / Bombay]\n\nI, , Registrar of the Archdeaconry of [Calcutta / Madras / Bombay], do hereby certify that the annexed are correct copies of the originals and Official Quarterly Returns of Marriage within the Archdeaconry of [Calcutta / Madras / Bombay], as made and transmitted to me for the quarter commencing the day of ending the day of in the year of Our Lord\n[Signature of Registrar.]\nRegistrar of the Archdeaconry of [Calcutta / Madras / Bombay]\n\nMARRIAGES solemnized at [Allahabad / Barrackpore / Bareilly / Calcutta, etc., etc.]\n\nwhen married (Year, Month, Day) | Names of parties (Christian, Surname) | Age | Condition | Rank or profession | Residence at the time of marriage | Father’s name and surname | By banns or license | Signatures of the parties | Signatures Of two or more witnesses present | Signature of the person solemnizing the marriage\n\nSCHEDULE IV\n(See sections 32 and 54)\nMARRIAGE REGISTER BOOK\n\nNumber | When married (Day, Month, Year) | Names of Parties (Christian name, Surname) | Age | Condition | Rank or profession | Residence at the time of marriage | Father’s name and surname\n1 | - | James White | 26 years | Widower | Carpenter | Agra… | William White\n- | - | Martha Duncan | 17 years | Spinster | …….. | Agra… | John Duncan\n\nMarried in the\nThis marriage was solemnized between us [James White, Martha Duncan], in the presence of us [John Smith, John Green].\n\nCERTIFICATE OF MARRIAGE\n\nNumber | When married (Day, Month, Year) | Names of Parties (Christian name, Surname) | Age | Condition | Rank or profession | Residence at the time of marriage | Father’s name and surname\n1 | - | James White | 26 years | Widower | Carpenter | Agra… | William White\n- | - | Martha Duncan | 17 years | Spinster | ………. | Agra… | John Duncan\n\nMarried in the\nThis marriage was solemnized between us [James White, Martha Duncan], in the presence of us [John Smith, John Green].\n\nSCHEDULE V\n[Enactments repealed.] Rep. by the Repealing Act, 1938 (1 of 1938), s. 2 and the Schedule.",
+        "metaData": "PART VIII - MISCELLANEOUS",
+        "metaDescription": "THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Section 88 - Non-validation of marriages within prohibited degrees",
+        "metaTitle": "Section 88 - THE INDIAN CHRISTIAN MARRIAGE ACT, 1872"
+    }
+]
+
+print(f"Total sections defined: {len(sections)}")
+
+# Write to JSON
+json_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../prisma/indianChristianMarriageBearerActData.json"))
+with open(json_path, "w", encoding="utf-8") as f:
+    json.dump(sections, f, indent=2, ensure_ascii=False)
+print(f"Saved JSON to {json_path}")
+
+# Write to JS
+js_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../prisma/indianChristianMarriageBearerActData.js"))
+with open(js_path, "w", encoding="utf-8") as f:
+    f.write("export const indianChristianMarriageBearerActSections = ")
+    json.dump(sections, f, indent=2, ensure_ascii=False)
+    f.write(";\n")
+print(f"Saved JS to {js_path}")

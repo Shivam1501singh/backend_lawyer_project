@@ -33,6 +33,12 @@ import { cpcBearerActSections } from './cpcBearerActData.js';
 import { hinduMarriageBearerActSections } from './hinduMarriageBearerActData.js';
 import { hinduSuccessionBearerActSections } from './hinduSuccessionBearerActData.js';
 import { specialMarriageBearerActSections } from './specialMarriageBearerActData.js';
+import { hinduMinorityGuardianshipBearerActSections } from './hinduMinorityGuardianshipBearerActData.js';
+import { dissolutionOfMuslimMarriagesBearerActSections } from './dissolutionOfMuslimMarriagesBearerActData.js';
+import { muslimWomenProtectionBearerActSections } from './muslimWomenProtectionBearerActData.js';
+import { muslimWomenMarriageProtectionBearerActSections } from './muslimWomenMarriageProtectionBearerActData.js';
+import { indianChristianMarriageBearerActSections } from './indianChristianMarriageBearerActData.js';
+import { divorceBearerActSections } from './divorceBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -5639,6 +5645,703 @@ async function seedBearerActs() {
     }
 
     console.log(`THE SPECIAL MARRIAGE ACT, 1954 Bearer Act Sections seeded: ${createdSmaSectionCount} created, ${updatedSmaSectionCount} updated across 8 chapters (Total: ${specialMarriageBearerActSections.length}).`);
+
+    // Seed THE HINDU MINORITY AND GUARDIANSHIP ACT, 1956 under Personal BearerAct
+    console.log('Seeding THE HINDU MINORITY AND GUARDIANSHIP ACT, 1956 Act and Sections under Personal...');
+    const hmgaActHeading = 'THE HINDU MINORITY AND GUARDIANSHIP ACT, 1956';
+    let hmgaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: hmgaActHeading
+      }
+    });
+
+    if (!hmgaAct) {
+      hmgaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Hindu Minority',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!hmgaAct) {
+      hmgaAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: hmgaActHeading,
+          act: hmgaActHeading,
+          year: 1956
+        }
+      });
+      console.log('Act created: ' + hmgaActHeading);
+    } else {
+      hmgaAct = await prisma.act.update({
+        where: { id: hmgaAct.id },
+        data: {
+          heading: hmgaActHeading,
+          act: hmgaActHeading,
+          year: 1956
+        }
+      });
+      console.log('Act synchronized: ' + hmgaActHeading);
+    }
+
+    const existingHmgaSections = await prisma.actSection.findMany({
+      where: { actId: hmgaAct.id }
+    });
+    const hmgaSectionMap = new Map(existingHmgaSections.map(s => [s.section, s]));
+
+    let createdHmgaSectionCount = 0;
+    let updatedHmgaSectionCount = 0;
+
+    const hmgaToCreate = [];
+    const hmgaToUpdate = [];
+
+    for (const item of hinduMinorityGuardianshipBearerActSections) {
+      const existing = hmgaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        hmgaToCreate.push({
+          actId: hmgaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        hmgaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (hmgaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < hmgaToCreate.length; i += insertChunkSize) {
+        const chunk = hmgaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdHmgaSectionCount = hmgaToCreate.length;
+    }
+
+    if (hmgaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < hmgaToUpdate.length; i += updateChunkSize) {
+        const chunk = hmgaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedHmgaSectionCount = hmgaToUpdate.length;
+    }
+
+    console.log(`THE HINDU MINORITY AND GUARDIANSHIP ACT, 1956 Bearer Act Sections seeded: ${createdHmgaSectionCount} created, ${updatedHmgaSectionCount} updated (Total: ${hinduMinorityGuardianshipBearerActSections.length}).`);
+
+    // Seed THE DISSOLUTION OF MUSLIM MARRIAGES ACT, 1939 under Personal BearerAct
+    console.log('Seeding THE DISSOLUTION OF MUSLIM MARRIAGES ACT, 1939 Act and Sections under Personal...');
+    const dmmaActHeading = 'THE DISSOLUTION OF MUSLIM MARRIAGES ACT, 1939';
+    let dmmaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: dmmaActHeading
+      }
+    });
+
+    if (!dmmaAct) {
+      dmmaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Dissolution of Muslim Marriages',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!dmmaAct) {
+      dmmaAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: dmmaActHeading,
+          act: dmmaActHeading,
+          year: 1939
+        }
+      });
+      console.log('Act created: ' + dmmaActHeading);
+    } else {
+      dmmaAct = await prisma.act.update({
+        where: { id: dmmaAct.id },
+        data: {
+          heading: dmmaActHeading,
+          act: dmmaActHeading,
+          year: 1939
+        }
+      });
+      console.log('Act synchronized: ' + dmmaActHeading);
+    }
+
+    const existingDmmaSections = await prisma.actSection.findMany({
+      where: { actId: dmmaAct.id }
+    });
+    const dmmaSectionMap = new Map(existingDmmaSections.map(s => [s.section, s]));
+
+    let createdDmmaSectionCount = 0;
+    let updatedDmmaSectionCount = 0;
+
+    const dmmaToCreate = [];
+    const dmmaToUpdate = [];
+
+    for (const item of dissolutionOfMuslimMarriagesBearerActSections) {
+      const existing = dmmaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        dmmaToCreate.push({
+          actId: dmmaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        dmmaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (dmmaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < dmmaToCreate.length; i += insertChunkSize) {
+        const chunk = dmmaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdDmmaSectionCount = dmmaToCreate.length;
+    }
+
+    if (dmmaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < dmmaToUpdate.length; i += updateChunkSize) {
+        const chunk = dmmaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedDmmaSectionCount = dmmaToUpdate.length;
+    }
+
+    console.log(`THE DISSOLUTION OF MUSLIM MARRIAGES ACT, 1939 Bearer Act Sections seeded: ${createdDmmaSectionCount} created, ${updatedDmmaSectionCount} updated (Total: ${dissolutionOfMuslimMarriagesBearerActSections.length}).`);
+
+    // Seed THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON DIVORCE) ACT, 1986 under Personal BearerAct
+    console.log('Seeding THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON DIVORCE) ACT, 1986 Act and Sections under Personal...');
+    const mwprdaActHeading = 'THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON DIVORCE) ACT, 1986';
+    let mwprdaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: mwprdaActHeading
+      }
+    });
+
+    if (!mwprdaAct) {
+      mwprdaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Muslim Women (Protection of Rights on Divorce)',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!mwprdaAct) {
+      mwprdaAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: mwprdaActHeading,
+          act: mwprdaActHeading,
+          year: 1986
+        }
+      });
+      console.log('Act created: ' + mwprdaActHeading);
+    } else {
+      mwprdaAct = await prisma.act.update({
+        where: { id: mwprdaAct.id },
+        data: {
+          heading: mwprdaActHeading,
+          act: mwprdaActHeading,
+          year: 1986
+        }
+      });
+      console.log('Act synchronized: ' + mwprdaActHeading);
+    }
+
+    const existingMwprdaSections = await prisma.actSection.findMany({
+      where: { actId: mwprdaAct.id }
+    });
+    const mwprdaSectionMap = new Map(existingMwprdaSections.map(s => [s.section, s]));
+
+    let createdMwprdaSectionCount = 0;
+    let updatedMwprdaSectionCount = 0;
+
+    const mwprdaToCreate = [];
+    const mwprdaToUpdate = [];
+
+    for (const item of muslimWomenProtectionBearerActSections) {
+      const existing = mwprdaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        mwprdaToCreate.push({
+          actId: mwprdaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        mwprdaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (mwprdaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < mwprdaToCreate.length; i += insertChunkSize) {
+        const chunk = mwprdaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdMwprdaSectionCount = mwprdaToCreate.length;
+    }
+
+    if (mwprdaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < mwprdaToUpdate.length; i += updateChunkSize) {
+        const chunk = mwprdaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedMwprdaSectionCount = mwprdaToUpdate.length;
+    }
+
+    console.log(`THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON DIVORCE) ACT, 1986 Bearer Act Sections seeded: ${createdMwprdaSectionCount} created, ${updatedMwprdaSectionCount} updated (Total: ${muslimWomenProtectionBearerActSections.length}).`);
+
+    // Seed THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON MARRIAGE) ACT, 2019 under Personal BearerAct
+    console.log('Seeding THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON MARRIAGE) ACT, 2019 Act and Sections under Personal...');
+    const mwprActHeading = 'THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON MARRIAGE) ACT, 2019';
+    let mwprAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: mwprActHeading
+      }
+    });
+
+    if (!mwprAct) {
+      mwprAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Muslim Women (Protection of Rights on Marriage)',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!mwprAct) {
+      mwprAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: mwprActHeading,
+          act: mwprActHeading,
+          year: 2019
+        }
+      });
+      console.log('Act created: ' + mwprActHeading);
+    } else {
+      mwprAct = await prisma.act.update({
+        where: { id: mwprAct.id },
+        data: {
+          heading: mwprActHeading,
+          act: mwprActHeading,
+          year: 2019
+        }
+      });
+      console.log('Act synchronized: ' + mwprActHeading);
+    }
+
+    const existingMwprSections = await prisma.actSection.findMany({
+      where: { actId: mwprAct.id }
+    });
+    const mwprSectionMap = new Map(existingMwprSections.map(s => [s.section, s]));
+
+    let createdMwprSectionCount = 0;
+    let updatedMwprSectionCount = 0;
+
+    const mwprToCreate = [];
+    const mwprToUpdate = [];
+
+    for (const item of muslimWomenMarriageProtectionBearerActSections) {
+      const existing = mwprSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        mwprToCreate.push({
+          actId: mwprAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        mwprToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (mwprToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < mwprToCreate.length; i += insertChunkSize) {
+        const chunk = mwprToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdMwprSectionCount = mwprToCreate.length;
+    }
+
+    if (mwprToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < mwprToUpdate.length; i += updateChunkSize) {
+        const chunk = mwprToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedMwprSectionCount = mwprToUpdate.length;
+    }
+
+    console.log(`THE MUSLIM WOMEN (PROTECTION OF RIGHTS ON MARRIAGE) ACT, 2019 Bearer Act Sections seeded: ${createdMwprSectionCount} created, ${updatedMwprSectionCount} updated (Total: ${muslimWomenMarriageProtectionBearerActSections.length}).`);
+
+    // Seed THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 under Personal BearerAct
+    console.log('Seeding THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Act and Chapters/Sections under Personal...');
+    const icmaActHeading = 'THE INDIAN CHRISTIAN MARRIAGE ACT, 1872';
+    let icmaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: icmaActHeading
+      }
+    });
+
+    if (!icmaAct) {
+      icmaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Indian Christian Marriage',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!icmaAct) {
+      icmaAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: icmaActHeading,
+          act: icmaActHeading,
+          year: 1872
+        }
+      });
+      console.log('Act created: ' + icmaActHeading);
+    } else {
+      icmaAct = await prisma.act.update({
+        where: { id: icmaAct.id },
+        data: {
+          heading: icmaActHeading,
+          act: icmaActHeading,
+          year: 1872
+        }
+      });
+      console.log('Act synchronized: ' + icmaActHeading);
+    }
+
+    const existingIcmaSections = await prisma.actSection.findMany({
+      where: { actId: icmaAct.id }
+    });
+    const icmaSectionMap = new Map(existingIcmaSections.map(s => [s.section, s]));
+
+    let createdIcmaSectionCount = 0;
+    let updatedIcmaSectionCount = 0;
+
+    const icmaToCreate = [];
+    const icmaToUpdate = [];
+
+    for (const item of indianChristianMarriageBearerActSections) {
+      const existing = icmaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        icmaToCreate.push({
+          actId: icmaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        icmaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (icmaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < icmaToCreate.length; i += insertChunkSize) {
+        const chunk = icmaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdIcmaSectionCount = icmaToCreate.length;
+    }
+
+    if (icmaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < icmaToUpdate.length; i += updateChunkSize) {
+        const chunk = icmaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedIcmaSectionCount = icmaToUpdate.length;
+    }
+
+    console.log(`THE INDIAN CHRISTIAN MARRIAGE ACT, 1872 Bearer Act Sections seeded: ${createdIcmaSectionCount} created, ${updatedIcmaSectionCount} updated (Total: ${indianChristianMarriageBearerActSections.length}).`);
+  }
+
+  // -------------------------------------------------------------
+  // THE DIVORCE ACT, 1869
+  // -------------------------------------------------------------
+  const personalCategoryForDivorce = await prisma.bearerAct.findUnique({
+    where: { name: 'Personal' }
+  });
+
+  if (personalCategoryForDivorce) {
+    const divorceActHeading = 'THE DIVORCE ACT, 1869';
+    let divorceAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalCategoryForDivorce.id,
+        heading: divorceActHeading
+      }
+    });
+
+    if (!divorceAct) {
+      divorceAct = await prisma.act.create({
+        data: {
+          bearerActId: personalCategoryForDivorce.id,
+          heading: divorceActHeading,
+          act: divorceActHeading,
+          year: 1869
+        }
+      });
+      console.log('Act created: ' + divorceActHeading);
+    } else {
+      divorceAct = await prisma.act.update({
+        where: { id: divorceAct.id },
+        data: {
+          heading: divorceActHeading,
+          act: divorceActHeading,
+          year: 1869
+        }
+      });
+      console.log('Act synchronized: ' + divorceActHeading);
+    }
+
+    const existingDivorceSections = await prisma.actSection.findMany({
+      where: { actId: divorceAct.id }
+    });
+    const divorceSectionMap = new Map(existingDivorceSections.map(s => [s.section, s]));
+
+    let createdDivorceSectionCount = 0;
+    let updatedDivorceSectionCount = 0;
+
+    const divorceToCreate = [];
+    const divorceToUpdate = [];
+
+    for (const item of divorceBearerActSections) {
+      const existing = divorceSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        divorceToCreate.push({
+          actId: divorceAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        divorceToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (divorceToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < divorceToCreate.length; i += insertChunkSize) {
+        const chunk = divorceToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdDivorceSectionCount = divorceToCreate.length;
+    }
+
+    if (divorceToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < divorceToUpdate.length; i += updateChunkSize) {
+        const chunk = divorceToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedDivorceSectionCount = divorceToUpdate.length;
+    }
+
+    console.log(`THE DIVORCE ACT, 1869 Bearer Act Sections seeded: ${createdDivorceSectionCount} created, ${updatedDivorceSectionCount} updated (Total: ${divorceBearerActSections.length}).`);
   }
 }
 

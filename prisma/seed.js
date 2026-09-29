@@ -44,6 +44,7 @@ import { guardiansWardsBearerActSections } from './guardiansWardsBearerActData.j
 import { hinduAdoptionsMaintenanceBearerActSections } from './hinduAdoptionsMaintenanceBearerActData.js';
 import { domesticViolenceBearerActSections } from './domesticViolenceBearerActData.js';
 import { officialLanguagesBearerActSections } from './officialLanguagesBearerActData.js';
+import { rightToInformationBearerActSections } from './rightToInformationBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -6971,6 +6972,117 @@ async function seedBearerActs() {
     }
 
     console.log(`Official Languages Bearer Act Sections seeded: ${createdOfficialLanguagesSectionCount} created, ${updatedOfficialLanguagesSectionCount} updated (Total: ${officialLanguagesBearerActSections.length}).`);
+
+    console.log('Seeding THE RIGHT TO INFORMATION ACT, 2005 under Constitutional and Political...');
+    let rtiAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: constitutionalBearerAct.id,
+        heading: 'THE RIGHT TO INFORMATION ACT, 2005'
+      }
+    });
+
+    if (!rtiAct) {
+      rtiAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: {
+            contains: 'RIGHT TO INFORMATION',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!rtiAct) {
+      rtiAct = await prisma.act.create({
+        data: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: 'THE RIGHT TO INFORMATION ACT, 2005',
+          act: 'THE RIGHT TO INFORMATION ACT, 2005',
+          year: 2005
+        }
+      });
+      console.log('Act created: THE RIGHT TO INFORMATION ACT, 2005');
+    } else {
+      rtiAct = await prisma.act.update({
+        where: { id: rtiAct.id },
+        data: {
+          heading: 'THE RIGHT TO INFORMATION ACT, 2005',
+          act: 'THE RIGHT TO INFORMATION ACT, 2005',
+          year: 2005
+        }
+      });
+      console.log('Act synchronized: THE RIGHT TO INFORMATION ACT, 2005');
+    }
+
+    const existingRtiSections = await prisma.actSection.findMany({
+      where: { actId: rtiAct.id }
+    });
+    const rtiSectionMap = new Map(existingRtiSections.map(s => [s.section, s]));
+
+    let createdRtiSectionCount = 0;
+    let updatedRtiSectionCount = 0;
+
+    const rtiToCreate = [];
+    const rtiToUpdate = [];
+
+    for (const item of rightToInformationBearerActSections) {
+      const existing = rtiSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        rtiToCreate.push({
+          actId: rtiAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        rtiToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (rtiToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: rtiToCreate
+      });
+      createdRtiSectionCount = rtiToCreate.length;
+    }
+
+    if (rtiToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < rtiToUpdate.length; i += updateChunkSize) {
+        const chunk = rtiToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedRtiSectionCount = rtiToUpdate.length;
+    }
+
+    console.log(`Right to Information Bearer Act Sections seeded: ${createdRtiSectionCount} created, ${updatedRtiSectionCount} updated (Total: ${rightToInformationBearerActSections.length}).`);
   }
 }
 

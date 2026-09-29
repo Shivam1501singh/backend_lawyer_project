@@ -47,6 +47,7 @@ import { officialLanguagesBearerActSections } from './officialLanguagesBearerAct
 import { rightToInformationBearerActSections } from './rightToInformationBearerActData.js';
 import { immigrationAndForeignersBearerActSections } from './immigrationAndForeignersBearerActData.js';
 import { lokpalAndLokayuktasBearerActSections } from './lokpalAndLokayuktasBearerActData.js';
+import { constitutionBearerActSections } from './constitutionBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -7308,6 +7309,122 @@ async function seedBearerActs() {
     }
 
     console.log(`Lokpal and Lokayuktas Bearer Act Sections seeded: ${createdLokpalSectionCount} created, ${updatedLokpalSectionCount} updated (Total: ${lokpalAndLokayuktasBearerActSections.length}).`);
+
+    // 31. CONSTITUTION OF INDIA
+    console.log('Seeding CONSTITUTION OF INDIA under Constitutional and Political...');
+    let constitutionAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: constitutionalBearerAct.id,
+        heading: 'CONSTITUTION OF INDIA'
+      }
+    });
+
+    if (!constitutionAct) {
+      constitutionAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: {
+            contains: 'CONSTITUTION OF INDIA',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!constitutionAct) {
+      constitutionAct = await prisma.act.create({
+        data: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: 'CONSTITUTION OF INDIA',
+          act: 'CONSTITUTION OF INDIA',
+          year: 1950
+        }
+      });
+      console.log('Act created: CONSTITUTION OF INDIA');
+    } else {
+      constitutionAct = await prisma.act.update({
+        where: { id: constitutionAct.id },
+        data: {
+          heading: 'CONSTITUTION OF INDIA',
+          act: 'CONSTITUTION OF INDIA',
+          year: 1950
+        }
+      });
+      console.log('Act synchronized: CONSTITUTION OF INDIA');
+    }
+
+    const existingConstitutionSections = await prisma.actSection.findMany({
+      where: { actId: constitutionAct.id }
+    });
+    const constitutionSectionMap = new Map(existingConstitutionSections.map(s => [s.section, s]));
+
+    let createdConstitutionSectionCount = 0;
+    let updatedConstitutionSectionCount = 0;
+
+    const constitutionToCreate = [];
+    const constitutionToUpdate = [];
+
+    for (const item of constitutionBearerActSections) {
+      const existing = constitutionSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        constitutionToCreate.push({
+          actId: constitutionAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        constitutionToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (constitutionToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < constitutionToCreate.length; i += insertChunkSize) {
+        const chunk = constitutionToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdConstitutionSectionCount = constitutionToCreate.length;
+    }
+
+    if (constitutionToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < constitutionToUpdate.length; i += updateChunkSize) {
+        const chunk = constitutionToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedConstitutionSectionCount = constitutionToUpdate.length;
+    }
+
+    console.log(`Constitution of India Bearer Act Sections seeded: ${createdConstitutionSectionCount} created, ${updatedConstitutionSectionCount} updated (Total: ${constitutionBearerActSections.length}).`);
   }
 }
 

@@ -32,6 +32,7 @@ import { landAcquisitionBearerActSections } from './landAcquisitionBearerActData
 import { cpcBearerActSections } from './cpcBearerActData.js';
 import { hinduMarriageBearerActSections } from './hinduMarriageBearerActData.js';
 import { hinduSuccessionBearerActSections } from './hinduSuccessionBearerActData.js';
+import { specialMarriageBearerActSections } from './specialMarriageBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -5521,6 +5522,123 @@ async function seedBearerActs() {
     }
 
     console.log(`THE HINDU SUCCESSION ACT, 1956 Bearer Act Sections seeded: ${createdHsaSectionCount} created, ${updatedHsaSectionCount} updated across 4 chapters (Total: ${hinduSuccessionBearerActSections.length}).`);
+
+    // Seed THE SPECIAL MARRIAGE ACT, 1954 under Personal BearerAct
+    console.log('Seeding THE SPECIAL MARRIAGE ACT, 1954 Act and Chapters/Sections under Personal...');
+    const smaActHeading = 'THE SPECIAL MARRIAGE ACT, 1954';
+    let smaAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: smaActHeading
+      }
+    });
+
+    if (!smaAct) {
+      smaAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Special Marriage',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!smaAct) {
+      smaAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: smaActHeading,
+          act: smaActHeading,
+          year: 1954
+        }
+      });
+      console.log('Act created: ' + smaActHeading);
+    } else {
+      smaAct = await prisma.act.update({
+        where: { id: smaAct.id },
+        data: {
+          heading: smaActHeading,
+          act: smaActHeading,
+          year: 1954
+        }
+      });
+      console.log('Act synchronized: ' + smaActHeading);
+    }
+
+    const existingSmaSections = await prisma.actSection.findMany({
+      where: { actId: smaAct.id }
+    });
+    const smaSectionMap = new Map(existingSmaSections.map(s => [s.section, s]));
+
+    let createdSmaSectionCount = 0;
+    let updatedSmaSectionCount = 0;
+
+    const smaToCreate = [];
+    const smaToUpdate = [];
+
+    for (const item of specialMarriageBearerActSections) {
+      const existing = smaSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        smaToCreate.push({
+          actId: smaAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        smaToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (smaToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < smaToCreate.length; i += insertChunkSize) {
+        const chunk = smaToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdSmaSectionCount = smaToCreate.length;
+    }
+
+    if (smaToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < smaToUpdate.length; i += updateChunkSize) {
+        const chunk = smaToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedSmaSectionCount = smaToUpdate.length;
+    }
+
+    console.log(`THE SPECIAL MARRIAGE ACT, 1954 Bearer Act Sections seeded: ${createdSmaSectionCount} created, ${updatedSmaSectionCount} updated across 8 chapters (Total: ${specialMarriageBearerActSections.length}).`);
   }
 }
 

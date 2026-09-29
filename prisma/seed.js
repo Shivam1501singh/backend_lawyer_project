@@ -46,6 +46,7 @@ import { domesticViolenceBearerActSections } from './domesticViolenceBearerActDa
 import { officialLanguagesBearerActSections } from './officialLanguagesBearerActData.js';
 import { rightToInformationBearerActSections } from './rightToInformationBearerActData.js';
 import { immigrationAndForeignersBearerActSections } from './immigrationAndForeignersBearerActData.js';
+import { lokpalAndLokayuktasBearerActSections } from './lokpalAndLokayuktasBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -7195,6 +7196,118 @@ async function seedBearerActs() {
     }
 
     console.log(`Immigration and Foreigners Bearer Act Sections seeded: ${createdImmigrationSectionCount} created, ${updatedImmigrationSectionCount} updated (Total: ${immigrationAndForeignersBearerActSections.length}).`);
+
+    // 30. THE LOKPAL AND LOKAYUKTAS ACT, 2013
+    console.log('Seeding THE LOKPAL AND LOKAYUKTAS ACT, 2013 under Constitutional and Political...');
+    let lokpalAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: constitutionalBearerAct.id,
+        heading: 'THE LOKPAL AND LOKAYUKTAS ACT, 2013'
+      }
+    });
+
+    if (!lokpalAct) {
+      lokpalAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: {
+            contains: 'LOKPAL AND LOKAYUKTAS',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!lokpalAct) {
+      lokpalAct = await prisma.act.create({
+        data: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: 'THE LOKPAL AND LOKAYUKTAS ACT, 2013',
+          act: 'THE LOKPAL AND LOKAYUKTAS ACT, 2013',
+          year: 2013
+        }
+      });
+      console.log('Act created: THE LOKPAL AND LOKAYUKTAS ACT, 2013');
+    } else {
+      lokpalAct = await prisma.act.update({
+        where: { id: lokpalAct.id },
+        data: {
+          heading: 'THE LOKPAL AND LOKAYUKTAS ACT, 2013',
+          act: 'THE LOKPAL AND LOKAYUKTAS ACT, 2013',
+          year: 2013
+        }
+      });
+      console.log('Act synchronized: THE LOKPAL AND LOKAYUKTAS ACT, 2013');
+    }
+
+    const existingLokpalSections = await prisma.actSection.findMany({
+      where: { actId: lokpalAct.id }
+    });
+    const lokpalSectionMap = new Map(existingLokpalSections.map(s => [s.section, s]));
+
+    let createdLokpalSectionCount = 0;
+    let updatedLokpalSectionCount = 0;
+
+    const lokpalToCreate = [];
+    const lokpalToUpdate = [];
+
+    for (const item of lokpalAndLokayuktasBearerActSections) {
+      const existing = lokpalSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        lokpalToCreate.push({
+          actId: lokpalAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        lokpalToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (lokpalToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: lokpalToCreate
+      });
+      createdLokpalSectionCount = lokpalToCreate.length;
+    }
+
+    if (lokpalToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < lokpalToUpdate.length; i += updateChunkSize) {
+        const chunk = lokpalToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedLokpalSectionCount = lokpalToUpdate.length;
+    }
+
+    console.log(`Lokpal and Lokayuktas Bearer Act Sections seeded: ${createdLokpalSectionCount} created, ${updatedLokpalSectionCount} updated (Total: ${lokpalAndLokayuktasBearerActSections.length}).`);
   }
 }
 

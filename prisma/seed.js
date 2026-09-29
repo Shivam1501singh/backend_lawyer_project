@@ -52,6 +52,7 @@ import { industrialRelationsBearerActSections } from './industrialRelationsBeare
 import { realEstateBearerActSections } from './realEstateBearerActData.js';
 import { codeOnWagesBearerActSections } from './codeOnWagesBearerActData.js';
 import { consumerProtectionBearerActSections } from './consumerProtectionBearerActData.js';
+import { centralGoodsAndServicesTaxBearerActSections } from './centralGoodsAndServicesTaxBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -7910,6 +7911,128 @@ async function seedBearerActs() {
     }
 
     console.log(`Consumer Protection Bearer Act Sections seeded: ${createdCpSectionCount} created, ${updatedCpSectionCount} updated (Total: ${consumerProtectionBearerActSections.length}).`);
+  }
+
+  // Seed THE CENTRAL GOODS AND SERVICES TAX ACT, 2017
+  const taxationLabourBearerActForCGST = await prisma.bearerAct.findUnique({
+    where: { name: 'Taxation, Labour & Consumer Protection' }
+  });
+
+  if (taxationLabourBearerActForCGST) {
+    console.log('Seeding THE CENTRAL GOODS AND SERVICES TAX ACT, 2017 under Taxation, Labour & Consumer Protection...');
+    let cgstAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: taxationLabourBearerActForCGST.id,
+        heading: 'THE CENTRAL GOODS AND SERVICES TAX ACT, 2017'
+      }
+    });
+
+    if (!cgstAct) {
+      cgstAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: taxationLabourBearerActForCGST.id,
+          heading: {
+            contains: 'CENTRAL GOODS AND SERVICES TAX',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!cgstAct) {
+      cgstAct = await prisma.act.create({
+        data: {
+          bearerActId: taxationLabourBearerActForCGST.id,
+          heading: 'THE CENTRAL GOODS AND SERVICES TAX ACT, 2017',
+          act: 'THE CENTRAL GOODS AND SERVICES TAX ACT, 2017',
+          year: 2017
+        }
+      });
+      console.log('Act created: THE CENTRAL GOODS AND SERVICES TAX ACT, 2017');
+    } else {
+      cgstAct = await prisma.act.update({
+        where: { id: cgstAct.id },
+        data: {
+          heading: 'THE CENTRAL GOODS AND SERVICES TAX ACT, 2017',
+          act: 'THE CENTRAL GOODS AND SERVICES TAX ACT, 2017',
+          year: 2017
+        }
+      });
+      console.log('Act synchronized: THE CENTRAL GOODS AND SERVICES TAX ACT, 2017');
+    }
+
+    const existingCgstSections = await prisma.actSection.findMany({
+      where: { actId: cgstAct.id }
+    });
+    const cgstSectionMap = new Map(existingCgstSections.map(s => [s.section, s]));
+
+    let createdCgstSectionCount = 0;
+    let updatedCgstSectionCount = 0;
+
+    const cgstToCreate = [];
+    const cgstToUpdate = [];
+
+    for (const item of centralGoodsAndServicesTaxBearerActSections) {
+      const existing = cgstSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        cgstToCreate.push({
+          actId: cgstAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        cgstToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (cgstToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < cgstToCreate.length; i += insertChunkSize) {
+        const chunk = cgstToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdCgstSectionCount = cgstToCreate.length;
+    }
+
+    if (cgstToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < cgstToUpdate.length; i += updateChunkSize) {
+        const chunk = cgstToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedCgstSectionCount = cgstToUpdate.length;
+    }
+
+    console.log(`Central Goods and Services Tax Bearer Act Sections seeded: ${createdCgstSectionCount} created, ${updatedCgstSectionCount} updated (Total: ${centralGoodsAndServicesTaxBearerActSections.length}).`);
   }
 }
 

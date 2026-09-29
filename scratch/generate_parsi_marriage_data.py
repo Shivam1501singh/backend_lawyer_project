@@ -1,0 +1,783 @@
+import json
+import os
+
+ACT_NAME = "THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+ACT_YEAR = 1936
+
+sections = [
+    # CHAPTER I: PRELIMINARY
+    {
+        "section": "Section 1",
+        "sectionNo": "1",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Short title, extent and commencement.",
+        "description": "1. Short title, extent and commencement.—(1) This Act may be called the Parsi Marriage and Divorce Act, 1936.\n(2) [It extends to the whole of India except the State of Jammu and Kashmir*]:\nProvided that the Central Government may, in respect of [territories which, immediately before the 1st November, 1956, were comprised in Part B States] by notification in the Official Gazette, direct that the provisions of this Act relating to the constitution and powers of Parsi Matrimonial Courts and to appeals from the decisions and orders of such Courts shall apply with such modifications as may be specified in the notification:\n[Provided further that nothing contained in this Act shall apply to the Renoncants of the Union territory of Pondicherry.]\n(3) It shall come into force on such date as the Central Government may, by notification in the Official Gazette, appoint.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 1 - Short title, extent and commencement.",
+        "metaTitle": "Section 1 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 2",
+        "sectionNo": "2",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Definitions.",
+        "description": "2. Definitions.—In this Act, unless there is anything repugnant in the subject or context,—\n(1) “Chief Justice” includes senior Judge;\n(2) “Court” means a Court constituted under this Act;\n(3) to “desert” together with its grammatical variations and cognate expressions, means to desert the other party to a marriage without reasonable cause and without the consent, or against the will, of such party;\n(4) “grievous hurt” means—\n(a) emasculation;\n(b) permanent privation of the sight of either eye;\n(c) permanent privation of the hearing of either ear;\n(d) privation of any member or joint;\n(e) destruction or permanent impairing of the powers of any member or joint;\n(f) permanent disfiguration of the head or face; or\n(g) any hurt which endangers life;\n(5) “husband” means a Parsi husband;\n(6) “marriage” means a marriage between Parsis whether contracted before or after the commencement of this Act;\n(7) a “Parsi” means a Parsi Zoroastrian;\n(8) “priest” means a Parsi priest and includes Dastur and Mobed; and\n(9) “wife” means a Parsi wife.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 2 - Definitions.",
+        "metaTitle": "Section 2 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+
+    # CHAPTER II: MARRIAGES BETWEEN PARSIS
+    {
+        "section": "Section 3",
+        "sectionNo": "3",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Requisites to validity of Parsi marriages.",
+        "description": "3. Requisites to validity of Parsi marriages.—[(1)] No marriage shall be valid if—\n(a) the contracting parties are related to each other in any of the degrees of consanguinity or affinity set forth in Schedule I; or\n(b) such marriage is not solemnized according to the Parsi form of ceremony called “Ashirvad” by a priest in the presence of two Parsi witnesses other than such priest; or\n[(c) in the case of any Parsi (whether such Parsi has changed his or her religion or domicile or not) who, if a male, has not completed twenty-one years of age, and if a female, has not completed eighteen years of age.]\n[(2) Notwithstanding that a marriage is invalid under any of the provisions of sub-section (1), any child of such marriage who would have been legitimate if the marriage had been valid, shall be legitimate.]",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 3 - Requisites to validity of Parsi marriages.",
+        "metaTitle": "Section 3 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 4",
+        "sectionNo": "4",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Remarriage when unlawful.",
+        "description": "4. Remarriage when unlawful.—(1) No Parsi (whether such Parsi has changed his or her religion or domicile or not) shall contract any marriage under this Act or any other law in the lifetime of his or her wife or husband, whether a Parsi or not, except after his or her lawful divorce from such wife or husband or after his or her marriage with such wife or husband has lawfully been declared null and void or dissolved, and, if the marriage was contracted with such wife or husband under the Parsi Marriage and Divorce Act 1865 (15 of 1865), or under this Act, except after a divorce, declaration or dissolution as aforesaid under either of the said Acts.\n(2) Every marriage contracted contrary to the provisions of sub-section (1) shall be void.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 4 - Remarriage when unlawful.",
+        "metaTitle": "Section 4 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 5",
+        "sectionNo": "5",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Punishment of bigamy.",
+        "description": "5. Punishment of bigamy.—Every Parsi who during the lifetime of his or her wife or husband, whether a Parsi or not, contracts a marriage without having been lawfully divorced from such wife or husband, or without his or her marriage with such wife or husband having legally been declared null and void or dissolved, shall be subject to the penalties provided in sections 494 and 495 of the Indian Penal Code (45 of 1860) for the offence of marrying again during the lifetime of a husband or wife.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 5 - Punishment of bigamy.",
+        "metaTitle": "Section 5 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 6",
+        "sectionNo": "6",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Certificate and registry of marriage.",
+        "description": "6. Certificate and registry of marriage.—Every marriage contracted under this Act shall, immediately on the solemnization thereof, be certified by the officiating priest in the form contained in Schedule II. The certificate shall be signed by the said priest, the contracting parties *** and two witnesses present at the marriage and the said priest shall thereupon send such certificate together with a fee of two rupees to be paid by the husband to the Registrar of the place at which such marriage is solemnized. The Registrar on receipt of the certificate and fee shall enter the certificate in a register to be kept by him for that purpose and shall be entitled to retain the fee.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 6 - Certificate and registry of marriage.",
+        "metaTitle": "Section 6 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 7",
+        "sectionNo": "7",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Appointment of Registrar.",
+        "description": "7. Appointment of Registrar.—For the purposes of this Act a Registrar shall be appointed. Within the local limits of the ordinary original civil jurisdiction of a High Court, the Registrar shall be appointed by the Chief Justice of such Court, and without such limits, by the State Government. Every Registrar so appointed may be removed by the Chief Justice or State Government appointing him.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 7 - Appointment of Registrar.",
+        "metaTitle": "Section 7 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 8",
+        "sectionNo": "8",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Marriage register to be open for public inspection.",
+        "description": "8. Marriage register to be open for public inspection.—The register of marriages mentioned in section 6 shall, at all reasonable times, be open for inspection, and certified extracts therefrom shall, on application, be given by the Registrar on payment to him by the applicant of two rupees for each such extract. Every such register shall be evidence of the truth of the statements therein contained.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 8 - Marriage register to be open for public inspection.",
+        "metaTitle": "Section 8 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 9",
+        "sectionNo": "9",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Copy of certificate to sent to Registrar-General of Births, Deaths and Marriages.",
+        "description": "9. Copy of certificate to sent to Registrar-General of Births, Deaths and Marriages.—Every Registrar, except the Registrar appointed by the Chief Justice of the High Court of Judicature at Bombay, shall, at such intervals as the State Government by which he was appointed from time to time directs, send to the Registrar-General of Births, Deaths and Marriages for the territories administered by such State Government a true copy certified by him in such form as such State Government from time to time prescribes of all certificates entered by him in the said register of marriages since the last of such intervals.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 9 - Copy of certificate to sent to Registrar-General of Births, Deaths and Marriages.",
+        "metaTitle": "Section 9 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 10",
+        "sectionNo": "10",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Registration of divorces.",
+        "description": "10. Registration of divorces.—When a Court passes a decree for divorce, nullity or dissolution, the Court shall send a copy of the decree for registration to the Registrar of Marriages within its jurisdiction appointed under section 7; the Registrar shall enter the same in a register to be kept by him for the purpose, and the provisions of Part II applicable to the Registrars and registers of marriages shall be applicable, so far as may be, to the Registrars and registers of divorces and decrees of nullity and dissolution.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 10 - Registration of divorces.",
+        "metaTitle": "Section 10 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 11",
+        "sectionNo": "11",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Penalty for solemnizing marriage contrary to section 4.",
+        "description": "11. Penalty for solemnizing marriage contrary to section 4.—Any priest knowingly and wilfully solemnizing any marriage contrary to and in violation of section 4 shall, on conviction thereof, be punished with simple imprisonment for a term which may extend to six months, or with fine which may extend to two hundred rupees, or with both.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 11 - Penalty for solemnizing marriage contrary to section 4.",
+        "metaTitle": "Section 11 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 12",
+        "sectionNo": "12",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Penalty for priest’s neglect of requirements of section 6.",
+        "description": "12. Penalty for priest’s neglect of requirements of section 6.—Any priest neglecting to comply with any of the requisitions affecting him contained in section 6 shall, on conviction thereof, be punished for every such offence with simple imprisonment for a term which may extend to three months, or with fine which may extend to one hundred rupees, or with both.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 12 - Penalty for priest’s neglect of requirements of section 6.",
+        "metaTitle": "Section 12 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 13",
+        "sectionNo": "13",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Penalty for omitting to subscribe and attest certificate.",
+        "description": "13. Penalty for omitting to subscribe and attest certificate.—Every other person required by section 6 to subscribe or attest the said certificate who shall wilfully omit or neglect so to do, shall, on conviction thereof, be punished for every such offence with a fine not exceeding one hundred rupees.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 13 - Penalty for omitting to subscribe and attest certificate.",
+        "metaTitle": "Section 13 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 14",
+        "sectionNo": "14",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Penalty for making, etc., false certificate.",
+        "description": "14. Penalty for making, etc., false certificate.—Every person making or signing or attesting any such certificate containing a statement which is false, and which he either knows or believes to be false, shall be punished with simple imprisonment for a term which may extend to three months, or with fine which may extend to one hundred rupees, or with both; and if the act amounts to forgery as defined in the Indian Penal Code (45 of 1860), then such person shall also be liable, on conviction thereof, to the penalties provided in section 466 of the said Code.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 14 - Penalty for making, etc., false certificate.",
+        "metaTitle": "Section 14 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 15",
+        "sectionNo": "15",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Penalty for failing to register certificate.",
+        "description": "15. Penalty for failing to register certificate.—Any Registrar failing to enter the said certificate pursuant to section 6 shall be punished with simple imprisonment for a term which may extend to one year, or with fine which may extend to one thousand rupees, or with both.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 15 - Penalty for failing to register certificate.",
+        "metaTitle": "Section 15 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 16",
+        "sectionNo": "16",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Penalty for secreting, destroying or altering register.",
+        "description": "16. Penalty for secreting, destroying or altering register.—Any person secreting, destroying, or dishonestly or fraudulently altering the said register in any part thereof, shall be punished with imprisonment of either description as defined in the Indian Penal Code (45 of 1860) for a term which may extend to two years or if he be a Register, for a term which may extend to five years and shall also be liable to fine which may extend to five hundred rupees.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 16 - Penalty for secreting, destroying or altering register.",
+        "metaTitle": "Section 16 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 17",
+        "sectionNo": "17",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "MARRIAGES BETWEEN PARSIS",
+        "title": "Formal irregularity not to invalidate marriage.",
+        "description": "17. Formal irregularity not to invalidate marriage.—No marriage contracted under this Act shall be deemed to be invalid solely by reason of the fact that it was not certified under section 6, or that the certificate was not sent to the Registrar, or that the certificate was defective, irregular or incorrect.",
+        "metaData": "MARRIAGES BETWEEN PARSIS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 17 - Formal irregularity not to invalidate marriage.",
+        "metaTitle": "Section 17 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+
+    # CHAPTER III: PARSI MATRIMONIAL COURTS
+    {
+        "section": "Section 18",
+        "sectionNo": "18",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Constitution of Special Courts under the Act.",
+        "description": "18. Constitution of Special Courts under the Act.—For the purpose of hearing suits under this Act, a Special Court shall be constituted in each of the Presidency-towns of Calcutta, Madras and Bombay, and in such other places in the territories of the several State Governments as such Governments respectively shall think fit.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 18 - Constitution of Special Courts under the Act.",
+        "metaTitle": "Section 18 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 19",
+        "sectionNo": "19",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Parsi Chief Matrimonial Courts.",
+        "description": "19. Parsi Chief Matrimonial Courts.—The Court so constituted in each of the Presidency-towns shall be entitled the Parsi Chief Matrimonial Court of Calcutta, Madras or Bombay, as the case may be. The local limits of the jurisdiction of a Parsi Chief Matrimonial Court shall be coterminous with the local limits of the ordinary original civil jurisdiction of the High Court. The Chief Justice of the High Court, or such other Judge of the same Court as the Chief Justice shall from time to time appoint shall be the Judge of such Matrimonial Court, and, in the trial of cases under this Act, he shall be aided [by five delegates, except in regard to—\n(a) interlocutory applications and proceedings;\n(b) alimony and maintenance, both permanent as well as pendente lite;\n(c) custody, maintenance and education of children; and\n(d) all matters and proceedings other than the regular hearing of cases.]",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 19 - Parsi Chief Matrimonial Courts.",
+        "metaTitle": "Section 19 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 20",
+        "sectionNo": "20",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Parsi District Matrimonial Courts.",
+        "description": "20. Parsi District Matrimonial Courts.—Every Court so constituted at a place other than a Presidency-town shall be entitled the Parsi District Matrimonial Court of such place. Subject to the provisions contained in section 21, the local limits of the jurisdiction of such Court shall be coterminous with the limits of the district in which it is held. The Judge of the principal Court of original civil jurisdiction at such place shall be the Judge of such Matrimonial Court, and in the trial of cases under this Act he shall be aided [by five delegates, except in regard to—\n(a) interlocutory applications and proceedings;\n(b) alimony and maintenance, both permanent as well as pendente lite;\n(c) custody, maintenance and education of children; and\n(d) all matters and proceedings other than the regular hearing of cases.]",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 20 - Parsi District Matrimonial Courts.",
+        "metaTitle": "Section 20 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 21",
+        "sectionNo": "21",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Power to alter territorial jurisdiction of District Courts.",
+        "description": "21. Power to alter territorial jurisdiction of District Courts.—The State Government may from time to time alter the local limits of the jurisdiction of any Parsi District Matrimonial Court, and may include within such limits any number of districts under its government.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 21 - Power to alter territorial jurisdiction of District Courts.",
+        "metaTitle": "Section 21 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 22",
+        "sectionNo": "22",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Certain districts to be within jurisdiction of the Chief Matrimonial Court.",
+        "description": "22. Certain districts to be within jurisdiction of the Chief Matrimonial Court.—Any district which the State Government, on account of the fewness of its Parsi inhabitants, shall deem it inexpedient to include within the jurisdiction of any District Matrimonial Court, shall be included within the jurisdiction of the Parsi Chief Matrimonial Court for the territories under such State Government where there is such a Court.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 22 - Certain districts to be within jurisdiction of the Chief Matrimonial Court.",
+        "metaTitle": "Section 22 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 23",
+        "sectionNo": "23",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Court seal.",
+        "description": "23. Court seal.—A seal shall be made for every Court constituted under this Act, and all decrees and orders and copies of decrees and orders of such Court shall be sealed with such seal, which shall be kept in the custody of the presiding Judge.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 23 - Court seal.",
+        "metaTitle": "Section 23 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 24",
+        "sectionNo": "24",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Appointment of delegates.",
+        "description": "24. Appointment of delegates.—(1) The State Governments, shall, in the Presidency-towns and districts subject to their respective governments, respectively appoint persons to be delegates to aid in the adjudication of cases arising under this Act, after giving the local parsis an opportunity of expressing their opinion in such manner as the respective Governments may think fit.\n(2) The persons so appointed shall be Parsis, their names shall be published in the Official Gazette and their number shall, within the local limits of the ordinary original civil jurisdiction of a High Court, be not more than thirty, and in districts beyond such limits, not more than twenty.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 24 - Appointment of delegates.",
+        "metaTitle": "Section 24 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 25",
+        "sectionNo": "25",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Power to appoint new delegates.",
+        "description": "25. Power to appoint new delegates.—The appointment of a delegate shall be for ten years; but he shall be eligible for reappointment for the like term or terms. Whenever a delegate shall die, or have completed his term of office, or be desirous of relinquishing his office, or refuse or become incapable or unfit to act, or cease to be a Parsi, or be convicted of an offence under the Indian Penal Code (45 of 1860) or other law for the time being in force [involving moral turpitude], or be adjudged insolvent, then and so often the State Government may appoint any person being a Parsi, to be a delegate in his stead, and the name of the person so appointed shall be published in the Official Gazette.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 25 - Power to appoint new delegates.",
+        "metaTitle": "Section 25 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 26",
+        "sectionNo": "26",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Delegates to be deemed public servants.",
+        "description": "26. Delegates to be deemed public servants.—All delegates appointed under this Act shall be considered to be public servants within the meaning of the Indian Penal Code (45 of 1860).",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 26 - Delegates to be deemed public servants.",
+        "metaTitle": "Section 26 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 27",
+        "sectionNo": "27",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Selection of delegates under sections 19 and 20 to be from those appointed under section 24.",
+        "description": "27. Selection of delegates under sections 19 and 20 to be from those appointed under section 24.—The delegates selected under sections 19 and 20 to aid in the adjudication of suits under this Act, shall be taken under the orders of the presiding Judge of the Court in due rotation from the delegates appointed by the State Government under section 24:\nProvided that each party to the suit may, without cause assigned, challenge any [two] of the delegates attending the Court before such delegates are selected and no delegate so challenged shall be selected.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 27 - Selection of delegates under sections 19 and 20 to be from those appointed under section 24.",
+        "metaTitle": "Section 27 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 28",
+        "sectionNo": "28",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Practitioners in Matrimonial Courts.",
+        "description": "28. Practitioners in Matrimonial Courts.—All legal practitioners entitled to practise in a High Court shall be entitled to practise in any Court constituted under this Act, and all legal practitioners entitled to practise in a District Court shall be entitled to practise in any Parsi District Matrimonial Court constituted under this Act.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 28 - Practitioners in Matrimonial Courts.",
+        "metaTitle": "Section 28 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 29",
+        "sectionNo": "29",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "PARSI MATRIMONIAL COURTS",
+        "title": "Court in which suits to be brought.",
+        "description": "29. Court in which suits to be brought.—(1) All suits instituted under this Act shall be brought in the Court within the limits of whose jurisdiction the defendant resides at the time of the institution of the suit [or where the marriage under this Act was solemnized].\n(2) When the defendant shall at such time have left [the territories to which this Act extends] such suit shall be brought in the Court at the place where the plaintiff and defendant last resided together.\n(3) In any case, whether the defendant resides in [the territories to which this Act extends] or not, such suit may be brought in the Court at the place where the plaintiff resides or at the place where the plaintiff and the defendant last resided together, if such Court, after recording its reasons in writing, grants leave so to do.",
+        "metaData": "PARSI MATRIMONIAL COURTS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 29 - Court in which suits to be brought.",
+        "metaTitle": "Section 29 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+
+    # CHAPTER IV: MATRIMONIAL SUITS
+    {
+        "section": "Section 30",
+        "sectionNo": "30",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Suits for nullity.",
+        "description": "30. Suits for nullity.—In any case in which consummation of the marriage is from natural causes impossible, such marriage may, at the instance of either party thereto, be declared to be null and void.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 30 - Suits for nullity.",
+        "metaTitle": "Section 30 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 31",
+        "sectionNo": "31",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Suits for dissolution.",
+        "description": "31. Suits for dissolution.—If a husband or wife shall have been continually absent from his or her wife or husband for the space of seven years, and shall not have been heard of as being alive within that time by those persons who would have naturally heard of him or her, had he or she been alive, the marriage of such husband or wife may, at the instance of either party thereto, be dissolved.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 31 - Suits for dissolution.",
+        "metaTitle": "Section 31 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 32",
+        "sectionNo": "32",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Grounds for divorce.",
+        "description": "32. Grounds for divorce.—Any married person may sue for divorce on any one or more of the following grounds, namely:—\n(a) that the marriage has not been consummated within one year after its solemnization owing to the wilful refusal of the defendant to consummate it;\n(b) that the defendant at the time of the marriage was of unsound mind and has been habitually so up to the date of the suit:\nProvided that divorce shall not be granted on this ground, unless the plaintiff (1) was ignorant of the fact at the time of the marriage, and (2) has filed the suit within three years from the date of the marriage;\n[(bb) that the defendant has been incurably of unsound mind for a period of two years or upwards immediately preceding the filing of the suit or has been suffering continuously or intermittently from mental disorder of such kind and to such an extent that the plaintiff cannot reasonably be expected to live with the defendant.\nExplanation.— In this clause,—\n(a) the expression “mental disorder” means mental illness, arrested or incomplete development of mind, psychopathic disorder or any other disorder or disability of mind and includes schizophrenia;\n(b) the expression “psychopathic disorder” means a persistent disorder or disability of mind (whether or not including subnormality of intelligence) which results in abnormally aggressive or seriously irresponsible conduct on the part of the defendant, and whether or not it requires or is susceptible to medical treatment;]\n(c) that the defendant was at the time of marriage pregnant by some person other than the plaintiff:\nProvided that divorce shall not be granted on this ground, unless (1) the plaintiff was at the time of the marriage ignorant of the fact alleged, (2) the suit has been filed within two years of the date of marriage, and (3) marital intercourse has not taken place after the plaintiff came to know of the fact;\n(d) that the defendant has since the marriage committed adultery or fornication or bigamy or rape or an unnatural offence:\nProvided that divorce shall not be granted on this ground if the suit has been filed more than two years after the plaintiff came to know of the fact;\n[(dd) that the different has since the solemnization of the marriage treated the plaintiff with cruelty or has behaved in such a way as to render it in the judgment of the Court improper to compel the plaintiff to live with the defendant:\nProvided that in every suit for divorce on this ground it shall be in the discretion of the Court whether it should grant a decree for divorce or for judicial separation only;]\n(e) that the defendant has since the marriage voluntarily caused grievous hurt to the plaintiff or has infected the plaintiff with venereal disease or, where the defendant is the husband, has compelled the wife to submit herself to prostitution:\nProvided that divorce shall not be granted on this ground, if the suit has been filed more than two years (i) after the infliction of the grievous hurt, or (ii) after the plaintiff came to know of the infection, or (iii) after the last act of compulsory prostitution;\n(f) that the defendant is undergoing a sentence of imprisonment for seven years or more for an offence as defined in the Indian Penal Code (45 of 1860):\nProvided that divorce shall not be granted on this ground, unless the defendant has prior to the filing of the suit undergone at least one year’s imprisonment out of the said period;\n(g) that the defendant has deserted the plaintiff for at least [two years];\n(h) that *** an order has been passed against the defendant by a Magistrate awarding separate maintenance to the plaintiff, and the parties have not had marital intercourse for [one year] or more since such decree or order;\n* * * * *\n(j) that the defendant has ceased to be a Parsi [by conversion to another religion]:\nProvided that divorce shall not be granted on this ground if the suit has been filed more than two years after the plaintiff came to know of the fact.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 32 - Grounds for divorce.",
+        "metaTitle": "Section 32 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 32A",
+        "sectionNo": "32A",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Non-resumption of cohabitation or restitution of conjugal rights within one year in pursuance of a decree to be ground for divorce.",
+        "description": "[32A. Non-resumption of cohabitation or restitution of conjugal rights within one year in pursuance of a decree to be ground for divorce.—(1) Either party to a marriage, whether solemnized before or after the commencement of the Parsi Marriage and Divorce (Amendment) Act, 1988 (5 of 1988), may sue for divorce also on the ground,—\n(i) that there has been no resumption of cohabitation as between the parties to the marriage for a period of one year or upwards after the passing of a decree for judicial separation in a proceeding to which they were parties; or\n(ii) that there has been no restitution of conjugal rights as between the parties to the marriage for a period of one year or upwards after the passing of a decree for restitution of conjugal rights in a proceeding to which they were parties.\n(2) No decree for divorce shall be granted under sub-section (1) if the plaintiff has failed or neglected to comply with an order for maintenance passed against him under section 40 of this Act or section 488 of the Code of Criminal Procedure, 1898 (5of 1898) or section 125 of the Code of Criminal Procedure, 1973 (2 of 1974).]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 32A - Non-resumption of cohabitation or restitution of conjugal rights within one year in pursuance of a decree to be ground for divorce.",
+        "metaTitle": "Section 32A - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 32B",
+        "sectionNo": "32B",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Divorce by mutual consent.",
+        "description": "32B. Divorce by mutual consent.—(1) Subject to the provisions of this Act, a suit for divorce may be filed by both the parties to a marriage together, whether such marriage was solemnized before or after the commencement of the Parsi Marriage and Divorce (Amendment) Act, 1988 (5 of 1988), on the ground that they have been living separately for a period of one year or more, that they have not been able to live together and that they have mutually agreed that the marriage should be dissolved:\nProvided that no suit under this sub-section shall be filed unless at the date of the filing of the suit one year has lapsed since the date of the marriage.\n(2) The Court shall, on being satisfied, after hearing the parties and after making such inquiry as it thinks fit, that a marriage has been solemnized under this Act and the averments in the plaint are true and that the consent of either party to the suit was not obtained by force or fraud, pass a decree declaring the marriage to be dissolved with effect from the date of the decree.]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 32B - Divorce by mutual consent.",
+        "metaTitle": "Section 32B - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 33",
+        "sectionNo": "33",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Joining of co-defendant.",
+        "description": "33. Joining of co-defendant.—In every such suit for divorce on the ground of adultery, the plaintiff shall, unless the Court shall otherwise order, make the person with whom the adultery is alleged to have been committed a co-defendant, and in any such suit by the husband the Court may order the adulterer to pay the whole or any part of the costs of the proceedings.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 33 - Joining of co-defendant.",
+        "metaTitle": "Section 33 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 34",
+        "sectionNo": "34",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Suits for judicial separation.",
+        "description": "34. Suits for judicial separation.—Any married person may sue for judicial separation on any of the grounds for which such person could have filed a suit for divorce ***.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 34 - Suits for judicial separation.",
+        "metaTitle": "Section 34 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 35",
+        "sectionNo": "35",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Decrees in certain suits.",
+        "description": "35. Decrees in certain suits.—In any suit under section 30, 31, 32, [32A] or 34, whether defended or not, if the Court be satisfied that any of the grounds set forth in those sections for granting relief exist, that none of the grounds therein set forth for withholding relief exist and that—\n(a) the act or omission set forth in the plaint has not been condoned;\n(b) the husband and wife are not colluding together;\n(c) the plaintiff has not connived at or been accessory to the said act or omission;\n(d) (save where a definite period of limitation is provided by this Act) there has been no unnecessary or improper delay in instituting the suit; and\n(e) there is no other legal ground why relief should not be granted;\nthen and in such case, but not otherwise, the Court shall decree such relief accordingly.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 35 - Decrees in certain suits.",
+        "metaTitle": "Section 35 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 36",
+        "sectionNo": "36",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Suit for restitution of conjugal rights.",
+        "description": "36. Suit for restitution of conjugal rights.—Where a husband shall have deserted or without lawful cause ceased to cohabit with his wife, or where a wife shall have deserted or without lawful cause ceased to cohabit with her husband, the party so deserted or with whom cohabitation shall have so ceased may sue for the restitution of his or her conjugal rights and the Court, if satisfied of the truth of the allegations contained in the plaint, and that there is no just ground why relief should not be granted, may proceed to decree such restitution of conjugal rights accordingly.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 36 - Suit for restitution of conjugal rights.",
+        "metaTitle": "Section 36 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 37",
+        "sectionNo": "37",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Counter-claim by defendant for any relief.",
+        "description": "37. Counter-claim by defendant for any relief.—In any suit under this Act, the defendant may make a counter claim for any relief he or she may be entitled to under this Act.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 37 - Counter-claim by defendant for any relief.",
+        "metaTitle": "Section 37 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 38",
+        "sectionNo": "38",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Documentary evidence.",
+        "description": "[38. Documentary evidence.—Notwithstanding anything contained in any other law for the time being in force, no document shall be inadmissible in evidence in any proceeding at the trial of a suit under this Act on the ground that it is not duly stamped or registered.]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 38 - Documentary evidence.",
+        "metaTitle": "Section 38 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 39",
+        "sectionNo": "39",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Alimony pendente lite.",
+        "description": "[39. Alimony pendente lite.—Where in any suit under this Act, it appears to the Court that either the wife or the husband, as the case may be, has no independent income sufficient for her or his support and the necessary expenses of the suit, it may, on the application of the wife or the husband, order the defendant to pay to the plaintiff, the expenses of the suit, and such weekly or monthly sum, during the suit, as, having regard to the plaintiff's own income and the income of the defendant, it may seem to the Court to be reasonable:\n[Provided that the application for the payment of the expenses of the suit and such weekly or monthly sum during the suit, shall, as far as possible, be disposed of within sixty days from the date of service of notice on the wife or the husband, as the case may be.]]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 39 - Alimony pendente lite.",
+        "metaTitle": "Section 39 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 40",
+        "sectionNo": "40",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Permanent alimony and maintenance.",
+        "description": "40. Permanent alimony and maintenance.—(1) Any Court exercising jurisdiction under this Act may, at the time of passing any decree or at any time subsequent thereto, on an application made to it for the purpose by either the wife or the husband, order that the defendant shall pay to the plaintiff for her or his maintenance and support, such gross sum or such monthly or periodical sum, for a term not exceeding the life of the plaintiff as having regard to the defendant's own income and other property, if any, the income and other property of the plaintiff, the conduct of the parties and other circumstances of the case, it may seem to the Court to be just, and any such payment may be secured, if necessary, by a charge on the movable or immovable property of the defendant.\n(2) The Court if it is satisfied that there is change in the circumstances of either party at any time after it has made an order under sub-section (1), it may, at the instance of either party, vary, modify or rescind any such order in such manner as the Court may deem just.\n(3) The Court if it is satisfied that the party in whose favour an order has been made under this section has remarried or, if such party is the wife, that she has not remained chaste, or, if such party is the husband, that he had sexual intercourse with any woman outside wedlock, it may, at the instance of the other party, vary, modify or rescind any such order in such manner as the Court may deem just.]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 40 - Permanent alimony and maintenance.",
+        "metaTitle": "Section 40 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 41",
+        "sectionNo": "41",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Payment of alimony to wife or to her trustee.",
+        "description": "41. Payment of alimony to wife or to her trustee.—In all cases in which the Court shall make any decree or order for alimony it may direct the same to be paid either to the wife herself, or to any trustee on her behalf to be approved by the Court [or to a guardian appointed by the Court], and may impose any terms or restrictions which to the Court may seem expedient, and may from time to time appoint a new trustee, [or guardian,] if for any reason it shall appear to the Court expedient so to do.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 41 - Payment of alimony to wife or to her trustee.",
+        "metaTitle": "Section 41 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 42",
+        "sectionNo": "42",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Disposal of joint property.",
+        "description": "42. Disposal of joint property.—In any suit under this Act the Court may make such provisions in the final decree as it may deem just and proper with respect to property presented at or about the time of marriage which may belong jointly to both the husband and wife.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 42 - Disposal of joint property.",
+        "metaTitle": "Section 42 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 43",
+        "sectionNo": "43",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Suits to be heard in camera and may not be printed or published.",
+        "description": "[43. Suits to be heard in camera and may not be printed or published.—(1) Every suit filed under this Act shall be tried in camera and it shall not be lawful for any person to print or publish any matter in relation to any such case except a judgment of the Court printed or published with the previous permission of the Court.\n(2) If any person prints or publishes any matter in contravention of the provisions contained in sub-section (1), he shall be punishable with fine which may extend to one thousand rupees.]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 43 - Suits to be heard in camera and may not be printed or published.",
+        "metaTitle": "Section 43 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 44",
+        "sectionNo": "44",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Validity of trial.",
+        "description": "44. Validity of trial.—Notwithstanding anything contained in section 19 or section 20 where in the case of a trial in a Parsi Matrimonial Court not less than [three] delegates have attended throughout the proceedings, the trial shall not be invalid by reason of the absence during any part thereof of the other delegates.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 44 - Validity of trial.",
+        "metaTitle": "Section 44 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 45",
+        "sectionNo": "45",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Provisions of Civil Procedure Code to apply to suits under the Act.",
+        "description": "45. Provisions of Civil Procedure Code to apply to suits under the Act.—The provisions of the Code of Civil Procedure, 1908 (5 of 1908), shall, so far as the same may be applicable, apply to proceedings in suits instituted under this Act including proceedings in execution and orders subsequent to decree:\n[Provided that the presiding Judge shall read out to the delegates the relevant sections of this Act, and may, if he considers it necessary so to do, explain the same:\nProvided further that a verbatim record shall be made of what the presiding Judge read out or explains to the delegates.]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 45 - Provisions of Civil Procedure Code to apply to suits under the Act.",
+        "metaTitle": "Section 45 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 46",
+        "sectionNo": "46",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Determination of questions of law and procedure and of fact.",
+        "description": "46. Determination of questions of law and procedure and of fact.—In suits under this Act all questions of law and procedure shall be determined by the presiding Judge; but the decision on the facts shall be the decision of the majority of the delegates before whom the case is tried:\nProvided that, where such delegates are equally divided in opinion, the decision on the facts shall be the decision of the presiding Judge.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 46 - Determination of questions of law and procedure and of fact.",
+        "metaTitle": "Section 46 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 47",
+        "sectionNo": "47",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Appeal to High Court.",
+        "description": "47. Appeal to High Court.—[(1)] An appeal shall lie to the High Court from—\n(a) the decision of any Court established under this Act, whether a Chief Matrimonial Court or District Matrimonial Court, on the ground of the decision being contrary to some law or usage having the force of law, or of a substantial error or defect in the procedure or investigation of the case which may have produced error or defect in the decision of the case upon the merits, and on no other ground; and\n(b) the granting of leave by any such Court under sub-section (3) of section 29:\nProvided that such appeal shall be instituted within three calendar months after the decision appealed from shall have been pronounced.\n[(2) Every appeal under sub-section (1) shall be heard by a Bench of two Judges of the High Court.]",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 47 - Appeal to High Court.",
+        "metaTitle": "Section 47 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 48",
+        "sectionNo": "48",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "MATRIMONIAL SUITS",
+        "title": "Liberty to parties to marry again.",
+        "description": "48. Liberty to parties to marry again.—When the time *** limited for appealing against any decree granting a divorce or annulling or dissolving a marriage shall have expired, and no appeal shall have been presented against such decree, or when any such appeal shall have been dismissed, or when in the result of any appeal a divorce has been granted or a marriage has been declared to be annulled or dissolved, but not sooner, it shall be lawful for the respective parties thereto to marry again ***.",
+        "metaData": "MATRIMONIAL SUITS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 48 - Liberty to parties to marry again.",
+        "metaTitle": "Section 48 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+
+    # CHAPTER V: CHILDREN OF THE PARTIES
+    {
+        "section": "Section 49",
+        "sectionNo": "49",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "CHILDREN OF THE PARTIES",
+        "title": "Custody of children.",
+        "description": "49. Custody of children.—In any suit under this Act, the Court may from time to time pass such interim orders and make such provisions in the final decree as it may deem just and proper with respect to the custody, maintenance and education of the children under the age of [eighteen years], the marriage of of whose parents is the subject of such suit, and may, after the final decree upon application, by petition for this purpose, make, revoke, suspend or vary from time to time all such orders and provisions with respect to the custody, maintenance and education of such children as might have been made by such final decree or by interim orders in case the suit for obtaining such decree were still pending:\n[Provided that the application with respect to the maintenance and education of such children during the suit, shall, as far as possible, be disposed of within sixty days from the date of service of notice on the respondent.]",
+        "metaData": "CHILDREN OF THE PARTIES",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 49 - Custody of children.",
+        "metaTitle": "Section 49 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 50",
+        "sectionNo": "50",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "CHILDREN OF THE PARTIES",
+        "title": "Settlement of wife’s property for benefit of children.",
+        "description": "50. Settlement of wife’s property for benefit of children.—In any case in which the Court shall pronounce a decree of divorce or judicial separation for adultery of the wife, if it shall be made to appear to the Court that the wife is entitled to any property either in possession or reversion, the Court may order such settlement as it shall think reasonable to be made of any part of such property, not exceeding one half thereof, for the benefit of the children of the marriage or any of them.",
+        "metaData": "CHILDREN OF THE PARTIES",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 50 - Settlement of wife’s property for benefit of children.",
+        "metaTitle": "Section 50 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+
+    # CHAPTER VI: MISCELLANEOUS
+    {
+        "section": "Section 51",
+        "sectionNo": "51",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Superintendence of High Court.",
+        "description": "51. Superintendence of High Court.—The High Court shall have superintendence over all Courts constituted under this Act subject to its appellate jurisdiction in the same manner as it has over other Courts under [article 227 of the Constitution] and all the provisions of [that article] shall apply to such Courts.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 51 - Superintendence of High Court.",
+        "metaTitle": "Section 51 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 52",
+        "sectionNo": "52",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Applicability of provisions of the Act.",
+        "description": "52. Applicability of provisions of the Act.—(1) The provisions of this Act shall apply to all suits to which the same are applicable whether the circumstances relied on occurred before or after the passing of this Act, and whether any decree or order referred to was passed under this Act or under the law in force before the passing of this Act, and where any proceedings are pending in any Court at the time of the commencement of this Act, the Court shall allow such amendment of the pleadings as may be necessary as the result of the coming into operation of this Act.\n(2) A Parsi who has contracted a marriage under the Parsi Marriage and Divorce Act, 1865 (15 of 1865), or under this Act, even though such Parsi may change his or her religion or domicile, so long as his or her wife or husband is alive and so long as such Parsi has not been lawfully divorced from such wife or husband or such marriage has not lawfully been declared null and void or dissolved under the decree of a competent Court under either of the said Acts, shall remain bound by the provisions of this Act.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 52 - Applicability of provisions of the Act.",
+        "metaTitle": "Section 52 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    },
+    {
+        "section": "Section 53",
+        "sectionNo": "53",
+        "chapterNo": 6,
+        "chapterRoman": "VI",
+        "chapterName": "MISCELLANEOUS",
+        "title": "[Repealed.]",
+        "description": """53. [Repealed].—Rep. by the Repealing and Amending Act, 1937 (20 of 1937), s. 3 and the Second Schedule.
+
+SCHEDULE I
+(See section 3)
+Table of prohibited degrees of consanguinity and affinity
+A man shall not marry his—
+1. Paternal grand-father’s mother.
+2. Paternal grand-mother’s mother.
+3. Maternal grand-father’s mother.
+4. Maternal grand-mother’s mother.
+5. Paternal grand-mother.
+6. Paternal grand-father’s wife.
+7. Maternal grand-mother.
+8. Maternal grand-father’s wife.
+9. Mother or step-mother.
+10. Father's sister or step-sister.
+11. Mother’s sister or step-sister.
+12. Sister or step-sister.
+13. Brother’s daughter or step-brother’s daughter, or any direct lineal descendant of a brother or step-brother.
+14. Sister’s daughter or step-sister’s daughter, or any direct lineal descendant of a sister or step-sister.
+15. Daughter or step-daughter, or any direct lineal descendant of either.
+16. Son's daughter or step-son’s daughter, or any direct lineal descendant of a son or step-son.
+17. Wife of son or step-son, or of any direct lineal descendant of a son or step-son.
+18. Wife of daughter’s son or of step-daughter’s son, or of any direct lineal descendant of a daughter or step-daughter.
+19. Mother of daughter’s husband.
+20. Mother of son’s wife.
+21. Mother of wife’s paternal grand-father.
+22. Mother of wife’s paternal grand-mother.
+23. Mother of wife’s maternal grand-father.
+24. Mother of wife’s maternal grand-mother.
+25. Wife’s paternal grand-mother.
+26. Wife’s maternal grand-mother.
+27. Wife’s mother or step-mother.
+28. Wife’s father’s sister.
+29. Wife’s mother’s sister.
+30. Father’s brother’s wife.
+31. Mother’s brothers wife
+32. Brother’s son’s wife.
+33. Sister’s son’s wife.
+A woman shall not marry her—
+1. Paternal grand-father's father.
+2. Paternal grand-mother’s father.
+3. Maternal grand-father’s father.
+4. Maternal grand-mother’s father.
+5. Paternal grand-father.
+6. Paternal grand-mother’s husband.
+7. Maternal grand-father.
+8. Maternal grand-mother’s husband.
+9. Father or step-father.
+10. Father’s brother or step-brother.
+11. Mother’s brother or step-brother.
+12. Brother or step-brother.
+13. Brother’s son or step-brother’s son, or any direct lineal descendant of a brother or step-brother.
+14. Sister’s son or step-sister’s son, or any direct lineal descendant of a sister or step-sister.
+15. Son or step-son, or any direct lineal descendant of either.
+16. Daughter’s son or step-daughter’s son, or any direct lineal descendant of a daughter or step-daughter.
+17. Husband of daughter or of step-daughter, or of any direct lineal descendant of a daughter or step-daughter.
+18. Husband of son’s daughter or of step-son’s daughter, or of any direct lineal descendant of a son or step-son.
+19. Father of daughter’s husband.
+20. Father of son’s wife.
+21. Father of husband’s paternal grand-father.
+22. Father of husband’s paternal grand-mother.
+23. Father of husband’s maternal grand-father.
+24. Father of husband’s maternal grand-mother.
+25. Husband’s paternal grand-father.
+26. Husband’s maternal grand-father.
+27. Husband’s father or step-father
+20. Brother of husband’s father.
+29. Brother of husband’s mother.
+30. Husband’s brothers’ son, or his direct lineal descendant.
+31. Husband’s sister’s son, or his direct lineal descendant.
+32. Brother’s daughter’s husband.
+33. Sister’s daughter’s husband.
+______________________________________________________________________________
+NOTE.—In the above table the words “brother” and “sister” denote and sister of the whole as well as half blood. Relationship by step means relationship by marriages.
+
+SCHEDULE II
+(See section 6)
+Certificate of Marriage
+Date and place of marriage.
+Names of the husband and wife.
+Condition at the time of marriage.
+Rank or profession.
+Age.
+Residence.
+Names of the fathers or guardians.
+Rank or profession.
+Signature of the officiating priest.
+Signatures of the contracting parties.
+Signatures of the fathers or guardians of the contracting parties under 21 years of age.
+Signatures of Witnesses.""",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Section 53 - [Repealed.]",
+        "metaTitle": "Section 53 - THE PARSI MARRIAGE AND DIVORCE ACT, 1936"
+    }
+]
+
+print(f"Total sections generated: {len(sections)}")
+
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+json_path = os.path.join(base_dir, "prisma", "parsiMarriageDivorceBearerActData.json")
+js_path = os.path.join(base_dir, "prisma", "parsiMarriageDivorceBearerActData.js")
+
+with open(json_path, "w", encoding="utf-8") as f:
+    json.dump(sections, f, indent=2, ensure_ascii=False)
+print(f"Wrote JSON to {json_path}")
+
+with open(js_path, "w", encoding="utf-8") as f:
+    f.write(f"export const parsiMarriageDivorceBearerActSections = {json.dumps(sections, indent=2, ensure_ascii=False)};\n")
+print(f"Wrote JS to {js_path}")

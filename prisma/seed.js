@@ -39,6 +39,9 @@ import { muslimWomenProtectionBearerActSections } from './muslimWomenProtectionB
 import { muslimWomenMarriageProtectionBearerActSections } from './muslimWomenMarriageProtectionBearerActData.js';
 import { indianChristianMarriageBearerActSections } from './indianChristianMarriageBearerActData.js';
 import { divorceBearerActSections } from './divorceBearerActData.js';
+import { parsiMarriageDivorceBearerActSections } from './parsiMarriageDivorceBearerActData.js';
+import { guardiansWardsBearerActSections } from './guardiansWardsBearerActData.js';
+import { hinduAdoptionsMaintenanceBearerActSections } from './hinduAdoptionsMaintenanceBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -6342,6 +6345,396 @@ async function seedBearerActs() {
     }
 
     console.log(`THE DIVORCE ACT, 1869 Bearer Act Sections seeded: ${createdDivorceSectionCount} created, ${updatedDivorceSectionCount} updated (Total: ${divorceBearerActSections.length}).`);
+  }
+
+  // 46. Seed THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Bearer Act Data
+  console.log('Seeding THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Bearer Act Data...');
+  const personalCategoryForParsiMarriage = await prisma.bearerAct.findUnique({
+    where: { name: 'Personal' }
+  });
+
+  if (!personalCategoryForParsiMarriage) {
+    console.log('Personal category not found for THE PARSI MARRIAGE AND DIVORCE ACT, 1936. Skipping.');
+  } else {
+    const parsiMarriageActHeading = 'THE PARSI MARRIAGE AND DIVORCE ACT, 1936';
+    let parsiMarriageAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalCategoryForParsiMarriage.id,
+        heading: parsiMarriageActHeading
+      }
+    });
+
+    if (!parsiMarriageAct) {
+      parsiMarriageAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalCategoryForParsiMarriage.id,
+          heading: {
+            contains: 'Parsi Marriage',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!parsiMarriageAct) {
+      parsiMarriageAct = await prisma.act.create({
+        data: {
+          bearerActId: personalCategoryForParsiMarriage.id,
+          heading: parsiMarriageActHeading,
+          act: parsiMarriageActHeading,
+          year: 1936
+        }
+      });
+      console.log('Act created: ' + parsiMarriageActHeading);
+    } else {
+      parsiMarriageAct = await prisma.act.update({
+        where: { id: parsiMarriageAct.id },
+        data: {
+          heading: parsiMarriageActHeading,
+          act: parsiMarriageActHeading,
+          year: 1936
+        }
+      });
+      console.log('Act synchronized: ' + parsiMarriageActHeading);
+    }
+
+    const existingParsiMarriageSections = await prisma.actSection.findMany({
+      where: { actId: parsiMarriageAct.id }
+    });
+    const parsiMarriageSectionMap = new Map(existingParsiMarriageSections.map(s => [s.section, s]));
+
+    let createdParsiMarriageSectionCount = 0;
+    let updatedParsiMarriageSectionCount = 0;
+
+    const parsiMarriageToCreate = [];
+    const parsiMarriageToUpdate = [];
+
+    for (const item of parsiMarriageDivorceBearerActSections) {
+      const existing = parsiMarriageSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        parsiMarriageToCreate.push({
+          actId: parsiMarriageAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        parsiMarriageToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (parsiMarriageToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < parsiMarriageToCreate.length; i += insertChunkSize) {
+        const chunk = parsiMarriageToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdParsiMarriageSectionCount = parsiMarriageToCreate.length;
+    }
+
+    if (parsiMarriageToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < parsiMarriageToUpdate.length; i += updateChunkSize) {
+        const chunk = parsiMarriageToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedParsiMarriageSectionCount = parsiMarriageToUpdate.length;
+    }
+
+    console.log(`THE PARSI MARRIAGE AND DIVORCE ACT, 1936 Bearer Act Sections seeded: ${createdParsiMarriageSectionCount} created, ${updatedParsiMarriageSectionCount} updated (Total: ${parsiMarriageDivorceBearerActSections.length}).`);
+  }
+
+  // 48. Seed THE GUARDIANS AND WARDS ACT, 1890
+  const personalCategoryForGuardiansWards = personalCategory || await prisma.bearerAct.findUnique({
+    where: { name: 'Personal' }
+  });
+
+  if (personalCategoryForGuardiansWards) {
+    const guardiansWardsActHeading = 'THE GUARDIANS AND WARDS ACT, 1890';
+    let guardiansWardsAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalCategoryForGuardiansWards.id,
+        heading: guardiansWardsActHeading
+      }
+    });
+
+    if (!guardiansWardsAct) {
+      guardiansWardsAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalCategoryForGuardiansWards.id,
+          heading: {
+            contains: 'Guardians and Wards',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!guardiansWardsAct) {
+      guardiansWardsAct = await prisma.act.create({
+        data: {
+          bearerActId: personalCategoryForGuardiansWards.id,
+          heading: guardiansWardsActHeading,
+          act: guardiansWardsActHeading,
+          year: 1890
+        }
+      });
+      console.log('Act created: ' + guardiansWardsActHeading);
+    } else {
+      guardiansWardsAct = await prisma.act.update({
+        where: { id: guardiansWardsAct.id },
+        data: {
+          heading: guardiansWardsActHeading,
+          act: guardiansWardsActHeading,
+          year: 1890
+        }
+      });
+      console.log('Act synchronized: ' + guardiansWardsActHeading);
+    }
+
+    const existingGuardiansWardsSections = await prisma.actSection.findMany({
+      where: { actId: guardiansWardsAct.id }
+    });
+    const guardiansWardsSectionMap = new Map(existingGuardiansWardsSections.map(s => [s.section, s]));
+
+    let createdGuardiansWardsSectionCount = 0;
+    let updatedGuardiansWardsSectionCount = 0;
+
+    const guardiansWardsToCreate = [];
+    const guardiansWardsToUpdate = [];
+
+    for (const item of guardiansWardsBearerActSections) {
+      const existing = guardiansWardsSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        guardiansWardsToCreate.push({
+          actId: guardiansWardsAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        guardiansWardsToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (guardiansWardsToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < guardiansWardsToCreate.length; i += insertChunkSize) {
+        const chunk = guardiansWardsToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdGuardiansWardsSectionCount = guardiansWardsToCreate.length;
+    }
+
+    if (guardiansWardsToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < guardiansWardsToUpdate.length; i += updateChunkSize) {
+        const chunk = guardiansWardsToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedGuardiansWardsSectionCount = guardiansWardsToUpdate.length;
+    }
+
+    console.log(`THE GUARDIANS AND WARDS ACT, 1890 Bearer Act Sections seeded: ${createdGuardiansWardsSectionCount} created, ${updatedGuardiansWardsSectionCount} updated (Total: ${guardiansWardsBearerActSections.length}).`);
+  }
+
+  // 37. THE HINDU ADOPTIONS AND MAINTENANCE ACT, 1956 Bearer Act Seeding
+  {
+    console.log('Seeding THE HINDU ADOPTIONS AND MAINTENANCE ACT, 1956 Bearer Act...');
+    let personalCategoryForHinduAdoptions = await prisma.bearerAct.findUnique({
+      where: { name: 'Personal' }
+    });
+
+    if (!personalCategoryForHinduAdoptions) {
+      personalCategoryForHinduAdoptions = await prisma.bearerAct.findFirst({
+        where: {
+          name: {
+            contains: 'Personal',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!personalCategoryForHinduAdoptions) {
+      personalCategoryForHinduAdoptions = await prisma.bearerAct.create({
+        data: {
+          name: 'Personal'
+        }
+      });
+      console.log('BearerAct created: Personal');
+    }
+
+    const hinduAdoptionsActHeading = 'THE HINDU ADOPTIONS AND MAINTENANCE ACT, 1956';
+    let hinduAdoptionsAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalCategoryForHinduAdoptions.id,
+        heading: hinduAdoptionsActHeading
+      }
+    });
+
+    if (!hinduAdoptionsAct) {
+      hinduAdoptionsAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalCategoryForHinduAdoptions.id,
+          heading: {
+            contains: 'Hindu Adoptions and Maintenance',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!hinduAdoptionsAct) {
+      hinduAdoptionsAct = await prisma.act.create({
+        data: {
+          bearerActId: personalCategoryForHinduAdoptions.id,
+          heading: hinduAdoptionsActHeading,
+          act: hinduAdoptionsActHeading,
+          year: 1956
+        }
+      });
+      console.log('Act created: ' + hinduAdoptionsActHeading);
+    } else {
+      hinduAdoptionsAct = await prisma.act.update({
+        where: { id: hinduAdoptionsAct.id },
+        data: {
+          heading: hinduAdoptionsActHeading,
+          act: hinduAdoptionsActHeading,
+          year: 1956
+        }
+      });
+      console.log('Act synchronized: ' + hinduAdoptionsActHeading);
+    }
+
+    const existingHinduAdoptionsSections = await prisma.actSection.findMany({
+      where: { actId: hinduAdoptionsAct.id }
+    });
+    const hinduAdoptionsSectionMap = new Map(existingHinduAdoptionsSections.map(s => [s.section, s]));
+
+    let createdHinduAdoptionsSectionCount = 0;
+    let updatedHinduAdoptionsSectionCount = 0;
+
+    const hinduAdoptionsToCreate = [];
+    const hinduAdoptionsToUpdate = [];
+
+    for (const item of hinduAdoptionsMaintenanceBearerActSections) {
+      const existing = hinduAdoptionsSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        hinduAdoptionsToCreate.push({
+          actId: hinduAdoptionsAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        hinduAdoptionsToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (hinduAdoptionsToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < hinduAdoptionsToCreate.length; i += insertChunkSize) {
+        const chunk = hinduAdoptionsToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdHinduAdoptionsSectionCount = hinduAdoptionsToCreate.length;
+    }
+
+    if (hinduAdoptionsToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < hinduAdoptionsToUpdate.length; i += updateChunkSize) {
+        const chunk = hinduAdoptionsToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedHinduAdoptionsSectionCount = hinduAdoptionsToUpdate.length;
+    }
+
+    console.log(`THE HINDU ADOPTIONS AND MAINTENANCE ACT, 1956 Bearer Act Sections seeded: ${createdHinduAdoptionsSectionCount} created, ${updatedHinduAdoptionsSectionCount} updated (Total: ${hinduAdoptionsMaintenanceBearerActSections.length}).`);
   }
 }
 

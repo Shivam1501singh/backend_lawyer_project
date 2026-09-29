@@ -1,9 +1,9 @@
 import prisma from '../src/lib/prisma.js';
-import { dowryBearerActSections } from '../prisma/dowryBearerActData.js';
+import { prohibitionOfChildMarriageBearerActSections } from '../prisma/prohibitionOfChildMarriageBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 async function run() {
-  console.log('--- Starting Dedicated THE DOWRY PROHIBITION ACT, 1961 Seeding ---');
+  console.log('--- Starting Dedicated THE PROHIBITION OF CHILD MARRIAGE ACT, 2006 Seeding ---');
 
   let personalBearerAct = await prisma.bearerAct.findUnique({
     where: { name: 'Personal' }
@@ -30,30 +30,7 @@ async function run() {
     console.log('Found existing Personal BearerAct ID:', personalBearerAct.id);
   }
 
-  const ACT_HEADING = 'THE DOWRY PROHIBITION ACT, 1961';
-
-  // Check if any legacy Dowry Prohibition Act exists under other BearerActs (e.g. Criminal)
-  const legacyActs = await prisma.act.findMany({
-    where: {
-      heading: {
-        contains: 'DOWRY PROHIBITION',
-        mode: 'insensitive'
-      },
-      bearerActId: {
-        not: personalBearerAct.id
-      }
-    }
-  });
-
-  if (legacyActs.length > 0) {
-    console.log(`Found ${legacyActs.length} legacy Dowry Act(s) under other BearerActs. Cleaning up...`);
-    for (const legacyAct of legacyActs) {
-      await prisma.act.delete({
-        where: { id: legacyAct.id }
-      });
-      console.log(`Deleted legacy Act ID ${legacyAct.id} from BearerAct ID ${legacyAct.bearerActId}`);
-    }
-  }
+  const ACT_HEADING = 'THE PROHIBITION OF CHILD MARRIAGE ACT, 2006';
 
   let act = await prisma.act.findFirst({
     where: {
@@ -67,7 +44,7 @@ async function run() {
       where: {
         bearerActId: personalBearerAct.id,
         heading: {
-          contains: 'DOWRY PROHIBITION',
+          contains: 'Child Marriage',
           mode: 'insensitive'
         }
       }
@@ -80,7 +57,7 @@ async function run() {
         bearerActId: personalBearerAct.id,
         heading: ACT_HEADING,
         act: ACT_HEADING,
-        year: 1961
+        year: 2006
       }
     });
     console.log('Created Act:', act.heading, 'ID:', act.id);
@@ -90,7 +67,7 @@ async function run() {
       data: {
         heading: ACT_HEADING,
         act: ACT_HEADING,
-        year: 1961
+        year: 2006
       }
     });
     console.log('Synchronized Act:', act.heading, 'ID:', act.id);
@@ -106,7 +83,7 @@ async function run() {
   const toCreate = [];
   const toUpdate = [];
 
-  for (const item of dowryBearerActSections) {
+  for (const item of prohibitionOfChildMarriageBearerActSections) {
     const existing = sectionMap.get(item.section);
     const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
 
@@ -170,10 +147,10 @@ async function run() {
     updatedCount = toUpdate.length;
   }
 
-  console.log(`Seeding complete for THE DOWRY PROHIBITION ACT, 1961:`);
+  console.log(`Seeding complete for THE PROHIBITION OF CHILD MARRIAGE ACT, 2006:`);
   console.log(`- Sections created: ${createdCount}`);
   console.log(`- Sections updated: ${updatedCount}`);
-  console.log(`- Total sections in definition: ${dowryBearerActSections.length}`);
+  console.log(`- Total sections in definition: ${prohibitionOfChildMarriageBearerActSections.length}`);
 
   const totalInDb = await prisma.actSection.count({
     where: { actId: act.id }

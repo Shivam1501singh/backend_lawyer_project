@@ -1,0 +1,482 @@
+import json
+import os
+
+ACT_NAME = "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+ACT_YEAR = 2005
+
+sections = [
+    # CHAPTER I: PRELIMINARY
+    {
+        "section": "Section 1",
+        "sectionNo": "1",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Short title, extent and commencement.",
+        "description": "1. Short title, extent and commencement.—(1) This Act may be called the Protection of Women from Domestic Violence Act, 2005.\n(2) It extends to the whole of India 1***.\n(3) It shall come into force on such date2 as the Central Government may, by notification in the Official Gazette, appoint.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 1 - Short title, extent and commencement.",
+        "metaTitle": "Section 1 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 2",
+        "sectionNo": "2",
+        "chapterNo": 1,
+        "chapterRoman": "I",
+        "chapterName": "PRELIMINARY",
+        "title": "Definitions.",
+        "description": "2. Definitions.—In this Act, unless the context otherwise requires,—\n(a) “aggrieved person” means any woman who is, or has been, in a domestic relationship with the respondent and who alleges to have been subjected to any act of domestic violence by the respondent;\n(b) “child” means any person below the age of eighteen years and includes any adopted, step or foster child;\n(c) “compensation order” means an order granted in terms of section 22;\n(d) “custody order” means an order granted in terms of section 21;\n(e) “domestic incident report” means a report made in the prescribed form on receipt of a complaint of domestic violence from an aggrieved person;\n(f) “domestic relationship” means a relationship between two persons who live or have, at any point of time, lived together in a shared household, when they are related by consanguinity, marriage, or through a relationship in the nature of marriage, adoption or are family members living together as a joint family;\n(g) “domestic violence” has the same meaning as assigned to it in section 3;\n(h) “dowry” shall have the same meaning as assigned to it in section 2 of the Dowry Prohibition Act, 1961 (28 of 1961);\n(i) “Magistrate” means the Judicial Magistrate of the first class, or as the case may be, the Metropolitan Magistrate, exercising jurisdiction under the Code of Criminal Procedure, 1973 (2 of 1974) in the area where the aggrieved person resides temporarily or otherwise or the respondent resides or the domestic violence is alleged to have taken place;\n(j) “medical facility” means such facility as may be notified by the State Government to be a medical facility for the purposes of this Act;\n(k) “monetary relief” means the compensation which the Magistrate may order the respondent to pay to the aggrieved person, at any stage during the hearing of an application seeking any relief under this Act, to meet the expenses incurred and the losses suffered by the aggrieved person as a result of the domestic violence;\n(l) “notification” means a notification published in the Official Gazette and the expression “notified” shall be construed accordingly;\n(m) “prescribed” means prescribed by rules made under this Act;\n(n) “Protection Officer” means an officer appointed by the State Government under sub-section (1) of section 8;\n(o) “protection order” means an order made in terms of section 18;\n(p) “residence order” means an order granted in terms of sub-section (1) of section 19;\n(q) “respondent” means any adult male person who is, or has been, in a domestic relationship with the aggrieved person and against whom the aggrieved person has sought any relief under this Act:\nProvided that an aggrieved wife or female living in a relationship in the nature of a marriage may also file a complaint against a relative of the husband or the male partner;\n(r) “service provider” means an entity registered under sub-section (1) of section 10;\n(s) “shared household” means a household where the person aggrieved lives or at any stage has lived in a domestic relationship either singly or along with the respondent and includes such a household whether owned or tenanted either jointly by the aggrieved person and the respondent, or owned or tenanted by either of them in respect of which either the aggrieved person or the respondent or both jointly or singly have any right, title, interest or equity and includes such a household which may belong to the joint family of which the respondent is a member, irrespective of whether the respondent or the aggrieved person has any right, title or interest in the shared household;\n(t) “shelter home” means any shelter home as may be notified by the State Government to be a shelter home for the purposes of this Act.",
+        "metaData": "PRELIMINARY",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 2 - Definitions.",
+        "metaTitle": "Section 2 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+
+    # CHAPTER II: DOMESTIC VIOLENCE
+    {
+        "section": "Section 3",
+        "sectionNo": "3",
+        "chapterNo": 2,
+        "chapterRoman": "II",
+        "chapterName": "DOMESTIC VIOLENCE",
+        "title": "Definition of domestic violence.",
+        "description": "3. Definition of domestic violence.—For the purposes of this Act, any act, omission or commission or conduct of the respondent shall constitute domestic violence in case it—\n(a) harms or injures or endangers the health, safety, life, limb or well-being, whether mental or physical, of the aggrieved person or tends to do so and includes causing physical abuse, sexual abuse, verbal and emotional abuse and economic abuse; or\n(b) harasses, harms, injures or endangers the aggrieved person with a view to coerce her or any other person related to her to meet any unlawful demand for any dowry or other property or valuable security; or\n(c) has the effect of threatening the aggrieved person or any person related to her by any conduct mentioned in clause (a) or clause (b); or\n(d) otherwise injures or causes harm, whether physical or mental, to the aggrieved person.\nExplanation I.—For the purposes of this section,—\n(i) “physical abuse” means any act or conduct which is of such a nature as to cause bodily pain, harm, or danger to life, limb, or health or impair the health or development of the aggrieved person and includes assault, criminal intimidation and criminal force;\n(ii) “sexual abuse” includes any conduct of a sexual nature that abuses, humiliates, degrades or otherwise violates the dignity of woman;\n(iii) “verbal and emotional abuse” includes—\n(a) insults, ridicule, humiliation, name calling and insults or ridicule specially with regard to not having a child or a male child; and\n(b) repeated threats to cause physical pain to any person in whom the aggrieved person is interested;\n(iv) “economic abuse” includes—\n(a) deprivation of all or any economic or financial resources to which the aggrieved person is entitled under any law or custom whether payable under an order of a court or otherwise or which the aggrieved person requires out of necessity including, but not limited to, household necessities for the aggrieved person and her children, if any, stridhan, property, jointly or separately owned by the aggrieved person, payment of rental related to the shared house hold and maintenance;\n(b) disposal of household effects, any alienation of assets whether movable or immovable, valuables, shares, securities, bonds and the like or other property in which the aggrieved person has an interest or is entitled to use by virtue of the domestic relationship or which may be reasonably required by the aggrieved person or her children or her stridhan or any other property jointly or separately held by the aggrieved person; and\n(c) prohibition or restriction to continued access to resources or facilities which the aggrieved person is entitled to use or enjoy by virtue of the domestic relationship including access to the shared household.\nExplanation II.—For the purpose of determining whether any act, omission, commission or conduct of the respondent constitutes “domestic violence” under this section, the overall facts and circumstances of the case shall be taken into consideration.",
+        "metaData": "DOMESTIC VIOLENCE",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 3 - Definition of domestic violence.",
+        "metaTitle": "Section 3 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+
+    # CHAPTER III: POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.
+    {
+        "section": "Section 4",
+        "sectionNo": "4",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Information to Protection Officer and exclusion of liability of informant.",
+        "description": "4. Information to Protection Officer and exclusion of liability of informant.—(1) Any person who has reason to believe that an act of domestic violence has been, or is being, or is likely to be committed, may give information about it to the concerned Protection Officer.\n(2) No liability, civil or criminal, shall be incurred by any person for giving in good faith of information for the purpose of sub-section (1).",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 4 - Information to Protection Officer and exclusion of liability of informant.",
+        "metaTitle": "Section 4 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 5",
+        "sectionNo": "5",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Duties of police officers, service providers and Magistrate.",
+        "description": "5. Duties of police officers, service providers and Magistrate.—A police officer, Protection Officer, service provider or Magistrate who has received a complaint of domestic violence or is otherwise present at the place of an incident of domestic violence or when the incident of domestic violence is reported to him, shall inform the aggrieved person—\n(a) of her right to make an application for obtaining a relief by way of a protection order, an order for monetary relief, a custody order, a residence order, a compensation order or more than one such order under this Act;\n(b) of the availability of services of service providers;\n(c) of the availability of services of the Protection Officers;\n(d) of her right to free legal services under the Legal Services Authorities Act, 1987 (39 of 1987);\n(e) of her right to file a complaint under section 498A of the Indian Penal Code (45 of 1860), wherever relevant:\nProvided that nothing in this Act shall be construed in any manner as to relieve a police officer from his duty to proceed in accordance with law upon receipt of information as to the commission of a cognizable offence.",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 5 - Duties of police officers, service providers and Magistrate.",
+        "metaTitle": "Section 5 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 6",
+        "sectionNo": "6",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Duties of shelter homes.",
+        "description": "6. Duties of shelter homes.—If an aggrieved person or on her behalf a Protection Officer or a service provider requests the person in charge of a shelter home to provide shelter to her, such person in charge of the shelter home shall provide shelter to the aggrieved person in the shelter home.",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 6 - Duties of shelter homes.",
+        "metaTitle": "Section 6 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 7",
+        "sectionNo": "7",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Duties of medical facilities.",
+        "description": "7. Duties of medical facilities.—If an aggrieved person or, on her behalf a Protection Officer or a service provider requests the person in charge of a medical facility to provide any medical aid to her, such person in charge of the medical facility shall provide medical aid to the aggrieved person in the medical facility.",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 7 - Duties of medical facilities.",
+        "metaTitle": "Section 7 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 8",
+        "sectionNo": "8",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Appointment of Protection Officers.",
+        "description": "8. Appointment of Protection Officers.—(1) The State Government shall, by notification, appoint such number of Protection Officers in each district as it may consider necessary and shall also notify the area or areas within which a Protection Officer shall exercise the powers and perform the duties conferred on him by or under this Act.\n(2) The Protection Officers shall as far as possible be women and shall possess such qualifications and experience as may be prescribed.\n(3) The terms and conditions of service of the Protection Officer and the other officers subordinate to him shall be such as may be prescribed.",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 8 - Appointment of Protection Officers.",
+        "metaTitle": "Section 8 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 9",
+        "sectionNo": "9",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Duties and functions of Protection Officers.",
+        "description": "9. Duties and functions of Protection Officers.—(1) It shall be the duty of the Protection Officer—\n(a) to assist the Magistrate in the discharge of his functions under this Act;\n(b) to make a domestic incident report to the Magistrate, in such form and in such manner as may be prescribed, upon receipt of a complaint of domestic violence and forward copies thereof to the police officer in charge of the police station within the local limits of whose jurisdiction domestic violence is alleged to have been committed and to the service providers in that area;\n(c) to make an application in such form and in such manner as may be prescribed to the Magistrate, if the aggrieved person so desires, claiming relief for issuance of a protection order;\n(d) to ensure that the aggrieved person is provided legal aid under the Legal Services Authorities Act, 1987 (39 of 1987) and make available free of cost the prescribed form in which a complaint is to be made;\n(e) to maintain a list of all service providers providing legal aid or counselling, shelter homes and medical facilities in a local area within the jurisdiction of the Magistrate;\n(f) to make available a safe shelter home, if the aggrieved person so requires and forward a copy of his report of having lodged the aggrieved person in a shelter home to the police station and the Magistrate having jurisdiction in the area where the shelter home is situated;\n(g) to get the aggrieved person medically examined, if she has sustained bodily injuries and forward a copy of the medical report to the police station and the Magistrate having jurisdiction in the area where the domestic violence is alleged to have been taken place;\n(h) to ensure that the order for monetary relief under section 20 is complied with and executed, in accordance with the procedure prescribed under the Code of Criminal Procedure, 1973 (2 of 1974);\n(i) to perform such other duties as may be prescribed.\n(2) The Protection Officer shall be under the control and supervision of the Magistrate, and shall perform the duties imposed on him by the Magistrate and the Government by, or under, this Act.",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 9 - Duties and functions of Protection Officers.",
+        "metaTitle": "Section 9 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 10",
+        "sectionNo": "10",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Service providers.",
+        "description": "10. Service providers.—(1) Subject to such rules as may be made in this behalf, any voluntary association registered under the Societies Registration Act, 1860 (21 of 1860) or a company registered under the Companies Act, 1956 (1 of 1956) or any other law for the time being in force with the objective of protecting the rights and interests of women by any lawful means including providing of legal aid, medical, financial or other assistance shall register itself with the State Government as a service provider for the purposes of this Act.\n(2) A service provider registered under sub-section (1) shall have the power to—\n(a) record the domestic incident report in the prescribed form if the aggrieved person so desires and forward a copy thereof to the Magistrate and the Protection Officer having jurisdiction in the area where the domestic violence took place;\n(b) get the aggrieved person medically examined and forward a copy of the medical report to the Protection Officer and the police station within the local limits of which the domestic violence took place;\n(c) ensure that the aggrieved person is provided shelter in a shelter home, if she so requires and forward a report of the lodging of the aggrieved person in the shelter home to the police station within the local limits of which the domestic violence took place.\n(3) No suit, prosecution or other legal proceeding shall lie against any service provider or any member of the service provider who is, or who is deemed to be, acting or purporting to act under this Act, for anything which is in good faith done or intended to be done in the exercise of powers or discharge of functions under this Act towards the prevention of the commission of domestic violence.",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 10 - Service providers.",
+        "metaTitle": "Section 10 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 11",
+        "sectionNo": "11",
+        "chapterNo": 3,
+        "chapterRoman": "III",
+        "chapterName": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "title": "Duties of Government.",
+        "description": "11. Duties of Government.—The Central Government and every State Government, shall take all measures to ensure that—\n(a) the provisions of this Act are given wide publicity through public media including the television, radio and the print media at regular intervals;\n(b) the Central Government and State Government officers including the police officers and the members of the judicial services are given periodic sensitization and awareness training on the issues addressed by this Act;\n(c) effective co-ordination between the services provided by concerned Ministries and Departments dealing with law, home affairs including law and order, health and human resources to address issues of domestic violence is established and periodical review of the same is conducted;\n(d) protocols for the various Ministries concerned with the delivery of services to women under this Act including the courts are prepared and put in place.",
+        "metaData": "POWERS AND DUTIES OF PROTECTION OFFICERS, SERVICE PROVIDERS, ETC.",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 11 - Duties of Government.",
+        "metaTitle": "Section 11 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+
+    # CHAPTER IV: PROCEDURE FOR OBTAINING ORDERS OF RELIEFS
+    {
+        "section": "Section 12",
+        "sectionNo": "12",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Application to Magistrate.",
+        "description": "12. Application to Magistrate.—(1) An aggrieved person or a Protection Officer or any other person on behalf of the aggrieved person may present an application to the Magistrate seeking one or more reliefs under this Act:\nProvided that before passing any order on such application, the Magistrate shall take into consideration any domestic incident report received by him from the Protection Officer or the service provider.\n(2) The relief sought for under sub-section (1) may include a relief for issuance of an order for payment of compensation or damages without prejudice to the right of such person to institute a suit for compensation or damages for the injuries caused by the acts of domestic violence committed by the respondent:\nProvided that where a decree for any amount as compensation or damages has been passed by any court in favour of the aggrieved person, the amount, if any, paid or payable in pursuance of the order made by the Magistrate under this Act shall be set off against the amount payable under such decree and the decree shall, notwithstanding anything contained in the Code of Civil Procedure, 1908 (5 of 1908), or any other law for the time being in force, be executable for the balance amount, if any, left after such set off.\n(3) Every application under sub-section (1) shall be in such form and contain such particulars as may be prescribed or as nearly as possible thereto.\n(4) The Magistrate shall fix the first date of hearing, which shall not ordinarily be beyond three days from the date of receipt of the application by the court.\n(5) The Magistrate shall Endeavour to dispose of every application made under sub-section (1) within a period of sixty days from the date of its first hearing.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 12 - Application to Magistrate.",
+        "metaTitle": "Section 12 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 13",
+        "sectionNo": "13",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Service of notice.",
+        "description": "13. Service of notice.—(1) A notice of the date of hearing fixed under section 12 shall be given by the Magistrate to the Protection Officer, who shall get it served by such means as may be prescribed on the respondent, and on any other person, as directed by the Magistrate within a maximum period of two days or such further reasonable time as may be allowed by the Magistrate from the date of its receipt.\n(2) A declaration of service of notice made by the Protection Officer in such form as may be prescribed shall be the proof that such notice was served upon the respondent and on any other person as directed by the Magistrate unless the contrary is proved.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 13 - Service of notice.",
+        "metaTitle": "Section 13 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 14",
+        "sectionNo": "14",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Counselling.",
+        "description": "14. Counselling.—(1) The Magistrate may, at any stage of the proceedings under this Act, direct the respondent or the aggrieved person, either singly or jointly, to undergo counselling with any member of a service provider who possess such qualifications and experience in counselling as may be prescribed.\n(2) Where the Magistrate has issued any direction under sub-section (1), he shall fix the next date of hearing of the case within a period not exceeding two months.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 14 - Counselling.",
+        "metaTitle": "Section 14 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 15",
+        "sectionNo": "15",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Assistance of welfare expert.",
+        "description": "15. Assistance of welfare expert.—In any proceeding under this Act, the Magistrate may secure the services of such person, preferably a woman, whether related to the aggrieved person or not, including a person engaged in promoting family welfare as he thinks fit, for the purpose of assisting him in discharging his functions.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 15 - Assistance of welfare expert.",
+        "metaTitle": "Section 15 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 16",
+        "sectionNo": "16",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Proceedings to be held in camera.",
+        "description": "16. Proceedings to be held in camera.—If the Magistrate considers that the circumstances of the case so warrant, and if either party to the proceedings so desires, he may conduct the proceedings under this Act in camera.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 16 - Proceedings to be held in camera.",
+        "metaTitle": "Section 16 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 17",
+        "sectionNo": "17",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Right to reside in a shared household.",
+        "description": "17. Right to reside in a shared household.—(1) Notwithstanding anything contained in any other law for the time being in force, every woman in a domestic relationship shall have the right to reside in the shared household, whether or not she has any right, title or beneficial interest in the same.\n(2) The aggrieved person shall not be evicted or excluded from the shared household or any part of it by the respondent save in accordance with the procedure established by law.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 17 - Right to reside in a shared household.",
+        "metaTitle": "Section 17 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 18",
+        "sectionNo": "18",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Protection orders.",
+        "description": "18. Protection orders.—The Magistrate may, after giving the aggrieved person and the respondent an opportunity of being heard and on being prima facie satisfied that domestic violence has taken place or is likely to take place, pass a protection order in favour of the aggrieved person and prohibit the respondent from—\n(a) committing any act of domestic violence;\n(b) aiding or abetting in the commission of acts of domestic violence;\n(c) entering the place of employment of the aggrieved person or, if the person aggrieved is a child, its school or any other place frequented by the aggrieved person;\n(d) attempting to communicate in any form, whatsoever, with the aggrieved person, including personal, oral or written or electronic or telephonic contact;\n(e) alienating any assets, operating bank lockers or bank accounts used or held or enjoyed by both the parties, jointly by the aggrieved person and the respondent or singly by the respondent, including her stridhan or any other property held either jointly by the parties or separately by them without the leave of the Magistrate;\n(f) causing violence to the dependants, other relatives or any person who give the aggrieved person assistance from domestic violence;\n(g) committing any other act as specified in the protection order.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 18 - Protection orders.",
+        "metaTitle": "Section 18 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 19",
+        "sectionNo": "19",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Residence orders.",
+        "description": "19. Residence orders.—(1) While disposing of an application under sub-section (1) of section12, the Magistrate may, on being satisfied that domestic violence has taken place, pass a residence order—\n(a) restraining the respondent from dispossessing or in any other manner disturbing the possession of the aggrieved person from the shared household, whether or not the respondent has a legal or equitable interest in the shared household;\n(b) directing the respondent to remove himself from the shared household;\n(c) restraining the respondent or any of his relatives from entering any portion of the shared household in which the aggrieved person resides;\n(d) restraining the respondent from alienating or disposing off the shared household or encumbering the same;\n(e) restraining the respondent from renouncing his rights in the shared household except with the leave of the Magistrate; or\n(f) directing the respondent to secure same level of alternate accommodation for the aggrieved person as enjoyed by her in the shared household or to pay rent for the same, if the circumstances so require:\nProvided that no order under clause (b) shall be passed against any person who is a woman.\n(2) The Magistrate may impose any additional conditions or pass any other direction which he may deem reasonably necessary to protect or to provide for the safety of the aggrieved person or any child of such aggrieved person.\n(3) The Magistrate may require from the respondent to execute a bond, with or without sureties, for preventing the commission of domestic violence.\n(4) An order under sub-section (3) shall be deemed to be an order under Chapter VIII of the Code of Criminal Procedure, 1973 (2 of 1974) and shall be dealt with accordingly.\n(5) While passing an order under sub-section (1), sub-section (2) or sub-section (3), the court may also pass an order directing the officer in charge of the nearest police station to give protection to the aggrieved person or to assist her or the person making an application on her behalf in the implementation of the order.\n(6) While making an order under sub-section (1), the Magistrate may impose on the respondent obligations relating to the discharge of rent and other payments, having regard to the financial needs and resources of the parties.\n(7) The Magistrate may direct the officer in-charge of the police station in whose jurisdiction the Magistrate has been approached to assist in the implementation of the protection order.\n(8) The Magistrate may direct the respondent to return to the possession of the aggrieved person her stridhan or any other property or valuable security to which she is entitled to.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 19 - Residence orders.",
+        "metaTitle": "Section 19 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 20",
+        "sectionNo": "20",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Monetary reliefs.",
+        "description": "20. Monetary reliefs.—(1) While disposing of an application under sub-section (1) of section 12, the Magistrate may direct the respondent to pay monetary relief to meet the expenses incurred and losses suffered by the aggrieved person and any child of the aggrieved person as a result of the domestic violence and such relief may include, but not limited to,—\n(a) the loss of earnings;\n(b) the medical expenses;\n(c) the loss caused due to the destruction, damage or removal of any property from the control of the aggrieved person; and\n(d) the maintenance for the aggrieved person as well as her children, if any, including an order under or in addition to an order of maintenance under section 125 of the Code of Criminal Procedure, 1973 (2 of 1974) or any other law for the time being in force.\n(2) The monetary relief granted under this section shall be adequate, fair and reasonable and consistent with the standard of living to which the aggrieved person is accustomed.\n(3) The Magistrate shall have the power to order an appropriate lump sum payment or monthly payments of maintenance, as the nature and circumstances of the case may require.\n(4) The Magistrate shall send a copy of the order for monetary relief made under sub-section (1) to the parties to the application and to the in charge of the police station within the local limits of whose jurisdiction the respondent resides.\n(5) The respondent shall pay the monetary relief granted to the aggrieved person within the period specified in the order under sub-section (1).\n(6) Upon the failure on the part of the respondent to make payment in terms of the order under sub-section (1), the Magistrate may direct the employer or a debtor of the respondent, to directly pay to the aggrieved person or to deposit with the court a portion of the wages or salaries or debt due to or accrued to the credit of the respondent, which amount may be adjusted towards the monetary relief payable by the respondent.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 20 - Monetary reliefs.",
+        "metaTitle": "Section 20 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 21",
+        "sectionNo": "21",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Custody orders.",
+        "description": "21. Custody orders.—Notwithstanding anything contained in any other law for the time being in force, the Magistrate may, at any stage of hearing of the application for protection order or for any other relief under this Act grant temporary custody of any child or children to the aggrieved person or the person making an application on her behalf and specify, if necessary, the arrangements for visit of such child or children by the respondent:\nProvided that if the Magistrate is of the opinion that any visit of the respondent may be harmful to the interests of the child or children, the Magistrate shall refuse to allow such visit.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 21 - Custody orders.",
+        "metaTitle": "Section 21 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 22",
+        "sectionNo": "22",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Compensation orders.",
+        "description": "22. Compensation orders.—In addition to other reliefs as may be granted under this Act, the Magistrate may on an application being made by the aggrieved person, pass an order directing the respondent to pay compensation and damages for the injuries, including mental torture and emotional distress, caused by the acts of domestic violence committed by that respondent.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 22 - Compensation orders.",
+        "metaTitle": "Section 22 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 23",
+        "sectionNo": "23",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Power to grant interim and ex parte orders.",
+        "description": "23. Power to grant interim and ex parte orders.—(1) In any proceeding before him under this Act, the Magistrate may pass such interim order as he deems just and proper.\n(2) If the Magistrate is satisfied that an application prima facie discloses that the respondent is committing, or has committed an act of domestic violence or that there is a likelihood that the respondent may commit an act of domestic violence, he may grant an ex parte order on the basis of the affidavit in such form, as may be prescribed, of the aggrieved person under section 18, section 19, section 20, section 21 or, as the case may be, section 22 against the respondent.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 23 - Power to grant interim and ex parte orders.",
+        "metaTitle": "Section 23 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 24",
+        "sectionNo": "24",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Court to give copies of order free of cost.",
+        "description": "24. Court to give copies of order free of cost.—The Magistrate shall, in all cases where he has passed any order under this Act, order that a copy of such order, shall be given free of cost, to the parties to the application, the police officer in-charge of the police station in the jurisdiction of which the Magistrate has been approached, and any service provider located within the local limits of the jurisdiction of the court and if any service provider has registered a domestic incident report, to that service provider.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 24 - Court to give copies of order free of cost.",
+        "metaTitle": "Section 24 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 25",
+        "sectionNo": "25",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Duration and alteration of orders.",
+        "description": "25. Duration and alteration of orders.—(1) A protection order made under section 18 shall be in force till the aggrieved person applies for discharge.\n(2) If the Magistrate, on receipt of an application from the aggrieved person or the respondent, is satisfied that there is a change in the circumstances requiring alteration, modification or revocation of any order made under this Act, he may, for reasons to be recorded in writing pass such order, as he may deem appropriate.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 25 - Duration and alteration of orders.",
+        "metaTitle": "Section 25 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 26",
+        "sectionNo": "26",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Relief in other suits and legal proceedings.",
+        "description": "26. Relief in other suits and legal proceedings.—(1) Any relief available under sections 18, 19, 20, 21 and 22 may also be sought in any legal proceeding, before a civil court, family court or a criminal court, affecting the aggrieved person and the respondent whether such proceeding was initiated before or after the commencement of this Act.\n(2) Any relief referred to in sub-section (1) may be sought for in addition to and along with any other relief that the aggrieved person may seek in such suit or legal proceeding before a civil or criminal court.\n(3) In case any relief has been obtained by the aggrieved person in any proceedings other than a proceeding under this Act, she shall be bound to inform the Magistrate of the grant of such relief.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 26 - Relief in other suits and legal proceedings.",
+        "metaTitle": "Section 26 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 27",
+        "sectionNo": "27",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Jurisdiction.",
+        "description": "27. Jurisdiction.—(1) The court of Judicial Magistrate of the first class or the Metropolitan Magistrate, as the case may be, within the local limits of which—\n(a) the person aggrieved permanently or temporarily resides or carries on business or is employed; or\n(b) the respondent resides or carries on business or is employed; or\n(c) the cause of action has arisen,\nshall be the competent court to grant a protection order and other orders under this Act and to try offences under this Act.\n(2) Any order made under this Act shall be enforceable throughout India.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 27 - Jurisdiction.",
+        "metaTitle": "Section 27 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 28",
+        "sectionNo": "28",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Procedure.",
+        "description": "28. Procedure.—(1) Save as otherwise provided in this Act, all proceedings under sections 12,18, 19, 20, 21, 22 and 23 and offences under section 31 shall be governed by the provisions of the Code of Criminal Procedure, 1973 (2 of 1974).\n(2) Nothing in sub-section (1) shall prevent the court from laying down its own procedure for disposal of an application under section 12 or under sub-section (2) of section 23.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 28 - Procedure.",
+        "metaTitle": "Section 28 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 29",
+        "sectionNo": "29",
+        "chapterNo": 4,
+        "chapterRoman": "IV",
+        "chapterName": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "title": "Appeal.",
+        "description": "29. Appeal.—There shall lie an appeal to the Court of Session within thirty days from the date on which the order made by the Magistrate is served on the aggrieved person or the respondent, as the case may be, whichever is later.",
+        "metaData": "PROCEDURE FOR OBTAINING ORDERS OF RELIEFS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 29 - Appeal.",
+        "metaTitle": "Section 29 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+
+    # CHAPTER V: MISCELLANEOUS
+    {
+        "section": "Section 30",
+        "sectionNo": "30",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Protection Officers and members of service providers to be public servants.",
+        "description": "30. Protection Officers and members of service providers to be public servants.—The Protection Officers and members of service providers, while acting or purporting to act in pursuance of any of the provisions of this Act or any rules or orders made thereunder shall be deemed to be public servants within the meaning of section 21 of the Indian Penal Code (45 of 1860).",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 30 - Protection Officers and members of service providers to be public servants.",
+        "metaTitle": "Section 30 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 31",
+        "sectionNo": "31",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Penalty for breach of protection order by respondent.",
+        "description": "31. Penalty for breach of protection order by respondent.—(1) A breach of protection order, or of an interim protection order, by the respondent shall be an offence under this Act and shall be punishable with imprisonment of either description for a term which may extend to one year, or with fine which may extend to twenty thousand rupees, or with both.\n(2) The offence under sub-section (1) shall as far as practicable be tried by the Magistrate who had passed the order, the breach of which has been alleged to have been caused by the accused.\n(3) While framing charges under sub-section (1), the Magistrate may also frame charges under section 498A of the Indian Penal Code (45 of 1860) or any other provision of that Code or the Dowry Prohibition Act, 1961 (28 of 1961), as the case may be, if the facts disclose the commission of an offence under those provisions.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 31 - Penalty for breach of protection order by respondent.",
+        "metaTitle": "Section 31 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 32",
+        "sectionNo": "32",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Cognizance and proof.",
+        "description": "32. Cognizance and proof.—(1) Notwithstanding anything contained in the Code of Criminal Procedure, 1973 (2 of 1974), the offence under sub-section (1) of section 31 shall be cognizable and non-bailable.\n(2) Upon the sole testimony of the aggrieved person, the court may conclude that an offence under sub-section (1) of section 31 has been committed by the accused.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 32 - Cognizance and proof.",
+        "metaTitle": "Section 32 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 33",
+        "sectionNo": "33",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Penalty for not discharging duty by Protection Officer.",
+        "description": "33. Penalty for not discharging duty by Protection Officer.—If any Protection Officer fails or refuses to discharge his duties as directed by the Magistrate in the protection order without any sufficient cause, he shall be punished with imprisonment of either description for a term which may extend to one year, or with fine which may extend to twenty thousand rupees, or with both.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 33 - Penalty for not discharging duty by Protection Officer.",
+        "metaTitle": "Section 33 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 34",
+        "sectionNo": "34",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Cognizance of offence committed by Protection Officer.",
+        "description": "34. Cognizance of offence committed by Protection Officer.—No prosecution or other legal proceeding shall lie against the Protection Officer unless a complaint is filed with the previous sanction of the State Government or an officer authorised by it in this behalf.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 34 - Cognizance of offence committed by Protection Officer.",
+        "metaTitle": "Section 34 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 35",
+        "sectionNo": "35",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Protection of action taken in good faith.",
+        "description": "35. Protection of action taken in good faith.—No suit, prosecution or other legal proceeding shall lie against the Protection Officer for any damage caused or likely to be caused by anything which is in good faith done or intended to be done under this Act or any rule or order made thereunder.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 35 - Protection of action taken in good faith.",
+        "metaTitle": "Section 35 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 36",
+        "sectionNo": "36",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Act not in derogation of any other law.",
+        "description": "36. Act not in derogation of any other law.—The provisions of this Act shall be in addition to, and not in derogation of the provisions of any other law, for the time being in force.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 36 - Act not in derogation of any other law.",
+        "metaTitle": "Section 36 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    },
+    {
+        "section": "Section 37",
+        "sectionNo": "37",
+        "chapterNo": 5,
+        "chapterRoman": "V",
+        "chapterName": "MISCELLANEOUS",
+        "title": "Power of Central Government to make rules.",
+        "description": "37. Power of Central Government to make rules.—(1) The Central Government may, by notification, make rules for carrying out the provisions of this Act.\n(2) In particular, and without prejudice to the generality of the foregoing power, such rules may provide for all or any of the following matters, namely:—\n(a) the qualifications and experience which a Protection Officer shall possess under sub-section (2) of section 8;\n(b) the terms and conditions of service of the Protection Officers and the other officers subordinate to him, under sub-section (3) of section 8;\n(c) the form and manner in which a domestic incident report may be made under clause (b) of sub-section (1) of section 9;\n(d) the form and the manner in which an application for protection order may be made to the Magistrate under clause (c) of sub-section (1) of section 9;\n(e) the form in which a complaint is to be filed under clause (d) of sub-section (1) of section 9;\n(f) the other duties to be performed by the Protection Officer under clause (i) of sub-section (1) of section 9;\n(g) the rules regulating registration of service providers under sub-section (1) of section 10;\n(h) the form in which an application under sub-section (1) of section 12 seeking reliefs under this Act may be made and the particulars which such application shall contain under sub-section (3) of that section;\n(i) the means of serving notices under sub-section (1) of section 13;\n(j) the form of declaration of service of notice to be made by the Protection Officer under sub-section (2) of section 13;\n(k) the qualifications and experience in counselling which a member of the service provider shall possess under sub-section (1) of section 14;\n(l) the form in which an affidavit may be filed by the aggrieved person under sub-section (2) of section 23;\n(m) any other matter which has to be, or may be, prescribed.\n(3) Every rule made under this Act shall be laid, as soon as may be after it is made, before each House of Parliament, while it is in session, for a total period of thirty days which may be comprised in one session or in two or more successive sessions, and if, before the expiry of the session immediately following the session or the successive sessions aforesaid, both Houses agree in making any modification in the rule or both Houses agree that the rule should not be made, the rule shall thereafter have effect only in such modified form or be of no effect, as the case may be; so, however, that any such modification or annulment shall be without prejudice to the validity of anything previously done under that rule.",
+        "metaData": "MISCELLANEOUS",
+        "metaDescription": "THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Section 37 - Power of Central Government to make rules.",
+        "metaTitle": "Section 37 - THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005"
+    }
+]
+
+def main():
+    print(f"Total sections generated: {len(sections)}")
+    
+    # Save JSON file
+    json_path = os.path.join("prisma", "domesticViolenceBearerActData.json")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(sections, f, indent=2, ensure_ascii=False)
+    print(f"Saved JSON data to {json_path}")
+    
+    # Save JS file
+    js_path = os.path.join("prisma", "domesticViolenceBearerActData.js")
+    with open(js_path, "w", encoding="utf-8") as f:
+        f.write("// THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Bearer Act Sections Data\n")
+        f.write("export const domesticViolenceBearerActSections = ")
+        json.dump(sections, f, indent=2, ensure_ascii=False)
+        f.write(";\n")
+    print(f"Saved JS data to {js_path}")
+
+if __name__ == "__main__":
+    main()

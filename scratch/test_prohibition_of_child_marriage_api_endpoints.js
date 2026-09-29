@@ -15,7 +15,7 @@ let server;
 const PORT = 5599;
 const BASE_URL = `http://localhost:${PORT}`;
 
-const ACT_HEADING = 'THE DOWRY PROHIBITION ACT, 1961';
+const ACT_HEADING = 'THE PROHIBITION OF CHILD MARRIAGE ACT, 2006';
 
 async function runApiTests() {
   console.log('Testing Bearer Act API endpoints for', ACT_HEADING, 'at', BASE_URL);
@@ -49,9 +49,9 @@ async function runApiTests() {
     assert(singleCatRes.status === 200, 'GET /api/bearer-acts/:id returns 200');
     const acts = singleCatRes.data.data.acts;
     assert(Array.isArray(acts), 'Category includes acts array');
-    const dowryAct = acts.find(a => a.heading === ACT_HEADING);
-    assert(!!dowryAct, 'Act is listed in Personal category');
-    assert(dowryAct.year === 1961, 'Act year is 1961');
+    const pcmaAct = acts.find(a => a.heading === ACT_HEADING);
+    assert(!!pcmaAct, 'Act is listed in Personal category');
+    assert(pcmaAct.year === 2006, 'Act year is 2006');
 
     // Verify other Personal acts remain intact
     const hmaAct = acts.find(a => a.heading === 'THE HINDU MARRIAGE ACT, 1955');
@@ -59,13 +59,11 @@ async function runApiTests() {
     const smaAct = acts.find(a => a.heading === 'THE SPECIAL MARRIAGE ACT, 1954');
     const hmgaAct = acts.find(a => a.heading === 'THE HINDU MINORITY AND GUARDIANSHIP ACT, 1956');
     const dvAct = acts.find(a => a.heading === 'THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005');
-    const pcmaAct = acts.find(a => a.heading === 'THE PROHIBITION OF CHILD MARRIAGE ACT, 2006');
     assert(!!hmaAct, 'THE HINDU MARRIAGE ACT, 1955 is preserved under Personal');
     assert(!!hsaAct, 'THE HINDU SUCCESSION ACT, 1956 is preserved under Personal');
     assert(!!smaAct, 'THE SPECIAL MARRIAGE ACT, 1954 is preserved under Personal');
     assert(!!hmgaAct, 'THE HINDU MINORITY AND GUARDIANSHIP ACT, 1956 is preserved under Personal');
     assert(!!dvAct, 'THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 is preserved under Personal');
-    assert(!!pcmaAct, 'THE PROHIBITION OF CHILD MARRIAGE ACT, 2006 is preserved under Personal');
 
     // 3. GET /api/bearer-acts/:id/acts
     console.log('\n[3] Testing GET /api/bearer-acts/:id/acts...');
@@ -75,19 +73,19 @@ async function runApiTests() {
 
     // 4. GET /api/acts/:id
     console.log('\n[4] Testing GET /api/acts/:id...');
-    const singleActRes = await axios.get(`${BASE_URL}/api/acts/${dowryAct.id}`);
+    const singleActRes = await axios.get(`${BASE_URL}/api/acts/${pcmaAct.id}`);
     assert(singleActRes.status === 200, 'GET /api/acts/:id returns 200');
     assert(singleActRes.data.data.heading === ACT_HEADING, 'Act details match heading');
-    assert(singleActRes.data.data.year === 1961, 'Act year is 1961');
-    assert(singleActRes.data.data.sections.length === 13, `Act details include all 13 sections (actual: ${singleActRes.data.data.sections.length})`);
+    assert(singleActRes.data.data.year === 2006, 'Act year is 2006');
+    assert(singleActRes.data.data.sections.length === 21, `Act details include all 21 sections (actual: ${singleActRes.data.data.sections.length})`);
 
     // 5. GET /api/acts/:id/sections
     console.log('\n[5] Testing GET /api/acts/:id/sections...');
-    const sectionsRes = await axios.get(`${BASE_URL}/api/acts/${dowryAct.id}/sections?limit=100`);
+    const sectionsRes = await axios.get(`${BASE_URL}/api/acts/${pcmaAct.id}/sections?limit=100`);
     assert(sectionsRes.status === 200, 'GET /api/acts/:id/sections returns 200');
     const sections = sectionsRes.data.data;
-    assert(sections.length === 13, `Returns all 13 sections (actual: ${sections.length})`);
-    assert(sectionsRes.data.pagination.total === 13, 'Pagination total is 13');
+    assert(sections.length === 21, `Returns all 21 sections (actual: ${sections.length})`);
+    assert(sectionsRes.data.pagination.total === 21, 'Pagination total is 21');
 
     // Check ordering
     let sorted = true;
@@ -98,14 +96,11 @@ async function runApiTests() {
         break;
       }
     }
-    assert(sorted, 'Sections from API are sorted strictly by sectionOrder (1, 2, 3, 4, 4A, 5, 6, 7, 8, 8A, 8B, 9, 10)');
+    assert(sorted, 'Sections from API are sorted strictly by sectionOrder (1 through 21)');
 
-    // Verify specific sections
+    // Verify first and last section
     assert(sections[0].section === 'Section 1' && sections[0].title === 'Short title, extent and commencement.', 'Section 1 is first with correct title');
-    assert(sections[4].section === 'Section 4A' && sections[4].title === 'Ban on advertisement.', 'Section 4A is ordered between 4 and 5');
-    assert(sections[9].section === 'Section 8A' && sections[9].title === 'Burden of proof in certain cases.', 'Section 8A is ordered after 8');
-    assert(sections[10].section === 'Section 8B' && sections[10].title === 'Dowry Prohibition Officers.', 'Section 8B is ordered after 8A');
-    assert(sections[12].section === 'Section 10' && sections[12].title === 'Power of the State Government to make rules.', 'Section 10 is last with correct title');
+    assert(sections[20].section === 'Section 21' && sections[20].title === 'Repeal and savings.', 'Section 21 is last with correct title');
 
     // 6. GET /api/sections/:id
     console.log('\n[6] Testing GET /api/sections/:id...');
@@ -114,20 +109,20 @@ async function runApiTests() {
     const singleSecRes = await axios.get(`${BASE_URL}/api/sections/${sec3.id}`);
     assert(singleSecRes.status === 200, 'GET /api/sections/:id returns 200');
     assert(singleSecRes.data.data.section === 'Section 3', 'Section identifier matches Section 3');
-    assert(singleSecRes.data.data.title === 'Penalty for giving or taking dowry.', 'Section 3 title matches PDF');
-    assert(singleSecRes.data.data.description.includes('gives or takes or abets the giving or taking of dowry'), 'Section 3 description contains expected text');
+    assert(singleSecRes.data.data.title === 'Child marriages to be voidable at the option of contracting party being a child.', 'Section 3 title matches PDF');
+    assert(singleSecRes.data.data.description.includes('decree of nullity'), 'Section 3 description contains expected text');
 
-    // 7. GET /api/bearer-acts/search?q=advertisement
-    console.log('\n[7] Testing GET /api/bearer-acts/search?q=advertisement...');
-    const globalSearchRes = await axios.get(`${BASE_URL}/api/bearer-acts/search?q=advertisement`);
+    // 7. GET /api/bearer-acts/search?q=solemnising
+    console.log('\n[7] Testing GET /api/bearer-acts/search?q=solemnising...');
+    const globalSearchRes = await axios.get(`${BASE_URL}/api/bearer-acts/search?q=solemnising`);
     assert(globalSearchRes.status === 200, 'Global search returns 200');
-    assert(globalSearchRes.data.data.some(r => r.act.heading === ACT_HEADING), 'Global search finds THE DOWRY PROHIBITION ACT, 1961');
+    assert(globalSearchRes.data.data.some(r => r.act.heading === ACT_HEADING), 'Global search finds THE PROHIBITION OF CHILD MARRIAGE ACT, 2006');
 
-    // 8. GET /api/acts/:actId/search?q=Prohibition
-    console.log('\n[8] Testing GET /api/acts/:actId/search?q=Prohibition...');
-    const actSearchRes = await axios.get(`${BASE_URL}/api/acts/${dowryAct.id}/search?q=Prohibition`);
+    // 8. GET /api/acts/:actId/search?q=injunction
+    console.log('\n[8] Testing GET /api/acts/:actId/search?q=injunction...');
+    const actSearchRes = await axios.get(`${BASE_URL}/api/acts/${pcmaAct.id}/search?q=injunction`);
     assert(actSearchRes.status === 200, 'Act search returns 200');
-    assert(actSearchRes.data.data.results.some(s => s.section === 'Section 8B'), 'Act search finds Section 8B for query "Prohibition"');
+    assert(actSearchRes.data.data.results.some(s => s.section === 'Section 13'), 'Act search finds Section 13 for query "injunction"');
 
     // 9. Legacy IPC/BNS datasets verification
     console.log('\n[9] Testing legacy datasets preservation...');

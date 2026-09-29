@@ -42,6 +42,7 @@ import { divorceBearerActSections } from './divorceBearerActData.js';
 import { parsiMarriageDivorceBearerActSections } from './parsiMarriageDivorceBearerActData.js';
 import { guardiansWardsBearerActSections } from './guardiansWardsBearerActData.js';
 import { hinduAdoptionsMaintenanceBearerActSections } from './hinduAdoptionsMaintenanceBearerActData.js';
+import { domesticViolenceBearerActSections } from './domesticViolenceBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -3095,118 +3096,6 @@ async function seedBearerActs() {
     }
 
     console.log(`UAPA Bearer Act Sections seeded: ${createdUapaSectionCount} created, ${updatedUapaSectionCount} updated across 4 chapters (Total: ${uapaBearerActSections.length}).`);
-
-    // Seed THE DOWRY PROHIBITION ACT, 1961 under Criminal BearerAct (Idempotent & Transaction-safe)
-    console.log('Seeding THE DOWRY PROHIBITION ACT, 1961 Act and Sections under Criminal...');
-    let dowryAct = await prisma.act.findFirst({
-      where: {
-        bearerActId: criminalBearerAct.id,
-        heading: 'THE DOWRY PROHIBITION ACT, 1961'
-      }
-    });
-
-    if (!dowryAct) {
-      dowryAct = await prisma.act.findFirst({
-        where: {
-          bearerActId: criminalBearerAct.id,
-          heading: {
-            contains: 'DOWRY PROHIBITION',
-            mode: 'insensitive'
-          }
-        }
-      });
-    }
-
-    if (!dowryAct) {
-      dowryAct = await prisma.act.create({
-        data: {
-          bearerActId: criminalBearerAct.id,
-          heading: 'THE DOWRY PROHIBITION ACT, 1961',
-          act: 'THE DOWRY PROHIBITION ACT, 1961',
-          year: 1961
-        }
-      });
-      console.log('Act created: THE DOWRY PROHIBITION ACT, 1961');
-    } else {
-      dowryAct = await prisma.act.update({
-        where: { id: dowryAct.id },
-        data: {
-          heading: 'THE DOWRY PROHIBITION ACT, 1961',
-          act: 'THE DOWRY PROHIBITION ACT, 1961',
-          year: 1961
-        }
-      });
-      console.log('Act synchronized: THE DOWRY PROHIBITION ACT, 1961');
-    }
-
-    const existingDowrySections = await prisma.actSection.findMany({
-      where: { actId: dowryAct.id }
-    });
-    const dowrySectionMap = new Map(existingDowrySections.map(s => [s.section, s]));
-
-    let createdDowrySectionCount = 0;
-    let updatedDowrySectionCount = 0;
-
-    const dowryToCreate = [];
-    const dowryToUpdate = [];
-
-    for (const item of dowryBearerActSections) {
-      const existing = dowrySectionMap.get(item.section);
-      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
-      if (!existing) {
-        dowryToCreate.push({
-          actId: dowryAct.id,
-          section: item.section,
-          sectionOrder: sectionOrder,
-          chapterNo: item.chapterNo,
-          chapterName: item.chapterName,
-          title: item.title,
-          description: item.description,
-          metaData: item.metaData,
-          metaDescription: item.metaDescription,
-          metaTitle: item.metaTitle
-        });
-      } else {
-        dowryToUpdate.push({
-          id: existing.id,
-          data: {
-            sectionOrder: sectionOrder,
-            chapterNo: item.chapterNo,
-            chapterName: item.chapterName,
-            title: item.title,
-            description: item.description,
-            metaData: item.metaData,
-            metaDescription: item.metaDescription,
-            metaTitle: item.metaTitle
-          }
-        });
-      }
-    }
-
-    if (dowryToCreate.length > 0) {
-      await prisma.actSection.createMany({
-        data: dowryToCreate
-      });
-      createdDowrySectionCount = dowryToCreate.length;
-    }
-
-    if (dowryToUpdate.length > 0) {
-      const updateChunkSize = 25;
-      for (let i = 0; i < dowryToUpdate.length; i += updateChunkSize) {
-        const chunk = dowryToUpdate.slice(i, i + updateChunkSize);
-        await Promise.all(
-          chunk.map(u =>
-            prisma.actSection.update({
-              where: { id: u.id },
-              data: u.data
-            })
-          )
-        );
-      }
-      updatedDowrySectionCount = dowryToUpdate.length;
-    }
-
-    console.log(`Dowry Prohibition Bearer Act Sections seeded: ${createdDowrySectionCount} created, ${updatedDowrySectionCount} updated (Total: ${dowryBearerActSections.length}).`);
 
     // Seed THE ARMS ACT, 1959 under Criminal BearerAct (Idempotent & Transaction-safe)
     console.log('Seeding THE ARMS ACT, 1959 Act and Sections under Criminal...');
@@ -6735,6 +6624,235 @@ async function seedBearerActs() {
     }
 
     console.log(`THE HINDU ADOPTIONS AND MAINTENANCE ACT, 1956 Bearer Act Sections seeded: ${createdHinduAdoptionsSectionCount} created, ${updatedHinduAdoptionsSectionCount} updated (Total: ${hinduAdoptionsMaintenanceBearerActSections.length}).`);
+  }
+
+  // 48. Seed THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Bearer Act Sections
+  if (personalBearerAct) {
+    let domesticViolenceAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: 'THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005'
+      }
+    });
+
+    if (!domesticViolenceAct) {
+      domesticViolenceAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'Domestic Violence',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!domesticViolenceAct) {
+      domesticViolenceAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: 'THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005',
+          act: 'THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005',
+          year: 2005
+        }
+      });
+      console.log('Created Act: THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 ID:', domesticViolenceAct.id);
+    } else {
+      domesticViolenceAct = await prisma.act.update({
+        where: { id: domesticViolenceAct.id },
+        data: {
+          heading: 'THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005',
+          act: 'THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005',
+          year: 2005
+        }
+      });
+    }
+
+    const existingDomesticViolenceSections = await prisma.actSection.findMany({
+      where: { actId: domesticViolenceAct.id }
+    });
+    const domesticViolenceSectionMap = new Map(existingDomesticViolenceSections.map(s => [s.section, s]));
+
+    let createdDomesticViolenceSectionCount = 0;
+    let updatedDomesticViolenceSectionCount = 0;
+
+    const domesticViolenceToCreate = [];
+    const domesticViolenceToUpdate = [];
+
+    for (const item of domesticViolenceBearerActSections) {
+      const existing = domesticViolenceSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+
+      if (!existing) {
+        domesticViolenceToCreate.push({
+          actId: domesticViolenceAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        domesticViolenceToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (domesticViolenceToCreate.length > 0) {
+      const insertChunkSize = 50;
+      for (let i = 0; i < domesticViolenceToCreate.length; i += insertChunkSize) {
+        const chunk = domesticViolenceToCreate.slice(i, i + insertChunkSize);
+        await prisma.actSection.createMany({
+          data: chunk
+        });
+      }
+      createdDomesticViolenceSectionCount = domesticViolenceToCreate.length;
+    }
+
+    if (domesticViolenceToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < domesticViolenceToUpdate.length; i += updateChunkSize) {
+        const chunk = domesticViolenceToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedDomesticViolenceSectionCount = domesticViolenceToUpdate.length;
+    }
+
+    console.log(`THE PROTECTION OF WOMEN FROM DOMESTIC VIOLENCE ACT, 2005 Bearer Act Sections seeded: ${createdDomesticViolenceSectionCount} created, ${updatedDomesticViolenceSectionCount} updated (Total: ${domesticViolenceBearerActSections.length}).`);
+
+    // Seed THE DOWRY PROHIBITION ACT, 1961 under Personal BearerAct
+    console.log('Seeding THE DOWRY PROHIBITION ACT, 1961 Act and Sections under Personal...');
+    let dowryAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: personalBearerAct.id,
+        heading: 'THE DOWRY PROHIBITION ACT, 1961'
+      }
+    });
+
+    if (!dowryAct) {
+      dowryAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: personalBearerAct.id,
+          heading: {
+            contains: 'DOWRY PROHIBITION',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!dowryAct) {
+      dowryAct = await prisma.act.create({
+        data: {
+          bearerActId: personalBearerAct.id,
+          heading: 'THE DOWRY PROHIBITION ACT, 1961',
+          act: 'THE DOWRY PROHIBITION ACT, 1961',
+          year: 1961
+        }
+      });
+      console.log('Act created: THE DOWRY PROHIBITION ACT, 1961');
+    } else {
+      dowryAct = await prisma.act.update({
+        where: { id: dowryAct.id },
+        data: {
+          heading: 'THE DOWRY PROHIBITION ACT, 1961',
+          act: 'THE DOWRY PROHIBITION ACT, 1961',
+          year: 1961
+        }
+      });
+      console.log('Act synchronized: THE DOWRY PROHIBITION ACT, 1961');
+    }
+
+    const existingDowrySections = await prisma.actSection.findMany({
+      where: { actId: dowryAct.id }
+    });
+    const dowrySectionMap = new Map(existingDowrySections.map(s => [s.section, s]));
+
+    let createdDowrySectionCount = 0;
+    let updatedDowrySectionCount = 0;
+
+    const dowryToCreate = [];
+    const dowryToUpdate = [];
+
+    for (const item of dowryBearerActSections) {
+      const existing = dowrySectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        dowryToCreate.push({
+          actId: dowryAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        dowryToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (dowryToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: dowryToCreate
+      });
+      createdDowrySectionCount = dowryToCreate.length;
+    }
+
+    if (dowryToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < dowryToUpdate.length; i += updateChunkSize) {
+        const chunk = dowryToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedDowrySectionCount = dowryToUpdate.length;
+    }
+
+    console.log(`Dowry Prohibition Bearer Act Sections seeded: ${createdDowrySectionCount} created, ${updatedDowrySectionCount} updated (Total: ${dowryBearerActSections.length}).`);
   }
 }
 

@@ -45,6 +45,7 @@ import { hinduAdoptionsMaintenanceBearerActSections } from './hinduAdoptionsMain
 import { domesticViolenceBearerActSections } from './domesticViolenceBearerActData.js';
 import { officialLanguagesBearerActSections } from './officialLanguagesBearerActData.js';
 import { rightToInformationBearerActSections } from './rightToInformationBearerActData.js';
+import { immigrationAndForeignersBearerActSections } from './immigrationAndForeignersBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -7083,6 +7084,117 @@ async function seedBearerActs() {
     }
 
     console.log(`Right to Information Bearer Act Sections seeded: ${createdRtiSectionCount} created, ${updatedRtiSectionCount} updated (Total: ${rightToInformationBearerActSections.length}).`);
+
+    // 29. IMMIGRATION AND FOREIGNERS ACT, 2025
+    let immigrationAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: constitutionalBearerAct.id,
+        heading: 'THE IMMIGRATION AND FOREIGNERS ACT, 2025'
+      }
+    });
+
+    if (!immigrationAct) {
+      immigrationAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: {
+            contains: 'IMMIGRATION AND FOREIGNERS',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!immigrationAct) {
+      immigrationAct = await prisma.act.create({
+        data: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: 'THE IMMIGRATION AND FOREIGNERS ACT, 2025',
+          act: 'THE IMMIGRATION AND FOREIGNERS ACT, 2025',
+          year: 2025
+        }
+      });
+      console.log('Act created: THE IMMIGRATION AND FOREIGNERS ACT, 2025');
+    } else {
+      immigrationAct = await prisma.act.update({
+        where: { id: immigrationAct.id },
+        data: {
+          heading: 'THE IMMIGRATION AND FOREIGNERS ACT, 2025',
+          act: 'THE IMMIGRATION AND FOREIGNERS ACT, 2025',
+          year: 2025
+        }
+      });
+      console.log('Act synchronized: THE IMMIGRATION AND FOREIGNERS ACT, 2025');
+    }
+
+    const existingImmigrationSections = await prisma.actSection.findMany({
+      where: { actId: immigrationAct.id }
+    });
+    const immigrationSectionMap = new Map(existingImmigrationSections.map(s => [s.section, s]));
+
+    let createdImmigrationSectionCount = 0;
+    let updatedImmigrationSectionCount = 0;
+
+    const immigrationToCreate = [];
+    const immigrationToUpdate = [];
+
+    for (const item of immigrationAndForeignersBearerActSections) {
+      const existing = immigrationSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        immigrationToCreate.push({
+          actId: immigrationAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        immigrationToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (immigrationToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: immigrationToCreate
+      });
+      createdImmigrationSectionCount = immigrationToCreate.length;
+    }
+
+    if (immigrationToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < immigrationToUpdate.length; i += updateChunkSize) {
+        const chunk = immigrationToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedImmigrationSectionCount = immigrationToUpdate.length;
+    }
+
+    console.log(`Immigration and Foreigners Bearer Act Sections seeded: ${createdImmigrationSectionCount} created, ${updatedImmigrationSectionCount} updated (Total: ${immigrationAndForeignersBearerActSections.length}).`);
   }
 }
 

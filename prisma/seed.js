@@ -43,6 +43,7 @@ import { parsiMarriageDivorceBearerActSections } from './parsiMarriageDivorceBea
 import { guardiansWardsBearerActSections } from './guardiansWardsBearerActData.js';
 import { hinduAdoptionsMaintenanceBearerActSections } from './hinduAdoptionsMaintenanceBearerActData.js';
 import { domesticViolenceBearerActSections } from './domesticViolenceBearerActData.js';
+import { officialLanguagesBearerActSections } from './officialLanguagesBearerActData.js';
 import { calculateSectionOrder } from '../src/utils/sectionOrder.js';
 
 const prisma = new PrismaClient();
@@ -6853,6 +6854,123 @@ async function seedBearerActs() {
     }
 
     console.log(`Dowry Prohibition Bearer Act Sections seeded: ${createdDowrySectionCount} created, ${updatedDowrySectionCount} updated (Total: ${dowryBearerActSections.length}).`);
+  }
+
+  const constitutionalBearerAct = await prisma.bearerAct.findUnique({
+    where: { name: 'Constitutional and Political' }
+  });
+
+  if (constitutionalBearerAct) {
+    console.log('Seeding THE OFFICIAL LANGUAGES ACT, 1963 under Constitutional and Political...');
+    let officialLanguagesAct = await prisma.act.findFirst({
+      where: {
+        bearerActId: constitutionalBearerAct.id,
+        heading: 'THE OFFICIAL LANGUAGES ACT, 1963'
+      }
+    });
+
+    if (!officialLanguagesAct) {
+      officialLanguagesAct = await prisma.act.findFirst({
+        where: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: {
+            contains: 'OFFICIAL LANGUAGES',
+            mode: 'insensitive'
+          }
+        }
+      });
+    }
+
+    if (!officialLanguagesAct) {
+      officialLanguagesAct = await prisma.act.create({
+        data: {
+          bearerActId: constitutionalBearerAct.id,
+          heading: 'THE OFFICIAL LANGUAGES ACT, 1963',
+          act: 'THE OFFICIAL LANGUAGES ACT, 1963',
+          year: 1963
+        }
+      });
+      console.log('Act created: THE OFFICIAL LANGUAGES ACT, 1963');
+    } else {
+      officialLanguagesAct = await prisma.act.update({
+        where: { id: officialLanguagesAct.id },
+        data: {
+          heading: 'THE OFFICIAL LANGUAGES ACT, 1963',
+          act: 'THE OFFICIAL LANGUAGES ACT, 1963',
+          year: 1963
+        }
+      });
+      console.log('Act synchronized: THE OFFICIAL LANGUAGES ACT, 1963');
+    }
+
+    const existingOfficialLanguagesSections = await prisma.actSection.findMany({
+      where: { actId: officialLanguagesAct.id }
+    });
+    const officialLanguagesSectionMap = new Map(existingOfficialLanguagesSections.map(s => [s.section, s]));
+
+    let createdOfficialLanguagesSectionCount = 0;
+    let updatedOfficialLanguagesSectionCount = 0;
+
+    const officialLanguagesToCreate = [];
+    const officialLanguagesToUpdate = [];
+
+    for (const item of officialLanguagesBearerActSections) {
+      const existing = officialLanguagesSectionMap.get(item.section);
+      const sectionOrder = calculateSectionOrder(item.sectionNo || item.section);
+      if (!existing) {
+        officialLanguagesToCreate.push({
+          actId: officialLanguagesAct.id,
+          section: item.section,
+          sectionOrder: sectionOrder,
+          chapterNo: item.chapterNo,
+          chapterName: item.chapterName,
+          title: item.title,
+          description: item.description,
+          metaData: item.metaData,
+          metaDescription: item.metaDescription,
+          metaTitle: item.metaTitle
+        });
+      } else {
+        officialLanguagesToUpdate.push({
+          id: existing.id,
+          data: {
+            sectionOrder: sectionOrder,
+            chapterNo: item.chapterNo,
+            chapterName: item.chapterName,
+            title: item.title,
+            description: item.description,
+            metaData: item.metaData,
+            metaDescription: item.metaDescription,
+            metaTitle: item.metaTitle
+          }
+        });
+      }
+    }
+
+    if (officialLanguagesToCreate.length > 0) {
+      await prisma.actSection.createMany({
+        data: officialLanguagesToCreate
+      });
+      createdOfficialLanguagesSectionCount = officialLanguagesToCreate.length;
+    }
+
+    if (officialLanguagesToUpdate.length > 0) {
+      const updateChunkSize = 25;
+      for (let i = 0; i < officialLanguagesToUpdate.length; i += updateChunkSize) {
+        const chunk = officialLanguagesToUpdate.slice(i, i + updateChunkSize);
+        await Promise.all(
+          chunk.map(u =>
+            prisma.actSection.update({
+              where: { id: u.id },
+              data: u.data
+            })
+          )
+        );
+      }
+      updatedOfficialLanguagesSectionCount = officialLanguagesToUpdate.length;
+    }
+
+    console.log(`Official Languages Bearer Act Sections seeded: ${createdOfficialLanguagesSectionCount} created, ${updatedOfficialLanguagesSectionCount} updated (Total: ${officialLanguagesBearerActSections.length}).`);
   }
 }
 

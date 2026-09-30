@@ -26,6 +26,7 @@ import userRoutes from './routes/user.routes.js';
 import advocateDeletionRoutes from './routes/advocate.deletion.routes.js';
 import advocateStatusRoutes from './routes/advocate.status.routes.js';
 import { userConsultancyRouter, adminConsultancyRouter } from './routes/consultancy.routes.js';
+import { userFeedbackRouter, adminFeedbackRouter } from './routes/feedback.routes.js';
 import { startAccountDeletionJob } from './services/accountDeletionJob.service.js';
 
 
@@ -96,6 +97,9 @@ app.use('/', bearerActRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/user/consultancy', userConsultancyRouter);
 app.use('/api/admin/consultancy', adminConsultancyRouter);
+app.use('/api/user/feedback', userFeedbackRouter);
+app.use('/api/feedback', userFeedbackRouter);
+app.use('/api/admin/feedback', adminFeedbackRouter);
 app.use('/api/advocate', advocateDeletionRoutes);
 app.use('/api/advocate', advocateStatusRoutes);
 

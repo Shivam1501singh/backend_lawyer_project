@@ -120,6 +120,22 @@ model User {
   savedLawyers    SavedLawyer[]
   likedAdvocates  AdvocateLike[]
   consultancyRequests ConsultancyRequest[]
+  feedbacks       Feedback[]
+}
+
+model Feedback {
+  id          String   @id @default(uuid())
+  name        String
+  phone       String
+  description String   @db.Text
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model DeletedUser {

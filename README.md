@@ -7124,3 +7124,323 @@ GET /api/acts/00000000-0000-0000-0000-000000000000/search?q=property
     - Perform both global search `GET /api/bearer-acts/search?q=...` and act-specific search `GET /api/acts/:actId/search?q=...` without any `Authorization` header.
     - Confirm both endpoints execute publicly and return HTTP 200 responses.
 
+---
+
+## 40. Feedback APIs – User & Admin
+
+### Feature Overview
+The Feedback feature allows authenticated users to submit feedback regarding their experience on the VakeelSetu platform. The user's name and phone number are automatically populated from their authenticated profile in the database, requiring the user to supply only the feedback description. 
+
+Platform administrators can review submitted feedbacks in reverse chronological order (latest first) with pagination support and delete individual feedback entries.
+
+---
+
+### Endpoints Matrix
+
+| Role | Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- | :--- |
+| **User** | `POST` | `/api/user/feedback` *(or `/api/feedback`)* | Submit user feedback | `USER` JWT Token |
+| **Admin** | `GET` | `/api/admin/feedback` | Retrieve submitted feedback list (paginated, latest first) | `ADMIN` JWT Token |
+| **Admin** | `DELETE` | `/api/admin/feedback/:id` | Delete feedback entry by ID | `ADMIN` JWT Token |
+
+---
+
+### Request Headers
+
+#### For User Endpoints
+```http
+Content-Type: application/json
+Authorization: Bearer <USER_JWT_TOKEN>
+```
+*(Or send `auth_token` cookie via browser/Axios with credentials enabled)*
+
+#### For Admin Endpoints
+```http
+Content-Type: application/json
+Authorization: Bearer <ADMIN_JWT_TOKEN>
+```
+*(Or send `auth_token` cookie via browser/Axios with credentials enabled)*
+
+---
+
+### 1. User API: Submit Feedback
+
+#### Endpoint
+`POST /api/user/feedback` *(alias: `POST /api/feedback`)*
+
+#### Authentication
+- **Role:** `USER` only
+- **Mechanism:** JWT cookie (`auth_token`) or `Authorization: Bearer <token>` header.
+
+#### Request Body
+```json
+{
+  "description": "The legal consultation service is very smooth and intuitive to use."
+}
+```
+
+#### Validation Rules (Zod)
+- `description`: String, required, trimmed, min 3 characters, max 2000 characters.
+
+#### Successful Response (`201 Created`)
+```json
+{
+  "success": true,
+  "message": "Feedback submitted successfully",
+  "data": {
+    "id": "1c5b1219-0444-4008-9a69-5703bb7ffa65",
+    "name": "Shivam Singh",
+    "phone": "9876543210",
+    "description": "The legal consultation service is very smooth and intuitive to use.",
+    "userId": "84c53adf-49b7-4483-9c79-925270906397",
+    "createdAt": "2026-09-30T06:28:03.705Z",
+    "updatedAt": "2026-09-30T06:28:03.705Z"
+  }
+}
+```
+
+#### Error Responses
+
+- **401 Unauthorized (No token provided):**
+  ```json
+  {
+    "success": false,
+    "message": "Authentication required. Please login."
+  }
+  ```
+
+- **400 Bad Request (Validation failed):**
+  ```json
+  {
+    "success": false,
+    "message": "Description must be at least 3 characters long.",
+    "errors": [
+      {
+        "field": "description",
+        "message": "Description must be at least 3 characters long."
+      }
+    ]
+  }
+  ```
+
+---
+
+### 2. Admin API: View Feedback
+
+#### Endpoint
+`GET /api/admin/feedback`
+
+#### Query Parameters
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `page` | Integer | `1` | Page number (min 1) |
+| `limit` | Integer | `10` | Items per page (min 1, max 100) |
+
+#### Authentication
+- **Role:** `ADMIN` only
+- **Mechanism:** JWT cookie (`auth_token`) or `Authorization: Bearer <token>` header.
+
+#### Successful Response (`200 OK`)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "ff876cd4-c08f-4960-8c92-5715d0a8afba",
+      "name": "Shivam Singh",
+      "phone": "9876543210",
+      "description": "Second feedback submitted on the platform.",
+      "userId": "84c53adf-49b7-4483-9c79-925270906397",
+      "createdAt": "2026-09-30T06:28:04.948Z",
+      "updatedAt": "2026-09-30T06:28:04.948Z"
+    },
+    {
+      "id": "1c5b1219-0444-4008-9a69-5703bb7ffa65",
+      "name": "Shivam Singh",
+      "phone": "9876543210",
+      "description": "The legal consultation service is very smooth and intuitive to use.",
+      "userId": "84c53adf-49b7-4483-9c79-925270906397",
+      "createdAt": "2026-09-30T06:28:03.705Z",
+      "updatedAt": "2026-09-30T06:28:03.705Z"
+    }
+  ],
+  "pagination": {
+    "total": 2,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+```
+
+#### Error Responses
+
+- **401 Unauthorized (No token provided):**
+  ```json
+  {
+    "success": false,
+    "message": "Authentication required. Please login."
+  }
+  ```
+
+- **403 Forbidden (Non-admin user attempt):**
+  ```json
+  {
+    "success": false,
+    "message": "Access forbidden. Insufficient permissions."
+  }
+  ```
+
+---
+
+### 3. Admin API: Delete Feedback
+
+#### Endpoint
+`DELETE /api/admin/feedback/:id`
+
+#### Authentication
+- **Role:** `ADMIN` only
+- **Mechanism:** JWT cookie (`auth_token`) or `Authorization: Bearer <token>` header.
+
+#### Path Parameters
+- `id`: Feedback UUID to delete.
+
+#### Successful Response (`200 OK`)
+```json
+{
+  "success": true,
+  "message": "Feedback deleted successfully",
+  "data": {
+    "id": "1c5b1219-0444-4008-9a69-5703bb7ffa65",
+    "name": "Shivam Singh",
+    "phone": "9876543210",
+    "description": "The legal consultation service is very smooth and intuitive to use.",
+    "userId": "84c53adf-49b7-4483-9c79-925270906397",
+    "createdAt": "2026-09-30T06:28:03.705Z",
+    "updatedAt": "2026-09-30T06:28:03.705Z"
+  }
+}
+```
+
+#### Error Responses
+
+- **404 Not Found (Feedback does not exist):**
+  ```json
+  {
+    "success": false,
+    "message": "Feedback not found."
+  }
+  ```
+
+- **403 Forbidden (Non-admin user attempt):**
+  ```json
+  {
+    "success": false,
+    "message": "Access forbidden. Insufficient permissions."
+  }
+  ```
+
+---
+
+### Step-by-Step Postman Testing Instructions
+
+#### Prerequisites
+1. Ensure the server is running on `http://localhost:5000`.
+2. Prepare a User account and an Admin account.
+
+---
+
+#### Scenario 1: Logged-in User Submits Feedback Successfully
+1. **Authenticate as User:**
+   - Call `POST http://localhost:5000/api/auth/user/login/verify-otp` (or verify phone/email OTP).
+   - Copy the returned `token` (or allow Postman cookies).
+2. **Submit Feedback:**
+   - **Method:** `POST`
+   - **URL:** `http://localhost:5000/api/user/feedback`
+   - **Headers:**
+     - `Authorization: Bearer <USER_TOKEN>`
+     - `Content-Type: application/json`
+   - **Body (raw JSON):**
+     ```json
+     {
+       "description": "The legal service advice received was extremely professional."
+     }
+     ```
+3. **Verify Response:**
+   - Status code is `201 Created`.
+   - `name` and `phone` match the authenticated user's profile.
+   - `userId` matches the logged-in user.
+
+---
+
+#### Scenario 2: Unauthenticated User Cannot Submit Feedback
+1. **Make Request without Token:**
+   - **Method:** `POST`
+   - **URL:** `http://localhost:5000/api/user/feedback`
+   - **Headers:** `Content-Type: application/json` (no `Authorization` header and no cookie)
+   - **Body (raw JSON):**
+     ```json
+     {
+       "description": "Unauthenticated test submission"
+     }
+     ```
+2. **Verify Response:**
+   - Status code is `401 Unauthorized`.
+   - Response message: `"Authentication required. Please login."`.
+
+---
+
+#### Scenario 3: Admin Retrieves All Feedback
+1. **Authenticate as Admin:**
+   - Call `POST http://localhost:5000/api/admin/login` with email and password.
+   - Copy the returned `token`.
+2. **Fetch Feedback List:**
+   - **Method:** `GET`
+   - **URL:** `http://localhost:5000/api/admin/feedback?page=1&limit=10`
+   - **Headers:**
+     - `Authorization: Bearer <ADMIN_TOKEN>`
+3. **Verify Response:**
+   - Status code is `200 OK`.
+   - `data` contains an array of feedbacks ordered newest first (`createdAt: 'desc'`).
+   - `pagination` contains `total`, `page`, `limit`, and `totalPages`.
+
+---
+
+#### Scenario 4: Normal User Cannot Access Admin Feedback APIs
+1. **Attempt Admin List as Normal User:**
+   - **Method:** `GET`
+   - **URL:** `http://localhost:5000/api/admin/feedback`
+   - **Headers:** `Authorization: Bearer <USER_TOKEN>`
+2. **Verify Response:**
+   - Status code is `403 Forbidden`.
+   - Response message: `"Access forbidden. Insufficient permissions."`.
+3. **Attempt Admin Delete as Normal User:**
+   - **Method:** `DELETE`
+   - **URL:** `http://localhost:5000/api/admin/feedback/<FEEDBACK_ID>`
+   - **Headers:** `Authorization: Bearer <USER_TOKEN>`
+4. **Verify Response:**
+   - Status code is `403 Forbidden`.
+
+---
+
+#### Scenario 5: Admin Deletes Feedback Successfully
+1. **Delete Feedback Entry:**
+   - **Method:** `DELETE`
+   - **URL:** `http://localhost:5000/api/admin/feedback/<FEEDBACK_ID>`
+   - **Headers:** `Authorization: Bearer <ADMIN_TOKEN>`
+2. **Verify Response:**
+   - Status code is `200 OK`.
+   - Response message: `"Feedback deleted successfully"`.
+
+---
+
+#### Scenario 6: Deleting a Non-Existent Feedback ID Returns 404
+1. **Delete with Invalid ID:**
+   - **Method:** `DELETE`
+   - **URL:** `http://localhost:5000/api/admin/feedback/00000000-0000-0000-0000-000000000000`
+   - **Headers:** `Authorization: Bearer <ADMIN_TOKEN>`
+2. **Verify Response:**
+   - Status code is `404 Not Found`.
+   - Response message: `"Feedback not found."`.
+
+

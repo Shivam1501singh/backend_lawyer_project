@@ -7,6 +7,7 @@ export const normalizeEntityType = (type) => {
   if (!type || typeof type !== 'string') return '';
   const upper = type.trim().toUpperCase();
   if (upper === 'ACT_SECTION') return 'SECTION';
+  if (upper === 'PDF' || upper === 'ACT_PDF') return 'PDF';
   return upper;
 };
 
@@ -24,16 +25,24 @@ export const normalizeOperation = (operation) => {
 export const contentCreatorWriteSchema = z.object({
   type: z.string({ required_error: 'type is required' })
     .transform((val) => normalizeEntityType(val))
-    .refine((val) => ['BEARER_ACT', 'ACT', 'SECTION'].includes(val), {
-      message: 'Invalid entity type. Allowed types: BEARER_ACT, ACT, SECTION'
+    .refine((val) => ['BEARER_ACT', 'ACT', 'SECTION', 'PDF'].includes(val), {
+      message: 'Invalid entity type. Allowed types: BEARER_ACT, ACT, SECTION, PDF'
     }),
   operation: z.string({ required_error: 'operation is required' })
     .transform((val) => normalizeOperation(val))
-    .refine((val) => ['CREATE', 'UPDATE'].includes(val), {
-      message: 'Invalid operation. Allowed operations: CREATE, UPDATE'
+    .refine((val) => ['CREATE', 'UPDATE', 'DELETE'].includes(val), {
+      message: 'Invalid operation. Allowed operations: CREATE, UPDATE, DELETE'
     }),
   data: z.record(z.any(), { required_error: 'data object is required' })
 });
+
+export const attachPredefinedPdfSchema = z.object({
+  fileName: z.string().trim().optional(),
+  filePath: z.string().trim().optional()
+}).refine((data) => data.fileName || data.filePath, {
+  message: 'Either fileName or filePath must be provided'
+});
+
 
 // Helper for string or json metadata
 const metaDataField = z.union([z.string(), z.record(z.any()), z.array(z.any())])

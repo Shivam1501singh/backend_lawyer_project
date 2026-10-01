@@ -1,6 +1,8 @@
 import prisma from '../lib/prisma.js';
 import * as validator from '../validators/bearerAct.validator.js';
 import { calculateSectionOrder } from '../utils/sectionOrder.js';
+import { attachPredefinedPdfToAct } from '../services/predefinedPdf.service.js';
+
 
 /**
  * Single Content Creator Write Endpoint
@@ -276,6 +278,51 @@ export const contentCreatorWriteHandler = async (req, res, next) => {
       }
     }
 
+    // ==========================================
+    // 4. PDF ATTACHMENT OPERATIONS
+    // ==========================================
+    if (type === 'PDF') {
+      if (operation === 'CREATE') {
+        const validated = validator.attachPredefinedPdfSchema.parse(data);
+        const actId = data.actId;
+        if (!actId) {
+          return res.status(400).json({
+            success: false,
+            message: 'actId is required for PDF attachment'
+          });
+        }
+        const result = await attachPredefinedPdfToAct({
+          actId,
+          fileName: validated.fileName,
+          filePath: validated.filePath
+        });
+        const statusCode = result.isDuplicate ? 200 : 201;
+        return res.status(statusCode).json({
+          success: true,
+          message: result.isDuplicate ? 'PDF already attached to this Act' : 'Predefined PDF attached successfully',
+          isDuplicate: result.isDuplicate,
+          data: result.data
+        });
+      }
+
+      if (operation === 'DELETE') {
+        const pdfId = data.id;
+        if (!pdfId) {
+          return res.status(400).json({
+            success: false,
+            message: 'id is required to delete PDF attachment'
+          });
+        }
+        await prisma.actPdf.delete({
+          where: { id: pdfId }
+        });
+        return res.status(200).json({
+          success: true,
+          message: 'PDF attachment deleted successfully'
+        });
+      }
+    }
+
     return res.status(400).json({
       success: false,
       message: `Unsupported operation ${operation} for entity type ${type}`
@@ -420,6 +467,9 @@ export const getSingleAct = async (req, res, next) => {
             { chapterNo: 'asc' },
             { sectionOrder: 'asc' }
           ]
+        },
+        pdfs: {
+          orderBy: { createdAt: 'desc' }
         }
       }
     });

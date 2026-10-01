@@ -125,9 +125,16 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-  startAccountDeletionJob();
-});
+import { fileURLToPath } from 'url';
+
+const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isMainModule) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    startAccountDeletionJob();
+  });
+}
 
 export default app;
+

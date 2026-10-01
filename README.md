@@ -7443,4 +7443,269 @@ Authorization: Bearer <ADMIN_JWT_TOKEN>
    - Status code is `404 Not Found`.
    - Response message: `"Feedback not found."`.
 
+---
+
+## 41. Bearer Act PDF Management APIs
+
+### Feature Overview
+The Bearer Act PDF Management system allows multiple PDF files (such as bare act texts, amendments, schedules, or reference judgments) to be attached to individual Acts under the Bearer Act hierarchy.
+
+Key capabilities:
+1. **Multi-PDF Association**: Multiple PDFs can be attached to a single Act.
+2. **Local Storage**: PDFs are securely stored in a dedicated local directory (`uploads/acts/` by default or configured via `ACT_PDF_UPLOAD_DIR`). File metadata (filename, relative file path, size, MIME type, timestamps) is persisted in PostgreSQL via Prisma.
+3. **Content Creator Uploads**: Authenticated Content Creators can upload one or multiple PDFs in a single request with validation on MIME type (`application/pdf`), `.pdf` file extension, and file size limits (default 50MB).
+4. **Predefined PDF Support**: Local PDF files placed in `uploads/acts/` can be linked to their corresponding Acts without duplicating attachments.
+5. **Public Access**: Anyone can view inline or download attached PDFs and query Act PDF metadata without authentication.
+
+---
+
+### Endpoints Matrix
+
+| Role | Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- | :--- |
+| **Content Creator** | `POST` | `/api/content-creator/acts/:actId/pdfs` | Upload multiple PDFs against an Act | `CONTENT_CREATOR` JWT / Cookie |
+| **Content Creator** | `POST` | `/api/content-creator/acts/pdfs` | Upload multiple PDFs (actId in body/query) | `CONTENT_CREATOR` JWT / Cookie |
+| **Content Creator** | `POST` | `/api/content-creator/acts/:actId/predefined-pdfs` | Associate predefined local PDF to Act | `CONTENT_CREATOR` JWT / Cookie |
+| **Content Creator** | `POST` | `/api/content-creator/acts/predefined-pdfs/sync` | Auto-sync all predefined PDFs in folder | `CONTENT_CREATOR` JWT / Cookie |
+| **Content Creator** | `DELETE` | `/api/content-creator/acts/pdfs/:id` | Delete a PDF attachment record | `CONTENT_CREATOR` JWT / Cookie |
+| **Public** | `GET` | `/api/acts/:actId/pdfs` | Retrieve all PDFs attached to an Act | None (Public) |
+| **Public** | `GET` | `/api/acts/pdfs/:id` | Retrieve single PDF metadata | None (Public) |
+| **Public** | `GET` | `/api/acts/pdfs/:id/view` | View PDF inline in browser | None (Public) |
+| **Public** | `GET` | `/api/acts/pdfs/:id/download` | Download PDF file attachment | None (Public) |
+
+---
+
+### Postman Upload Instructions (`multipart/form-data`)
+
+To upload PDFs using Postman:
+
+1. **Set Request Method & URL:**
+   - Method: `POST`
+   - URL: `http://localhost:5000/api/content-creator/acts/<ACT_ID>/pdfs` (Replace `<ACT_ID>` with the Act UUID)
+2. **Set Authentication Headers:**
+   - Under the **Headers** tab, add:
+     - Key: `Authorization`
+     - Value: `Bearer <CONTENT_CREATOR_JWT_TOKEN>`
+   - *(Do NOT manually set `Content-Type: multipart/form-data`; Postman will automatically set the header with the correct boundary)*.
+3. **Configure Request Body:**
+   - Under the **Body** tab, select **form-data**.
+   - Set Key: `pdfs` (or `files`)
+   - Change Key type dropdown from **Text** to **File**.
+   - In the Value column, click **Select Files** and choose one or multiple `.pdf` files.
+4. **Send Request:**
+   - Click **Send**.
+   - You will receive a `201 Created` response with the uploaded PDF details and direct URLs for viewing and downloading.
+
+---
+
+### Request & Response Examples
+
+#### 1. Upload Multiple PDFs for an Act
+- **Method:** `POST`
+- **URL:** `/api/content-creator/acts/27b7de9c-d477-4b71-9257-2e1d71057c72/pdfs`
+- **Headers:**
+  - `Authorization: Bearer <CONTENT_CREATOR_TOKEN>`
+- **Body (`form-data`):**
+  - `pdfs`: `The_Code_of_Civil_Procedure_1908.pdf` (File)
+  - `pdfs`: `CPC_Amendments_2002.pdf` (File)
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "message": "2 PDF(s) uploaded successfully",
+  "act": {
+    "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "heading": "THE CODE OF CIVIL PROCEDURE, 1908",
+    "act": "THE CODE OF CIVIL PROCEDURE, 1908",
+    "year": 1908
+  },
+  "data": [
+    {
+      "id": "e4a5d8b3-6c83-4702-8f64-96429f45d1a2",
+      "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "fileName": "The_Code_of_Civil_Procedure_1908.pdf",
+      "filePath": "uploads/acts/The_Code_of_Civil_Procedure_1908-1727764981234-892147123.pdf",
+      "fileSize": 1425890,
+      "mimeType": "application/pdf",
+      "createdAt": "2026-10-01T12:00:00.000Z",
+      "updatedAt": "2026-10-01T12:00:00.000Z",
+      "viewUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/view",
+      "downloadUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/download"
+    },
+    {
+      "id": "f8c2b719-21a4-44ab-9c12-789a45cd981e",
+      "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "fileName": "CPC_Amendments_2002.pdf",
+      "filePath": "uploads/acts/CPC_Amendments_2002-1727764981235-983214561.pdf",
+      "fileSize": 512400,
+      "mimeType": "application/pdf",
+      "createdAt": "2026-10-01T12:00:00.000Z",
+      "updatedAt": "2026-10-01T12:00:00.000Z",
+      "viewUrl": "http://localhost:5000/api/acts/pdfs/f8c2b719-21a4-44ab-9c12-789a45cd981e/view",
+      "downloadUrl": "http://localhost:5000/api/acts/pdfs/f8c2b719-21a4-44ab-9c12-789a45cd981e/download"
+    }
+  ]
+}
+```
+
+---
+
+#### 2. Retrieve All PDFs for an Act
+- **Method:** `GET`
+- **URL:** `/api/acts/27b7de9c-d477-4b71-9257-2e1d71057c72/pdfs`
+- **Headers:** None required
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "act": {
+    "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "heading": "THE CODE OF CIVIL PROCEDURE, 1908",
+    "act": "THE CODE OF CIVIL PROCEDURE, 1908",
+    "year": 1908
+  },
+  "data": [
+    {
+      "id": "e4a5d8b3-6c83-4702-8f64-96429f45d1a2",
+      "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "fileName": "The_Code_of_Civil_Procedure_1908.pdf",
+      "filePath": "uploads/acts/The_Code_of_Civil_Procedure_1908-1727764981234-892147123.pdf",
+      "fileSize": 1425890,
+      "mimeType": "application/pdf",
+      "createdAt": "2026-10-01T12:00:00.000Z",
+      "updatedAt": "2026-10-01T12:00:00.000Z",
+      "viewUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/view",
+      "downloadUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/download"
+    }
+  ],
+  "count": 1
+}
+```
+
+---
+
+#### 3. Retrieve Single PDF Details
+- **Method:** `GET`
+- **URL:** `/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2`
+- **Headers:** None required
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "e4a5d8b3-6c83-4702-8f64-96429f45d1a2",
+    "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "fileName": "The_Code_of_Civil_Procedure_1908.pdf",
+    "filePath": "uploads/acts/The_Code_of_Civil_Procedure_1908-1727764981234-892147123.pdf",
+    "fileSize": 1425890,
+    "mimeType": "application/pdf",
+    "createdAt": "2026-10-01T12:00:00.000Z",
+    "updatedAt": "2026-10-01T12:00:00.000Z",
+    "viewUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/view",
+    "downloadUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/download",
+    "act": {
+      "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "bearerActId": "18f9d638-4f24-4ba2-985e-6351829e0da1",
+      "heading": "THE CODE OF CIVIL PROCEDURE, 1908",
+      "act": "THE CODE OF CIVIL PROCEDURE, 1908",
+      "year": 1908
+    }
+  }
+}
+```
+
+---
+
+#### 4. View PDF (Inline)
+- **Method:** `GET`
+- **URL:** `/api/acts/pdfs/:id/view` (or `/api/pdfs/:id/view`)
+- **Headers:** None required
+- **Response:**
+  - Status: `200 OK`
+  - `Content-Type: application/pdf`
+  - `Content-Disposition: inline; filename="The_Code_of_Civil_Procedure_1908.pdf"`
+  - Body: Binary stream rendered directly inside browser / PDF viewer.
+
+---
+
+#### 5. Download PDF (Attachment)
+- **Method:** `GET`
+- **URL:** `/api/acts/pdfs/:id/download` (or `/api/pdfs/:id/download`)
+- **Headers:** None required
+- **Response:**
+  - Status: `200 OK`
+  - `Content-Type: application/pdf`
+  - `Content-Disposition: attachment; filename="The_Code_of_Civil_Procedure_1908.pdf"`
+  - Body: Binary file download prompted by the browser.
+
+---
+
+#### 6. Attach Predefined Local PDF
+- **Method:** `POST`
+- **URL:** `/api/content-creator/acts/:actId/predefined-pdfs`
+- **Headers:**
+  - `Authorization: Bearer <CONTENT_CREATOR_TOKEN>`
+  - `Content-Type: application/json`
+- **Request Body:**
+```json
+{
+  "fileName": "the_code_of_civil_procedure_1908.pdf"
+}
+```
+**Response (201 Created for new, 200 OK for duplicate):**
+```json
+{
+  "success": true,
+  "message": "Predefined PDF attached successfully",
+  "isDuplicate": false,
+  "data": {
+    "id": "8b17ce21-12ef-45ca-b3a1-9a72d45c1109",
+    "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "fileName": "the_code_of_civil_procedure_1908.pdf",
+    "filePath": "uploads/acts/the_code_of_civil_procedure_1908.pdf",
+    "fileSize": 1425890,
+    "mimeType": "application/pdf",
+    "createdAt": "2026-10-01T12:00:00.000Z",
+    "updatedAt": "2026-10-01T12:00:00.000Z",
+    "viewUrl": "http://localhost:5000/api/acts/pdfs/8b17ce21-12ef-45ca-b3a1-9a72d45c1109/view",
+    "downloadUrl": "http://localhost:5000/api/acts/pdfs/8b17ce21-12ef-45ca-b3a1-9a72d45c1109/download"
+  }
+}
+```
+
+---
+
+#### 7. Delete PDF Attachment
+- **Method:** `DELETE`
+- **URL:** `/api/content-creator/acts/pdfs/:id`
+- **Headers:**
+  - `Authorization: Bearer <CONTENT_CREATOR_TOKEN>`
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "PDF attachment deleted successfully"
+}
+```
+
+---
+
+### Error Handling & Status Codes
+
+| Status Code | Scenario | Example Response |
+| :--- | :--- | :--- |
+| `400 Bad Request` | Upload file format is not `.pdf` | `{"success": false, "message": "Invalid file type. Only PDF files with .pdf extension are allowed."}` |
+| `400 Bad Request` | No files attached in request | `{"success": false, "message": "No PDF files uploaded. Please attach at least one PDF file."}` |
+| `400 Bad Request` | File size exceeds max limit (50MB) | `{"success": false, "message": "File size exceeds the allowed limit of 50MB."}` |
+| `401 Unauthorized` | Missing authentication token | `{"success": false, "message": "Authentication required. Please login."}` |
+| `403 Forbidden` | Non-content-creator role (`USER`/`ADVOCATE`) | `{"success": false, "message": "Access forbidden. Content Creator role required."}` |
+| `404 Not Found` | Act ID does not exist | `{"success": false, "message": "Act not found"}` |
+| `404 Not Found` | PDF attachment ID does not exist | `{"success": false, "message": "PDF attachment not found"}` |
+| `404 Not Found` | PDF physical file missing on disk | `{"success": false, "message": "PDF file not found on disk"}` |
+
+
 

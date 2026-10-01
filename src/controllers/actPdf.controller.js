@@ -12,6 +12,7 @@ export const formatPdfResponse = (pdf, req = null) => {
   return {
     id: pdf.id,
     actId: pdf.actId,
+    displayName: pdf.displayName,
     fileName: pdf.fileName,
     filePath: pdf.filePath,
     fileSize: pdf.fileSize,
@@ -73,18 +74,38 @@ export const uploadActPdfsHandler = async (req, res, next) => {
     if (!uploadedFiles || uploadedFiles.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No PDF files uploaded. Please attach at least one PDF file (field name "pdfs" or "files").'
+        message: 'No PDF files uploaded. Please attach at least one PDF file (field name "pdfs", "pdf", or "files").'
       });
     }
 
+    // Validate displayName
+    const validationResult = validator.uploadActPdfSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      for (const file of uploadedFiles) {
+        if (file.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      }
+      return res.status(400).json({
+        success: false,
+        message: validationResult.error.errors[0]?.message || 'displayName is required',
+        errors: validationResult.error.errors
+      });
+    }
+
+    const { displayName: baseDisplayName } = validationResult.data;
+
     const createdPdfs = [];
 
-    for (const file of uploadedFiles) {
+    for (let i = 0; i < uploadedFiles.length; i++) {
+      const file = uploadedFiles[i];
       const relativePath = path.relative(process.cwd(), file.path);
+      const itemDisplayName = uploadedFiles.length === 1
+        ? baseDisplayName
+        : `${baseDisplayName} (${file.originalname})`;
 
       const created = await prisma.actPdf.create({
         data: {
           actId: act.id,
+          displayName: itemDisplayName,
           fileName: file.originalname,
           filePath: relativePath,
           fileSize: file.size,
@@ -286,6 +307,7 @@ export const attachPredefinedPdfHandler = async (req, res, next) => {
 
     const result = await attachPredefinedPdfToAct({
       actId,
+      displayName: validated.displayName,
       fileName: validated.fileName,
       filePath: validated.filePath
     });

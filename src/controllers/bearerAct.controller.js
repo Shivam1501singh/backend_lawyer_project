@@ -293,6 +293,7 @@ export const contentCreatorWriteHandler = async (req, res, next) => {
         }
         const result = await attachPredefinedPdfToAct({
           actId,
+          displayName: validated.displayName,
           fileName: validated.fileName,
           filePath: validated.filePath
         });

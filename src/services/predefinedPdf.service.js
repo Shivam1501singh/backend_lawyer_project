@@ -41,7 +41,7 @@ export const resolvePdfPath = (storedPath) => {
 /**
  * Associates a single predefined local PDF file with an Act (Idempotent)
  */
-export const attachPredefinedPdfToAct = async ({ actId, fileName, filePath }) => {
+export const attachPredefinedPdfToAct = async ({ actId, displayName, fileName, filePath }) => {
   const act = await prisma.act.findUnique({
     where: { id: actId }
   });
@@ -64,6 +64,7 @@ export const attachPredefinedPdfToAct = async ({ actId, fileName, filePath }) =>
 
   const stats = fs.statSync(resolvedPath);
   const relativePath = path.relative(process.cwd(), resolvedPath);
+  const actualDisplayName = displayName || path.basename(actualFileName, path.extname(actualFileName)).replace(/_/g, ' ');
 
   // Check if attachment already exists (by actId and fileName OR filePath)
   const existing = await prisma.actPdf.findFirst({
@@ -87,6 +88,7 @@ export const attachPredefinedPdfToAct = async ({ actId, fileName, filePath }) =>
   const created = await prisma.actPdf.create({
     data: {
       actId,
+      displayName: actualDisplayName,
       fileName: actualFileName,
       filePath: relativePath,
       fileSize: stats.size,
@@ -192,9 +194,12 @@ export const syncPredefinedActPdfs = async ({ targetActId = null, directory = nu
         continue;
       }
 
+      const defaultDisplayName = path.basename(file, path.extname(file)).replace(/_/g, ' ');
+
       const created = await prisma.actPdf.create({
         data: {
           actId: matchedAct.id,
+          displayName: defaultDisplayName,
           fileName: file,
           filePath: relativePath,
           fileSize: stats.size,
@@ -206,6 +211,7 @@ export const syncPredefinedActPdfs = async ({ targetActId = null, directory = nu
         id: created.id,
         actId: matchedAct.id,
         actHeading: matchedAct.heading,
+        displayName: defaultDisplayName,
         fileName: file,
         filePath: relativePath,
         fileSize: stats.size

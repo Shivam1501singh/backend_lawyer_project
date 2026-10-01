@@ -36,12 +36,20 @@ export const contentCreatorWriteSchema = z.object({
   data: z.record(z.any(), { required_error: 'data object is required' })
 });
 
+export const uploadActPdfSchema = z.object({
+  displayName: z.string({ required_error: 'displayName is required' })
+    .trim()
+    .min(1, 'displayName is required and cannot be empty')
+});
+
 export const attachPredefinedPdfSchema = z.object({
+  displayName: z.string().trim().min(1, 'displayName cannot be empty').optional(),
   fileName: z.string().trim().optional(),
   filePath: z.string().trim().optional()
 }).refine((data) => data.fileName || data.filePath, {
   message: 'Either fileName or filePath must be provided'
 });
+
 
 
 // Helper for string or json metadata

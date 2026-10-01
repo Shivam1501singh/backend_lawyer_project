@@ -669,6 +669,7 @@ model ActSection {
 model ActPdf {
   id          String   @id @default(uuid())
   actId       String
+  displayName String
   fileName    String
   filePath    String
   fileSize    Int?
@@ -679,6 +680,7 @@ model ActPdf {
   act         Act      @relation(fields: [actId], references: [id], onDelete: Cascade)
 
   @@index([actId])
+  @@index([displayName])
   @@index([fileName])
   @@index([createdAt])
 }

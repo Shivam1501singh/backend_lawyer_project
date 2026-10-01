@@ -7451,9 +7451,9 @@ Authorization: Bearer <ADMIN_JWT_TOKEN>
 The Bearer Act PDF Management system allows multiple PDF files (such as bare act texts, amendments, schedules, or reference judgments) to be attached to individual Acts under the Bearer Act hierarchy.
 
 Key capabilities:
-1. **Multi-PDF Association**: Multiple PDFs can be attached to a single Act.
-2. **Local Storage**: PDFs are securely stored in a dedicated local directory (`uploads/acts/` by default or configured via `ACT_PDF_UPLOAD_DIR`). File metadata (filename, relative file path, size, MIME type, timestamps) is persisted in PostgreSQL via Prisma.
-3. **Content Creator Uploads**: Authenticated Content Creators can upload one or multiple PDFs in a single request with validation on MIME type (`application/pdf`), `.pdf` file extension, and file size limits (default 50MB).
+1. **Multi-PDF Association with Display Names**: Multiple PDFs can be attached to a single Act, each assigned a mandatory **`displayName`** (e.g. "Full Bare Act Text (English)", "Amendment Act 2026").
+2. **Local Storage**: PDFs are securely stored in a dedicated local directory (`uploads/acts/` by default or configured via `ACT_PDF_UPLOAD_DIR`). File metadata (filename, display name, relative file path, size, MIME type, timestamps) is persisted in PostgreSQL via Prisma.
+3. **Content Creator Uploads**: Authenticated Content Creators can upload one or multiple PDFs in a single request with validation on `displayName`, MIME type (`application/pdf`), `.pdf` file extension, and file size limits (default 50MB).
 4. **Predefined PDF Support**: Local PDF files placed in `uploads/acts/` can be linked to their corresponding Acts without duplicating attachments.
 5. **Public Access**: Anyone can view inline or download attached PDFs and query Act PDF metadata without authentication.
 
@@ -7463,13 +7463,13 @@ Key capabilities:
 
 | Role | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- | :--- |
-| **Content Creator** | `POST` | `/api/content-creator/acts/:actId/pdfs` | Upload multiple PDFs against an Act | `CONTENT_CREATOR` JWT / Cookie |
-| **Content Creator** | `POST` | `/api/content-creator/acts/pdfs` | Upload multiple PDFs (actId in body/query) | `CONTENT_CREATOR` JWT / Cookie |
+| **Content Creator** | `POST` | `/api/content-creator/acts/:actId/pdfs` | Upload PDF(s) with `displayName` against an Act | `CONTENT_CREATOR` JWT / Cookie |
+| **Content Creator** | `POST` | `/api/content-creator/acts/pdfs` | Upload PDF(s) with `displayName` (actId in body/query) | `CONTENT_CREATOR` JWT / Cookie |
 | **Content Creator** | `POST` | `/api/content-creator/acts/:actId/predefined-pdfs` | Associate predefined local PDF to Act | `CONTENT_CREATOR` JWT / Cookie |
 | **Content Creator** | `POST` | `/api/content-creator/acts/predefined-pdfs/sync` | Auto-sync all predefined PDFs in folder | `CONTENT_CREATOR` JWT / Cookie |
 | **Content Creator** | `DELETE` | `/api/content-creator/acts/pdfs/:id` | Delete a PDF attachment record | `CONTENT_CREATOR` JWT / Cookie |
-| **Public** | `GET` | `/api/acts/:actId/pdfs` | Retrieve all PDFs attached to an Act | None (Public) |
-| **Public** | `GET` | `/api/acts/pdfs/:id` | Retrieve single PDF metadata | None (Public) |
+| **Public** | `GET` | `/api/acts/:actId/pdfs` | Retrieve all PDFs attached to an Act (with display names) | None (Public) |
+| **Public** | `GET` | `/api/acts/pdfs/:id` | Retrieve single PDF metadata (with display name) | None (Public) |
 | **Public** | `GET` | `/api/acts/pdfs/:id/view` | View PDF inline in browser | None (Public) |
 | **Public** | `GET` | `/api/acts/pdfs/:id/download` | Download PDF file attachment | None (Public) |
 
@@ -7489,31 +7489,35 @@ To upload PDFs using Postman:
    - *(Do NOT manually set `Content-Type: multipart/form-data`; Postman will automatically set the header with the correct boundary)*.
 3. **Configure Request Body:**
    - Under the **Body** tab, select **form-data**.
-   - Set Key: `pdfs` (or `files`)
-   - Change Key type dropdown from **Text** to **File**.
-   - In the Value column, click **Select Files** and choose one or multiple `.pdf` files.
+   - Add Field 1 (Text):
+     - Key: `displayName` (Type: Text)
+     - Value: `Official Bare Act Text (English)`
+   - Add Field 2 (File):
+     - Key: `pdf` (or `pdfs` / `files`)
+     - Change Key type dropdown from **Text** to **File**.
+     - In the Value column, click **Select Files** and choose one or multiple `.pdf` files.
 4. **Send Request:**
    - Click **Send**.
-   - You will receive a `201 Created` response with the uploaded PDF details and direct URLs for viewing and downloading.
+   - You will receive a `201 Created` response with the uploaded PDF details (including `displayName`) and direct URLs for viewing and downloading.
 
 ---
 
 ### Request & Response Examples
 
-#### 1. Upload Multiple PDFs for an Act
+#### 1. Upload PDF with Display Name for an Act
 - **Method:** `POST`
 - **URL:** `/api/content-creator/acts/27b7de9c-d477-4b71-9257-2e1d71057c72/pdfs`
 - **Headers:**
   - `Authorization: Bearer <CONTENT_CREATOR_TOKEN>`
 - **Body (`form-data`):**
-  - `pdfs`: `The_Code_of_Civil_Procedure_1908.pdf` (File)
-  - `pdfs`: `CPC_Amendments_2002.pdf` (File)
+  - `displayName`: `The Code of Civil Procedure, 1908 (Full Text)` (Text, Required)
+  - `pdf`: `The_Code_of_Civil_Procedure_1908.pdf` (File)
 
 **Response (201 Created):**
 ```json
 {
   "success": true,
-  "message": "2 PDF(s) uploaded successfully",
+  "message": "1 PDF(s) uploaded successfully",
   "act": {
     "id": "27b7de9c-d477-4b71-9257-2e1d71057c72",
     "heading": "THE CODE OF CIVIL PROCEDURE, 1908",
@@ -7524,6 +7528,7 @@ To upload PDFs using Postman:
     {
       "id": "e4a5d8b3-6c83-4702-8f64-96429f45d1a2",
       "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "displayName": "The Code of Civil Procedure, 1908 (Full Text)",
       "fileName": "The_Code_of_Civil_Procedure_1908.pdf",
       "filePath": "uploads/acts/The_Code_of_Civil_Procedure_1908-1727764981234-892147123.pdf",
       "fileSize": 1425890,
@@ -7532,18 +7537,6 @@ To upload PDFs using Postman:
       "updatedAt": "2026-10-01T12:00:00.000Z",
       "viewUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/view",
       "downloadUrl": "http://localhost:5000/api/acts/pdfs/e4a5d8b3-6c83-4702-8f64-96429f45d1a2/download"
-    },
-    {
-      "id": "f8c2b719-21a4-44ab-9c12-789a45cd981e",
-      "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
-      "fileName": "CPC_Amendments_2002.pdf",
-      "filePath": "uploads/acts/CPC_Amendments_2002-1727764981235-983214561.pdf",
-      "fileSize": 512400,
-      "mimeType": "application/pdf",
-      "createdAt": "2026-10-01T12:00:00.000Z",
-      "updatedAt": "2026-10-01T12:00:00.000Z",
-      "viewUrl": "http://localhost:5000/api/acts/pdfs/f8c2b719-21a4-44ab-9c12-789a45cd981e/view",
-      "downloadUrl": "http://localhost:5000/api/acts/pdfs/f8c2b719-21a4-44ab-9c12-789a45cd981e/download"
     }
   ]
 }
@@ -7570,6 +7563,7 @@ To upload PDFs using Postman:
     {
       "id": "e4a5d8b3-6c83-4702-8f64-96429f45d1a2",
       "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+      "displayName": "The Code of Civil Procedure, 1908 (Full Text)",
       "fileName": "The_Code_of_Civil_Procedure_1908.pdf",
       "filePath": "uploads/acts/The_Code_of_Civil_Procedure_1908-1727764981234-892147123.pdf",
       "fileSize": 1425890,
@@ -7598,6 +7592,7 @@ To upload PDFs using Postman:
   "data": {
     "id": "e4a5d8b3-6c83-4702-8f64-96429f45d1a2",
     "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "displayName": "The Code of Civil Procedure, 1908 (Full Text)",
     "fileName": "The_Code_of_Civil_Procedure_1908.pdf",
     "filePath": "uploads/acts/The_Code_of_Civil_Procedure_1908-1727764981234-892147123.pdf",
     "fileSize": 1425890,
@@ -7652,6 +7647,7 @@ To upload PDFs using Postman:
 - **Request Body:**
 ```json
 {
+  "displayName": "The Code of Civil Procedure 1908 Reference Copy",
   "fileName": "the_code_of_civil_procedure_1908.pdf"
 }
 ```
@@ -7664,6 +7660,7 @@ To upload PDFs using Postman:
   "data": {
     "id": "8b17ce21-12ef-45ca-b3a1-9a72d45c1109",
     "actId": "27b7de9c-d477-4b71-9257-2e1d71057c72",
+    "displayName": "The Code of Civil Procedure 1908 Reference Copy",
     "fileName": "the_code_of_civil_procedure_1908.pdf",
     "filePath": "uploads/acts/the_code_of_civil_procedure_1908.pdf",
     "fileSize": 1425890,
@@ -7698,6 +7695,7 @@ To upload PDFs using Postman:
 
 | Status Code | Scenario | Example Response |
 | :--- | :--- | :--- |
+| `400 Bad Request` | Missing or empty `displayName` | `{"success": false, "message": "displayName is required"}` |
 | `400 Bad Request` | Upload file format is not `.pdf` | `{"success": false, "message": "Invalid file type. Only PDF files with .pdf extension are allowed."}` |
 | `400 Bad Request` | No files attached in request | `{"success": false, "message": "No PDF files uploaded. Please attach at least one PDF file."}` |
 | `400 Bad Request` | File size exceeds max limit (50MB) | `{"success": false, "message": "File size exceeds the allowed limit of 50MB."}` |
@@ -7706,6 +7704,7 @@ To upload PDFs using Postman:
 | `404 Not Found` | Act ID does not exist | `{"success": false, "message": "Act not found"}` |
 | `404 Not Found` | PDF attachment ID does not exist | `{"success": false, "message": "PDF attachment not found"}` |
 | `404 Not Found` | PDF physical file missing on disk | `{"success": false, "message": "PDF file not found on disk"}` |
+
 
 
 

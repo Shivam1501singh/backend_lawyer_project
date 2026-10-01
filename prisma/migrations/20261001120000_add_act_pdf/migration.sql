@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS "ActPdf" (
     "id" TEXT NOT NULL,
     "actId" TEXT NOT NULL,
+    "displayName" TEXT NOT NULL,
     "fileName" TEXT NOT NULL,
     "filePath" TEXT NOT NULL,
     "fileSize" INTEGER,
@@ -14,6 +15,9 @@ CREATE TABLE IF NOT EXISTS "ActPdf" (
 
 -- CreateIndex
 CREATE INDEX IF NOT EXISTS "ActPdf_actId_idx" ON "ActPdf"("actId");
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "ActPdf_displayName_idx" ON "ActPdf"("displayName");
 
 -- CreateIndex
 CREATE INDEX IF NOT EXISTS "ActPdf_fileName_idx" ON "ActPdf"("fileName");

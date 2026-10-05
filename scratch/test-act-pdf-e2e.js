@@ -386,10 +386,10 @@ async function runTests() {
     await prisma.bearerAct.delete({ where: { id: testBearerAct.id } });
     if (fs.existsSync(predefinedFilePath)) fs.unlinkSync(predefinedFilePath);
 
-    // Clean up any remaining test pdf files in uploads/acts
+    // Clean up only temporary test pdf files created during this test run
     const actFiles = fs.readdirSync(uploadsDir);
     for (const file of actFiles) {
-      if (file.endsWith('.pdf')) {
+      if (file.startsWith('test-') || file === predefinedFileName || file.startsWith('sample-')) {
         try { fs.unlinkSync(path.join(uploadsDir, file)); } catch (e) {}
       }
     }
